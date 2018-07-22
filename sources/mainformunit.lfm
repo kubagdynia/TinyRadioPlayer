@@ -1,0 +1,21 @@
+object MainForm: TMainForm
+  Left = 472
+  Height = 240
+  Top = 202
+  Width = 320
+  Caption = 'Tiny Radio Player'
+  ClientHeight = 240
+  ClientWidth = 320
+  Position = poScreenCenter
+  LCLVersion = '1.8.2.0'
+  object Label1: TLabel
+    Left = 128
+    Height = 15
+    Top = 96
+    Width = 69
+    Alignment = taCenter
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    Caption = 'Hello World!!'
+    ParentColor = False
+  end
+end
