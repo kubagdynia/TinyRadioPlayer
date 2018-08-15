@@ -13,6 +13,7 @@ uses
 {$R *.res}
 
 begin
+  Application.Title:='Tiny Radio Player';
   RequireDerivedFormResource:=True;
   Application.Initialize;
   Application.CreateForm(TMainForm, MainForm);
