@@ -101,14 +101,14 @@ begin
          // Buffering progress
        end;
     3: begin
-         // nazwa stacji
+         // station name
          lblInfo2.Caption := AMsg;
        end;
     4: begin
          // bitrate
        end;
     7: begin
-         // nazwa piosenki
+         // title name, song name
          lblInfo1.Caption := AMsg;
        end;
     8: begin
