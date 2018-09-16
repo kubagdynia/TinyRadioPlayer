@@ -72,5 +72,7 @@ compiled/*
 sources/backup/*
 sources/*.lps
 
-bin/*
-!bin/.info
+#bin/*
+bin/*/TinyRadioPlayer*
+!bin/**/libbass.so
+!bin/**/bass.dll
