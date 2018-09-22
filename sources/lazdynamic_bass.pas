@@ -151,7 +151,6 @@ const
   BASS_DEVICE_AUDIOTRACK  = $20000; // use AudioTrack output
   BASS_DEVICE_DSOUND      = $40000; // use DirectSound output
 
-
   // DirectSound interfaces (for use with BASS_GetDSoundObject)
   BASS_OBJECT_DS          = 1;   // IDirectSound
   BASS_OBJECT_DS3DL       = 2;   // IDirectSound3DListener
@@ -441,35 +440,35 @@ const
   BASS_LEVEL_VOLPAN   = 8;
 
   // BASS_ChannelGetTags types : what's returned
-  BASS_TAG_ID3        = 0; // ID3v1 tags : TAG_ID3 structure
-  BASS_TAG_ID3V2      = 1; // ID3v2 tags : variable length block
-  BASS_TAG_OGG        = 2; // OGG comments : series of null-terminated UTF-8 strings
-  BASS_TAG_HTTP       = 3; // HTTP headers : series of null-terminated ANSI strings
-  BASS_TAG_ICY        = 4; // ICY headers : series of null-terminated ANSI strings
-  BASS_TAG_META       = 5; // ICY metadata : ANSI string
-  BASS_TAG_APE        = 6; // APEv2 tags : series of null-terminated UTF-8 strings
-  BASS_TAG_MP4        = 7; // MP4/iTunes metadata : series of null-terminated UTF-8 strings
-  BASS_TAG_WMA        = 8; // WMA tags : series of null-terminated UTF-8 strings
-  BASS_TAG_VENDOR     = 9; // OGG encoder : UTF-8 string
-  BASS_TAG_LYRICS3    = 10; // Lyric3v2 tag : ASCII string
-  BASS_TAG_CA_CODEC   = 11;	// CoreAudio codec info : TAG_CA_CODEC structure
-  BASS_TAG_MF         = 13;	// Media Foundation tags : series of null-terminated UTF-8 strings
-  BASS_TAG_WAVEFORMAT = 14;	// WAVE format : WAVEFORMATEEX structure
-  BASS_TAG_AM_MIME    = 15; // Android Media MIME type : ASCII string
-  BASS_TAG_AM_NAME    = 16; // Android Media codec name : ASCII string
-  BASS_TAG_RIFF_INFO  = $100; // RIFF "INFO" tags : series of null-terminated ANSI strings
-  BASS_TAG_RIFF_BEXT  = $101; // RIFF/BWF "bext" tags : TAG_BEXT structure
-  BASS_TAG_RIFF_CART  = $102; // RIFF/BWF "cart" tags : TAG_CART structure
-  BASS_TAG_RIFF_DISP  = $103; // RIFF "DISP" text tag : ANSI string
-  BASS_TAG_RIFF_CUE   = $104; // RIFF "cue " chunk : TAG_CUE structure
-  BASS_TAG_RIFF_SMPL  = $105; // RIFF "smpl" chunk : TAG_SMPL structure
-  BASS_TAG_APE_BINARY = $1000; // + index #, binary APEv2 tag : TAG_APE_BINARY structure
-  BASS_TAG_MUSIC_NAME = $10000;	// MOD music name : ANSI string
+  BASS_TAG_ID3           = 0; // ID3v1 tags : TAG_ID3 structure
+  BASS_TAG_ID3V2         = 1; // ID3v2 tags : variable length block
+  BASS_TAG_OGG           = 2; // OGG comments : series of null-terminated UTF-8 strings
+  BASS_TAG_HTTP          = 3; // HTTP headers : series of null-terminated ANSI strings
+  BASS_TAG_ICY           = 4; // ICY headers : series of null-terminated ANSI strings
+  BASS_TAG_META          = 5; // ICY metadata : ANSI string
+  BASS_TAG_APE           = 6; // APEv2 tags : series of null-terminated UTF-8 strings
+  BASS_TAG_MP4           = 7; // MP4/iTunes metadata : series of null-terminated UTF-8 strings
+  BASS_TAG_WMA           = 8; // WMA tags : series of null-terminated UTF-8 strings
+  BASS_TAG_VENDOR        = 9; // OGG encoder : UTF-8 string
+  BASS_TAG_LYRICS3       = 10; // Lyric3v2 tag : ASCII string
+  BASS_TAG_CA_CODEC      = 11;	// CoreAudio codec info : TAG_CA_CODEC structure
+  BASS_TAG_MF            = 13;	// Media Foundation tags : series of null-terminated UTF-8 strings
+  BASS_TAG_WAVEFORMAT    = 14;	// WAVE format : WAVEFORMATEEX structure
+  BASS_TAG_AM_MIME       = 15; // Android Media MIME type : ASCII string
+  BASS_TAG_AM_NAME       = 16; // Android Media codec name : ASCII string
+  BASS_TAG_RIFF_INFO     = $100; // RIFF "INFO" tags : series of null-terminated ANSI strings
+  BASS_TAG_RIFF_BEXT     = $101; // RIFF/BWF "bext" tags : TAG_BEXT structure
+  BASS_TAG_RIFF_CART     = $102; // RIFF/BWF "cart" tags : TAG_CART structure
+  BASS_TAG_RIFF_DISP     = $103; // RIFF "DISP" text tag : ANSI string
+  BASS_TAG_RIFF_CUE      = $104; // RIFF "cue " chunk : TAG_CUE structure
+  BASS_TAG_RIFF_SMPL     = $105; // RIFF "smpl" chunk : TAG_SMPL structure
+  BASS_TAG_APE_BINARY    = $1000; // + index #, binary APEv2 tag : TAG_APE_BINARY structure
+  BASS_TAG_MUSIC_NAME    = $10000;	// MOD music name : ANSI string
   BASS_TAG_MUSIC_MESSAGE = $10001; // MOD message : ANSI string
-  BASS_TAG_MUSIC_ORDERS = $10002; // MOD order list : BYTE array of pattern numbers
-  BASS_TAG_MUSIC_AUTH = $10003; // MOD author : UTF-8 string
-  BASS_TAG_MUSIC_INST = $10100;	// + instrument #, MOD instrument name : ANSI string
-  BASS_TAG_MUSIC_SAMPLE = $10300; // + sample #, MOD sample name : ANSI string
+  BASS_TAG_MUSIC_ORDERS  = $10002; // MOD order list : BYTE array of pattern numbers
+  BASS_TAG_MUSIC_AUTH    = $10003; // MOD author : UTF-8 string
+  BASS_TAG_MUSIC_INST    = $10100;	// + instrument #, MOD instrument name : ANSI string
+  BASS_TAG_MUSIC_SAMPLE  = $10300; // + sample #, MOD sample name : ANSI string
 
   // BASS_ChannelGetLength/GetPosition/SetPosition modes
   BASS_POS_BYTE           = 0; // byte position
@@ -613,7 +612,7 @@ type
     {$IFDEF CPUX64}
     padding: DWORD;
     {$ENDIF}
-	name: PAnsiChar;    // format description
+    name: PAnsiChar;    // format description
     exts: PAnsiChar;    // file extension filter (*.ext1;*.ext2;etc...)
   end;
   PBASS_PLUGINFORMS = ^TBASS_PLUGINFORMS;
@@ -998,246 +997,245 @@ Function Load_BASSDLL (const dllfilename:string) :boolean;
 begin
   Result := False;
   if BASS_Handle<>0 then result:=true {is it already there ?}
-  else begin {go & load the library}
+  else
+  begin {go & load the library}
     if Length(dllfilename) = 0 then exit;
     BASS_Handle:= {$IFNDEF MSWINDOWS}LoadLibraryEx(dllfilename);{$ELSE}DynLibs.LoadLibrary(dllfilename);{$ENDIF} // obtain the handle we want
 
-	if BASS_Handle <> DynLibs.NilHandle then
-       begin {now we tie the functions to the VARs from above}
+    if BASS_Handle <> DynLibs.NilHandle then
+    begin {now we tie the functions to the VARs from above}
+      Pointer(BASS_SetConfig)              :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SetConfig'));
+      Pointer(BASS_GetConfig)              :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetConfig'));
 
-Pointer(BASS_SetConfig)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SetConfig'));
-Pointer(BASS_GetConfig)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetConfig'));
+      Pointer(BASS_SetConfigPtr)           :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SetConfigPtr'));
+      Pointer(BASS_GetConfigPtr)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetConfigPtr'));
+      Pointer(BASS_GetVersion)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetVersion'));
+      Pointer(BASS_ErrorGetCode)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ErrorGetCode'));
+      Pointer(BASS_GetDeviceInfo)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetDeviceInfo'));
+      Pointer(BASS_Init)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Init'));
+      Pointer(BASS_SetDevice)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SetDevice'));
+      Pointer(BASS_GetDevice)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetDevice'));
+      Pointer(BASS_Free)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Free'));
+      Pointer(BASS_GetDSoundObject)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetDSoundObject'));
+      Pointer(BASS_GetInfo)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetInfo'));
+      Pointer(BASS_Update)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Update'));
+      Pointer(BASS_GetCPU)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetCPU'));
+      Pointer(BASS_Start)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Start'));
+      Pointer(BASS_Stop)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Stop'));
+      Pointer(BASS_Pause)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Pause'));
+      Pointer(BASS_SetVolume)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SetVolume'));
+      Pointer(BASS_GetVolume)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetVolume'));
 
+      Pointer(BASS_PluginLoad)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_PluginLoad'));
+      Pointer(BASS_PluginFree)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_PluginFree'));
+      Pointer(BASS_PluginGetInfo)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_PluginGetInfo'));
 
+      Pointer(BASS_Set3DFactors)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Set3DFactors'));
+      Pointer(BASS_Get3DFactors)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Get3DFactors'));
+      Pointer(BASS_Set3DPosition)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Set3DPosition'));
+      Pointer(BASS_Get3DPosition)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Get3DPosition'));
+      Pointer(BASS_Apply3D)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Apply3D'));
+      {$IFDEF MSWINDOWS}
+      Pointer(BASS_SetEAXParameters)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SetEAXParameters'));
+      Pointer(BASS_GetEAXParameters)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetEAXParameters'));
+      {$ENDIF}
+      Pointer(BASS_MusicLoad)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_MusicLoad'));
+      Pointer(BASS_MusicFree)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_MusicFree'));
 
-Pointer(BASS_SetConfigPtr)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SetConfigPtr'));
-Pointer(BASS_GetConfigPtr)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetConfigPtr'));
-Pointer(BASS_GetVersion)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetVersion'));
-Pointer(BASS_ErrorGetCode)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ErrorGetCode'));
-Pointer(BASS_GetDeviceInfo)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetDeviceInfo'));
-Pointer(BASS_Init)				:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Init'));
-Pointer(BASS_SetDevice)			:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SetDevice'));
-Pointer(BASS_GetDevice)			:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetDevice'));
-Pointer(BASS_Free)				:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Free'));
-Pointer(BASS_GetDSoundObject)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetDSoundObject'));
-Pointer(BASS_GetInfo)			:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetInfo'));
-Pointer(BASS_Update)			:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Update'));
-Pointer(BASS_GetCPU)			:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetCPU'));
-Pointer(BASS_Start)				:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Start'));
-Pointer(BASS_Stop)				:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Stop'));
-Pointer(BASS_Pause)				:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Pause'));
-Pointer(BASS_SetVolume)			:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SetVolume'));
-Pointer(BASS_GetVolume)			:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetVolume'));
+      Pointer(BASS_SampleLoad)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleLoad'));
+      Pointer(BASS_SampleCreate)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleCreate'));
+      Pointer(BASS_SampleFree)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleFree'));
+      Pointer(BASS_SampleSetData)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleSetData'));
+      Pointer(BASS_SampleGetData)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleGetData'));
+      Pointer(BASS_SampleGetInfo)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleGetInfo'));
+      Pointer(BASS_SampleSetInfo)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleSetInfo'));
+      Pointer(BASS_SampleGetChannel)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleGetChannel'));
+      Pointer(BASS_SampleGetChannels)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleGetChannels'));
+      Pointer(BASS_SampleStop)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleStop'));
 
-Pointer(BASS_PluginLoad)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_PluginLoad'));
-Pointer(BASS_PluginFree)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_PluginFree'));
-Pointer(BASS_PluginGetInfo)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_PluginGetInfo'));
+      Pointer(BASS_StreamCreate)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_StreamCreate'));
+      Pointer(BASS_StreamCreateFile)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_StreamCreateFile'));
+      Pointer(BASS_StreamCreateURL)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_StreamCreateURL'));
+      Pointer(BASS_StreamCreateFileUser)   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_StreamCreateFileUser'));
+      Pointer(BASS_StreamFree)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_StreamFree'));
+      Pointer(BASS_StreamGetFilePosition)  :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_StreamGetFilePosition'));
+      Pointer(BASS_StreamPutData)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_StreamPutData'));
+      Pointer(BASS_StreamPutFileData)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_StreamPutFileData'));
 
-Pointer(BASS_Set3DFactors)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Set3DFactors'));
-Pointer(BASS_Get3DFactors)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Get3DFactors'));
-Pointer(BASS_Set3DPosition)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Set3DPosition'));
-Pointer(BASS_Get3DPosition)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Get3DPosition'));
-Pointer(BASS_Apply3D)			:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Apply3D'));
-{$IFDEF MSWINDOWS}
-Pointer(BASS_SetEAXParameters)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SetEAXParameters'));
-Pointer(BASS_GetEAXParameters)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetEAXParameters'));
-{$ENDIF}
-Pointer(BASS_MusicLoad)			:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_MusicLoad'));
-Pointer(BASS_MusicFree)			:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_MusicFree'));
+      Pointer(BASS_RecordGetDeviceInfo)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordGetDeviceInfo'));
+      Pointer(BASS_RecordInit)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordInit'));
+      Pointer(BASS_RecordSetDevice)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordSetDevice'));
+      Pointer(BASS_RecordGetDevice)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordGetDevice'));
+      Pointer(BASS_RecordFree)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordFree'));
+      Pointer(BASS_RecordGetInfo)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordGetInfo'));
+      Pointer(BASS_RecordGetInputName)     :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordGetInputName'));
+      Pointer(BASS_RecordSetInput)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordSetInput'));
+      Pointer(BASS_RecordGetInput)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordGetInput'));
+      Pointer(BASS_RecordStart)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordStart'));
 
-Pointer(BASS_SampleLoad)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleLoad'));
-Pointer(BASS_SampleCreate)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleCreate'));
-Pointer(BASS_SampleFree)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleFree'));
-Pointer(BASS_SampleSetData)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleSetData'));
-Pointer(BASS_SampleGetData)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleGetData'));
-Pointer(BASS_SampleGetInfo)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleGetInfo'));
-Pointer(BASS_SampleSetInfo)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleSetInfo'));
-Pointer(BASS_SampleGetChannel)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleGetChannel'));
-Pointer(BASS_SampleGetChannels)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleGetChannels'));
-Pointer(BASS_SampleStop)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SampleStop'));
+      Pointer(BASS_ChannelBytes2Seconds)   :=   DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelBytes2Seconds'));
+      Pointer(BASS_ChannelSeconds2Bytes)   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSeconds2Bytes'));
+      Pointer(BASS_ChannelGetDevice)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetDevice'));
+      Pointer(BASS_ChannelSetDevice)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSetDevice'));
+      Pointer(BASS_ChannelIsActive)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelIsActive'));
+      Pointer(BASS_ChannelGetInfo)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetInfo'));
+      Pointer(BASS_ChannelGetTags)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetTags'));
+      Pointer(BASS_ChannelFlags)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelFlags'));
+      Pointer(BASS_ChannelUpdate)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelUpdate'));
+      Pointer(BASS_ChannelLock)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelLock'));
+      Pointer(BASS_ChannelPlay)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelPlay'));
+      Pointer(BASS_ChannelStop)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelStop'));
+      Pointer(BASS_ChannelPause)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelPause'));
+      Pointer(BASS_ChannelSetAttribute)    :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSetAttribute'));
+      Pointer(BASS_ChannelGetAttribute)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetAttribute'));
+      Pointer(BASS_ChannelSlideAttribute)  :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSlideAttribute'));
+      Pointer(BASS_ChannelIsSliding)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelIsSliding'));
+      Pointer(BASS_ChannelSetAttributeEx)  :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSetAttributeEx'));
+      Pointer(BASS_ChannelGetAttributeEx)  :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetAttributeEx'));
+      Pointer(BASS_ChannelSet3DAttributes) :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSet3DAttributes'));
+      Pointer(BASS_ChannelGet3DAttributes) :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGet3DAttributes'));
+      Pointer(BASS_ChannelSet3DPosition)   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSet3DPosition'));
+      Pointer(BASS_ChannelGet3DPosition)   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGet3DPosition'));
+      Pointer(BASS_ChannelGetLength)       :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetLength'));
+      Pointer(BASS_ChannelSetPosition)     :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSetPosition'));
+      Pointer(BASS_ChannelGetPosition)     :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetPosition'));
+      Pointer(BASS_ChannelGetLevel)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetLevel'));
+      Pointer(BASS_ChannelGetLevelEx)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetLevelEx'));
+      Pointer(BASS_ChannelGetData)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetData'));
+      Pointer(BASS_ChannelSetSync)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSetSync'));
+      Pointer(BASS_ChannelRemoveSync)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelRemoveSync'));
+      Pointer(BASS_ChannelSetDSP)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSetDSP'));
+      Pointer(BASS_ChannelRemoveDSP)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelRemoveDSP'));
+      Pointer(BASS_ChannelSetLink)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSetLink'));
+      Pointer(BASS_ChannelRemoveLink)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelRemoveLink'));
+      Pointer(BASS_ChannelSetFX)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSetFX'));
+      Pointer(BASS_ChannelRemoveFX)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelRemoveFX'));
 
-Pointer(BASS_StreamCreate)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_StreamCreate'));
-Pointer(BASS_StreamCreateFile)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_StreamCreateFile'));
-Pointer(BASS_StreamCreateURL)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_StreamCreateURL'));
-Pointer(BASS_StreamCreateFileUser)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_StreamCreateFileUser'));
-Pointer(BASS_StreamFree)			:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_StreamFree'));
-Pointer(BASS_StreamGetFilePosition)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_StreamGetFilePosition'));
-Pointer(BASS_StreamPutData)			:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_StreamPutData'));
-Pointer(BASS_StreamPutFileData)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_StreamPutFileData'));
-
-Pointer(BASS_RecordGetDeviceInfo)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordGetDeviceInfo'));
-Pointer(BASS_RecordInit)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordInit'));
-Pointer(BASS_RecordSetDevice)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordSetDevice'));
-Pointer(BASS_RecordGetDevice)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordGetDevice'));
-Pointer(BASS_RecordFree)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordFree'));
-Pointer(BASS_RecordGetInfo)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordGetInfo'));
-Pointer(BASS_RecordGetInputName):=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordGetInputName'));
-Pointer(BASS_RecordSetInput)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordSetInput'));
-Pointer(BASS_RecordGetInput)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordGetInput'));
-Pointer(BASS_RecordStart)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_RecordStart'));
-
-Pointer(BASS_ChannelBytes2Seconds)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelBytes2Seconds'));
-Pointer(BASS_ChannelSeconds2Bytes)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSeconds2Bytes'));
-Pointer(BASS_ChannelGetDevice)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetDevice'));
-Pointer(BASS_ChannelSetDevice)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSetDevice'));
-Pointer(BASS_ChannelIsActive)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelIsActive'));
-Pointer(BASS_ChannelGetInfo)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetInfo'));
-Pointer(BASS_ChannelGetTags)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetTags'));
-Pointer(BASS_ChannelFlags)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelFlags'));
-Pointer(BASS_ChannelUpdate)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelUpdate'));
-Pointer(BASS_ChannelLock)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelLock'));
-Pointer(BASS_ChannelPlay)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelPlay'));
-Pointer(BASS_ChannelStop)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelStop'));
-Pointer(BASS_ChannelPause)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelPause'));
-Pointer(BASS_ChannelSetAttribute)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSetAttribute'));
-Pointer(BASS_ChannelGetAttribute)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetAttribute'));
-Pointer(BASS_ChannelSlideAttribute)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSlideAttribute'));
-Pointer(BASS_ChannelIsSliding)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelIsSliding'));
-Pointer(BASS_ChannelSetAttributeEx)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSetAttributeEx'));
-Pointer(BASS_ChannelGetAttributeEx)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetAttributeEx'));
-Pointer(BASS_ChannelSet3DAttributes):=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSet3DAttributes'));
-Pointer(BASS_ChannelGet3DAttributes):=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGet3DAttributes'));
-Pointer(BASS_ChannelSet3DPosition)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSet3DPosition'));
-Pointer(BASS_ChannelGet3DPosition)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGet3DPosition'));
-Pointer(BASS_ChannelGetLength)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetLength'));
-Pointer(BASS_ChannelSetPosition):=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSetPosition'));
-Pointer(BASS_ChannelGetPosition):=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetPosition'));
-Pointer(BASS_ChannelGetLevel)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetLevel'));
-Pointer(BASS_ChannelGetLevelEx)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetLevelEx'));
-Pointer(BASS_ChannelGetData)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelGetData'));
-Pointer(BASS_ChannelSetSync)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSetSync'));
-Pointer(BASS_ChannelRemoveSync)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelRemoveSync'));
-Pointer(BASS_ChannelSetDSP)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSetDSP'));
-Pointer(BASS_ChannelRemoveDSP)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelRemoveDSP'));
-Pointer(BASS_ChannelSetLink)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSetLink'));
-Pointer(BASS_ChannelRemoveLink)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelRemoveLink'));
-Pointer(BASS_ChannelSetFX)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelSetFX'));
-Pointer(BASS_ChannelRemoveFX)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_ChannelRemoveFX'));
-
-Pointer(BASS_FXSetParameters)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_FXSetParameters'));
-Pointer(BASS_FXGetParameters)	:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_FXGetParameters'));
-Pointer(BASS_FXReset)			:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_FXReset'));
-Pointer(BASS_FXSetPriority)		:=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_FXSetPriority'));
+      Pointer(BASS_FXSetParameters)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_FXSetParameters'));
+      Pointer(BASS_FXGetParameters)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_FXGetParameters'));
+      Pointer(BASS_FXReset)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_FXReset'));
+      Pointer(BASS_FXSetPriority)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_FXSetPriority'));
 
       {now check if everything is linked in correctly}
       if
-(@BASS_SetConfig=nil)  or
-(@BASS_GetConfig=nil)  or
-(@BASS_SetConfigPtr=nil)  or
-(@BASS_GetConfigPtr=nil)  or
-(@BASS_GetVersion=nil)  or
-(@BASS_ErrorGetCode=nil)  or
-(@BASS_GetDeviceInfo=nil)  or
-(@BASS_Init=nil)  or
-(@BASS_SetDevice=nil)  or
-(@BASS_GetDevice=nil)  or
-(@BASS_Free=nil)  or
-(@BASS_GetDSoundObject=nil)  or
-(@BASS_GetInfo=nil)  or
-(@BASS_Update=nil)  or
-(@BASS_GetCPU=nil)  or
-(@BASS_Start=nil)  or
-(@BASS_Stop=nil)  or
-(@BASS_Pause=nil)  or
-(@BASS_SetVolume=nil)  or
-(@BASS_GetVolume=nil)  or
+        (@BASS_SetConfig=nil) or
+        (@BASS_GetConfig=nil) or
+        (@BASS_SetConfigPtr=nil) or
+        (@BASS_GetConfigPtr=nil) or
+        (@BASS_GetVersion=nil) or
+        (@BASS_ErrorGetCode=nil) or
+        (@BASS_GetDeviceInfo=nil) or
+        (@BASS_Init=nil) or
+        (@BASS_SetDevice=nil) or
+        (@BASS_GetDevice=nil) or
+        (@BASS_Free=nil) or
+        (@BASS_GetDSoundObject=nil) or
+        (@BASS_GetInfo=nil) or
+        (@BASS_Update=nil) or
+        (@BASS_GetCPU=nil) or
+        (@BASS_Start=nil) or
+        (@BASS_Stop=nil) or
+        (@BASS_Pause=nil) or
+        (@BASS_SetVolume=nil) or
+        (@BASS_GetVolume=nil) or
 
-(@BASS_PluginLoad=nil) or
-(@BASS_PluginFree=nil) or
-(@BASS_PluginGetInfo=nil) or
+        (@BASS_PluginLoad=nil) or
+        (@BASS_PluginFree=nil) or
+        (@BASS_PluginGetInfo=nil) or
 
-(@BASS_Set3DFactors=nil)  or
-(@BASS_Get3DFactors=nil)  or
-(@BASS_Set3DPosition=nil)  or
-(@BASS_Get3DPosition=nil)  or
-(@BASS_Apply3D=nil)  or
-{$IFDEF MSWINDOWS}
-(@BASS_SetEAXParameters=nil)  or
-(@BASS_GetEAXParameters=nil)  or
-{$ENDIF}
-(@BASS_MusicLoad=nil)  or
-(@BASS_MusicFree=nil)  or
+        (@BASS_Set3DFactors=nil) or
+        (@BASS_Get3DFactors=nil) or
+        (@BASS_Set3DPosition=nil) or
+        (@BASS_Get3DPosition=nil) or
+        (@BASS_Apply3D=nil) or
+        {$IFDEF MSWINDOWS}
+        (@BASS_SetEAXParameters=nil) or
+        (@BASS_GetEAXParameters=nil) or
+        {$ENDIF}
+        (@BASS_MusicLoad=nil) or
+        (@BASS_MusicFree=nil) or
 
-(@BASS_SampleLoad=nil)  or
-(@BASS_SampleCreate=nil)  or
-(@BASS_SampleFree=nil)  or
-(@BASS_SampleSetData=nil)  or
-(@BASS_SampleGetData=nil)  or
-(@BASS_SampleGetInfo=nil)  or
-(@BASS_SampleSetInfo=nil)  or
-(@BASS_SampleGetChannel=nil)  or
-(@BASS_SampleGetChannels=nil)  or
-(@BASS_SampleStop=nil)  or
+        (@BASS_SampleLoad=nil) or
+        (@BASS_SampleCreate=nil) or
+        (@BASS_SampleFree=nil) or
+        (@BASS_SampleSetData=nil) or
+        (@BASS_SampleGetData=nil) or
+        (@BASS_SampleGetInfo=nil) or
+        (@BASS_SampleSetInfo=nil) or
+        (@BASS_SampleGetChannel=nil) or
+        (@BASS_SampleGetChannels=nil) or
+        (@BASS_SampleStop=nil) or
 
-(@BASS_StreamCreate=nil)  or
-(@BASS_StreamCreateFile=nil)  or
-(@BASS_StreamCreateURL=nil)  or
-(@BASS_StreamCreateFileUser=nil)  or
-(@BASS_StreamFree=nil)  or
-(@BASS_StreamGetFilePosition=nil)  or
-(@BASS_StreamPutData=nil)  or
-(@BASS_StreamPutFileData=nil)  or
+        (@BASS_StreamCreate=nil) or
+        (@BASS_StreamCreateFile=nil) or
+        (@BASS_StreamCreateURL=nil) or
+        (@BASS_StreamCreateFileUser=nil) or
+        (@BASS_StreamFree=nil) or
+        (@BASS_StreamGetFilePosition=nil) or
+        (@BASS_StreamPutData=nil) or
+        (@BASS_StreamPutFileData=nil) or
 
-(@BASS_RecordGetDeviceInfo=nil)  or
-(@BASS_RecordInit=nil)  or
-(@BASS_RecordSetDevice=nil)  or
-(@BASS_RecordGetDevice=nil)  or
-(@BASS_RecordFree=nil)  or
-(@BASS_RecordGetInfo=nil)  or
-(@BASS_RecordGetInputName=nil)  or
-(@BASS_RecordSetInput=nil)  or
-(@BASS_RecordGetInput=nil)  or
-(@BASS_RecordStart=nil)  or
+        (@BASS_RecordGetDeviceInfo=nil) or
+        (@BASS_RecordInit=nil) or
+        (@BASS_RecordSetDevice=nil) or
+        (@BASS_RecordGetDevice=nil) or
+        (@BASS_RecordFree=nil) or
+        (@BASS_RecordGetInfo=nil) or
+        (@BASS_RecordGetInputName=nil) or
+        (@BASS_RecordSetInput=nil) or
+        (@BASS_RecordGetInput=nil) or
+        (@BASS_RecordStart=nil)  or
 
-(@BASS_ChannelBytes2Seconds=nil)  or
-(@BASS_ChannelSeconds2Bytes=nil)  or
-(@BASS_ChannelGetDevice=nil)  or
-(@BASS_ChannelSetDevice=nil)  or
-(@BASS_ChannelIsActive=nil)  or
-(@BASS_ChannelGetInfo=nil)  or
-(@BASS_ChannelGetTags=nil)  or
-(@BASS_ChannelFlags=nil)  or
-(@BASS_ChannelUpdate=nil)  or
-(@BASS_ChannelLock=nil)  or
-(@BASS_ChannelPlay=nil)  or
-(@BASS_ChannelStop=nil)  or
-(@BASS_ChannelPause=nil)  or
-(@BASS_ChannelSetAttribute=nil)  or
-(@BASS_ChannelGetAttribute=nil)  or
-(@BASS_ChannelSlideAttribute=nil)  or
-(@BASS_ChannelIsSliding=nil)  or
-(@BASS_ChannelSetAttributeEx=nil)  or
-(@BASS_ChannelGetAttributeEx=nil)  or
-(@BASS_ChannelSet3DAttributes=nil)  or
-(@BASS_ChannelGet3DAttributes=nil)  or
-(@BASS_ChannelSet3DPosition=nil)  or
-(@BASS_ChannelGet3DPosition=nil)  or
-(@BASS_ChannelGetLength=nil)  or
-(@BASS_ChannelSetPosition=nil)  or
-(@BASS_ChannelGetPosition=nil)  or
-(@BASS_ChannelGetLevel=nil)  or
-(@BASS_ChannelGetLevelEx=nil)  or
-(@BASS_ChannelGetData=nil)  or
-(@BASS_ChannelSetSync=nil)  or
-(@BASS_ChannelRemoveSync=nil)  or
-(@BASS_ChannelSetDSP=nil)  or
-(@BASS_ChannelRemoveDSP=nil)  or
-(@BASS_ChannelSetLink=nil)  or
-(@BASS_ChannelRemoveLink=nil)  or
-(@BASS_ChannelSetFX=nil)  or
-(@BASS_ChannelRemoveFX=nil)  or
+        (@BASS_ChannelBytes2Seconds=nil) or
+        (@BASS_ChannelSeconds2Bytes=nil) or
+        (@BASS_ChannelGetDevice=nil) or
+        (@BASS_ChannelSetDevice=nil) or
+        (@BASS_ChannelIsActive=nil) or
+        (@BASS_ChannelGetInfo=nil) or
+        (@BASS_ChannelGetTags=nil) or
+        (@BASS_ChannelFlags=nil) or
+        (@BASS_ChannelUpdate=nil) or
+        (@BASS_ChannelLock=nil) or
+        (@BASS_ChannelPlay=nil) or
+        (@BASS_ChannelStop=nil) or
+        (@BASS_ChannelPause=nil) or
+        (@BASS_ChannelSetAttribute=nil) or
+        (@BASS_ChannelGetAttribute=nil) or
+        (@BASS_ChannelSlideAttribute=nil) or
+        (@BASS_ChannelIsSliding=nil) or
+        (@BASS_ChannelSetAttributeEx=nil) or
+        (@BASS_ChannelGetAttributeEx=nil) or
+        (@BASS_ChannelSet3DAttributes=nil) or
+        (@BASS_ChannelGet3DAttributes=nil) or
+        (@BASS_ChannelSet3DPosition=nil) or
+        (@BASS_ChannelGet3DPosition=nil) or
+        (@BASS_ChannelGetLength=nil) or
+        (@BASS_ChannelSetPosition=nil) or
+        (@BASS_ChannelGetPosition=nil) or
+        (@BASS_ChannelGetLevel=nil) or
+        (@BASS_ChannelGetLevelEx=nil) or
+        (@BASS_ChannelGetData=nil) or
+        (@BASS_ChannelSetSync=nil) or
+        (@BASS_ChannelRemoveSync=nil) or
+        (@BASS_ChannelSetDSP=nil) or
+        (@BASS_ChannelRemoveDSP=nil) or
+        (@BASS_ChannelSetLink=nil) or
+        (@BASS_ChannelRemoveLink=nil) or
+        (@BASS_ChannelSetFX=nil) or
+        (@BASS_ChannelRemoveFX=nil) or
 
-(@BASS_FXSetParameters=nil)  or
-(@BASS_FXGetParameters=nil)  or
-(@BASS_FXReset=nil) or
-(@BASS_FXSetPriority=nil)
+        (@BASS_FXSetParameters=nil) or
+        (@BASS_FXGetParameters=nil) or
+        (@BASS_FXReset=nil) or
+        (@BASS_FXSetPriority=nil)
 
-         then
+        then
           begin {if something went wrong during linking, free library & reset handle}
             DynLibs.UnloadLibrary(BASS_Handle);
             BASS_Handle := DynLibs.NilHandle;
-         end;
-       end;
+          end;
+
+    end;
     result := (BASS_Handle <> DynLibs.NilHandle);
   end;
 	

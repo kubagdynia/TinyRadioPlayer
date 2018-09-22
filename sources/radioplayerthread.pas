@@ -416,7 +416,6 @@ var
   meta: PAnsiChar; //PChar;
   p: Integer;
   metaChanInfo: BASS_CHANNELINFO;
-  dup: string;
 begin
   if BASS_ChannelIsActive(FChan) <> BASS_ACTIVE_PLAYING then Exit;
 
@@ -432,7 +431,6 @@ begin
     if (p = 0) then
       Exit;
     p := p + 13;
-    dup := Copy(meta, p, Pos(';', String(meta)) - p - 1);
     SendPlayerMessage(Copy(meta, p, Pos(';', String(meta)) - p - 1), 7);
   end;
 
@@ -520,7 +518,6 @@ end;
 procedure TRadioPlayerThread.CheckProgress;
 var
   len, progress: DWORD;
-  ddd: DWORD;
 begin
   if BASS_ChannelIsActive(FChan) <> BASS_ACTIVE_PLAYING then Exit;
 

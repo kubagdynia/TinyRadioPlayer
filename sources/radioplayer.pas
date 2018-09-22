@@ -28,7 +28,6 @@ type
     procedure FThreadWatcherTimer(Sender: TObject);
   private
     FActiveRadioPlayerThread: integer;
-    // For now using only one thread because of thread issue
     FRadioPlayerThreads: array [1..3] of TRadioPlayerThread;
     FFloatable: DWord;
     FThreadWatcher: TTimer;
@@ -124,9 +123,13 @@ procedure TRadioPlayer.RadioInit;
 begin
   {$IFDEF USE_DYNAMIC_BASS}
     {$IFDEF WIN32}
-      Load_BASSDLL(GetApplicationPath + '/' + LIB_PATH + 'bass.dll');
+    Load_BASSDLL(GetApplicationPath + '/' + LIB_PATH + 'bass.dll');
     {$ELSE}
+      {$IFDEF UNIX}
       Load_BASSDLL(GetApplicationPath + '/' + LIB_PATH + 'libbass.so');
+      {$ELSE}
+      Load_BASSDLL(GetApplicationPath + '/' + LIB_PATH + 'libbass.dylib');
+      {$ENDIF}
     {$ENDIF}
   {$ENDIF}
 
@@ -184,7 +187,7 @@ begin
       {$IFDEF UNIX}
       libPattern := 'libbass*.so';
       {$ELSE}
-
+      libPattern := 'libbass*.dylib';
       {$ENDIF}
     {$ENDIF}
 
