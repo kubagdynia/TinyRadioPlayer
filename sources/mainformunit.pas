@@ -15,20 +15,21 @@ Description:         Main Form
 interface
 
 uses
-  Classes, SysUtils, FileUtil, BCButton, BGRAFlashProgressBar, Forms, Controls,
-  Graphics, Dialogs, LCLType, StdCtrls, ExtCtrls, Helpers, RadioPlayer;
+  Classes, SysUtils, FileUtil, BCButton, BGRAFlashProgressBar, BCLabel, Forms,
+  Controls, Graphics, Dialogs, LCLType, StdCtrls, ExtCtrls, Helpers,
+  RadioPlayer;
 
 type
 
   { TMainForm }
 
   TMainForm = class(TForm)
-    ProgressBar1: TBGRAFlashProgressBar;
+    pbLeftLevelMeter: TBGRAFlashProgressBar;
     btnPlay: TBCButton;
     edtStreamUrl: TEdit;
     lblInfo1: TLabel;
     lblInfo2: TLabel;
-    ProgressBar2: TBGRAFlashProgressBar;
+    pbRightLevelMeter: TBGRAFlashProgressBar;
     sbVolume: TScrollBar;
     Timer1: TTimer;
     procedure btnPlayClick(Sender: TObject);
@@ -131,8 +132,8 @@ begin
   begin
     level := RadioPlayer.ChannelGetLevel;
 
-    ProgressBar1.Value := MulDiv(100, LoWord(level), 32768);
-    ProgressBar2.Value := MulDiv(100, HiWord(level), 32768);
+    pbLeftLevelMeter.Value := MulDiv(100, LoWord(level), 32768);
+    pbRightLevelMeter.Value := MulDiv(100, HiWord(level), 32768);
   end;
 end;
 

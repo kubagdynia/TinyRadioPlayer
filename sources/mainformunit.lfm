@@ -2,10 +2,10 @@ object MainForm: TMainForm
   Left = 455
   Height = 183
   Top = 258
-  Width = 374
+  Width = 372
   Caption = 'Tiny Radio Player'
   ClientHeight = 183
-  ClientWidth = 374
+  ClientWidth = 372
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   Position = poScreenCenter
@@ -15,7 +15,6 @@ object MainForm: TMainForm
     Height = 33
     Top = 112
     Width = 360
-    Anchors = [akTop, akLeft, akRight]
     StateClicked.Background.Color = 13421772
     StateClicked.Background.ColorOpacity = 255
     StateClicked.Background.Gradient1.StartColor = 15722194
@@ -189,26 +188,30 @@ object MainForm: TMainForm
     Text = 'http://78.46.246.97:9022'
   end
   object lblInfo1: TLabel
-    Left = 24
-    Height = 15
-    Top = 16
-    Width = 328
+    Left = 8
+    Height = 20
+    Top = 8
+    Width = 360
     Alignment = taCenter
     Anchors = [akTop, akLeft, akRight]
     AutoSize = False
+    Color = clSilver
     ParentColor = False
+    Transparent = False
   end
   object lblInfo2: TLabel
-    Left = 24
-    Height = 15
-    Top = 40
-    Width = 328
+    Left = 8
+    Height = 20
+    Top = 32
+    Width = 360
     Alignment = taCenter
     Anchors = [akTop, akLeft, akRight]
     AutoSize = False
+    Color = clSilver
     ParentColor = False
+    Transparent = False
   end
-  object ProgressBar1: TBGRAFlashProgressBar
+  object pbLeftLevelMeter: TBGRAFlashProgressBar
     Left = 8
     Height = 17
     Top = 88
@@ -222,7 +225,7 @@ object MainForm: TMainForm
     BackgroundRandomizeMaxIntensity = 5000
     BackgroundRandomize = True
   end
-  object ProgressBar2: TBGRAFlashProgressBar
+  object pbRightLevelMeter: TBGRAFlashProgressBar
     Left = 192
     Height = 17
     Top = 88
@@ -237,7 +240,7 @@ object MainForm: TMainForm
     BackgroundRandomize = True
   end
   object sbVolume: TScrollBar
-    Left = 247
+    Left = 245
     Height = 17
     Top = 152
     Width = 121
@@ -250,7 +253,7 @@ object MainForm: TMainForm
   object Timer1: TTimer
     Interval = 33
     OnTimer = Timer1Timer
-    left = 336
+    left = 384
     top = 8
   end
 end
