@@ -16,8 +16,7 @@ interface
 
 uses
   Classes, SysUtils,  LCLIntf, Dialogs, LCLType, ExtCtrls, Consts, Helpers,
-  RadioPlayerThread,
-  {$IFDEF USE_DYNAMIC_BASS}lazdynamic_bass{$ELSE}BASS{$ENDIF};
+  RadioPlayerThread, lazdynamic_bass;
 
 type
   TRadioPlayerTagsEvent = procedure(AMsg: string; AMsgNbr: byte) of object;
@@ -121,15 +120,13 @@ end;
 
 procedure TRadioPlayer.RadioInit;
 begin
-  {$IFDEF USE_DYNAMIC_BASS}
-    {$IFDEF WIN32}
-    Load_BASSDLL(GetApplicationPath + '/' + LIB_PATH + 'bass.dll');
+  {$IFDEF WIN32}
+  Load_BASSDLL(GetApplicationPath + '/' + LIB_PATH + 'bass.dll');
+  {$ELSE}
+    {$IFDEF UNIX}
+    Load_BASSDLL(GetApplicationPath + '/' + LIB_PATH + 'libbass.so');
     {$ELSE}
-      {$IFDEF UNIX}
-      Load_BASSDLL(GetApplicationPath + '/' + LIB_PATH + 'libbass.so');
-      {$ELSE}
-      Load_BASSDLL(GetApplicationPath + '/' + LIB_PATH + 'libbass.dylib');
-      {$ENDIF}
+    Load_BASSDLL(GetApplicationPath + '/' + LIB_PATH + 'libbass.dylib');
     {$ENDIF}
   {$ENDIF}
 
@@ -247,10 +244,8 @@ begin
   // Close BASS
   BASS_Free();
 
-  {$IFDEF USE_DYNAMIC_BASS}
   // release the bass library
   Unload_BASSDLL();
-  {$ENDIF}
 
   inherited Destroy;
 end;

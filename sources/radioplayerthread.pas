@@ -16,7 +16,7 @@ interface
 
 uses
   Classes, SysUtils, LMessages, LCLIntf, Dialogs, LCLType, FileUtil, Consts,
-  {$IFDEF USE_DYNAMIC_BASS}lazdynamic_bass{$ELSE}BASS{$ENDIF};
+  lazdynamic_bass;
 
 const
   WM_INFO_UPDATE = WM_USER + 101;

@@ -145,8 +145,7 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-dUseCThreads
--dUSE_DYNAMIC_BASS"/>
+      <CustomOptions Value="-dUseCThreads"/>
     </Other>
   </CompilerOptions>
   <Debugging>
