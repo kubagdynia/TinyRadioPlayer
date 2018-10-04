@@ -1,1 +1,9 @@
 External libraries
+
+unpack and copy these files to the directory with the executable file
+
+windows
+lib/bass/i386-win32/bass.7z -> /bin/i386-win32/data/lib
+
+linux
+lib/bass/x86_64-linux/libbass.7z -> /bin/x86_64-linux/data/lib

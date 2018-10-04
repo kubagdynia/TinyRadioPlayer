@@ -42,6 +42,10 @@
               </Win32>
             </Options>
           </Linking>
+          <Other>
+            <CustomOptions Value="-dUseCThreads
+-dUSE_DYNAMIC_BASS"/>
+          </Other>
         </CompilerOptions>
       </Item2>
     </BuildModes>
@@ -53,12 +57,18 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="1">
+    <RequiredPackages Count="3">
       <Item1>
-        <PackageName Value="LCL"/>
+        <PackageName Value="bgracontrols"/>
       </Item1>
+      <Item2>
+        <PackageName Value="lclextensions_package"/>
+      </Item2>
+      <Item3>
+        <PackageName Value="LCL"/>
+      </Item3>
     </RequiredPackages>
-    <Units Count="2">
+    <Units Count="6">
       <Unit0>
         <Filename Value="TinyRadioPlayer.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -71,6 +81,26 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="MainFormUnit"/>
       </Unit1>
+      <Unit2>
+        <Filename Value="radioplayerthread.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="RadioPlayerThread"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="consts.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Consts"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="radioplayer.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="RadioPlayer"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="helpers.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Helpers"/>
+      </Unit5>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -114,6 +144,9 @@
         </Win32>
       </Options>
     </Linking>
+    <Other>
+      <CustomOptions Value="-dUseCThreads"/>
+    </Other>
   </CompilerOptions>
   <Debugging>
     <Exceptions Count="3">
