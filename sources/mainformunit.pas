@@ -24,6 +24,7 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    btnStop: TBCButton;
     pbLeftLevelMeter: TBGRAFlashProgressBar;
     btnPlay: TBCButton;
     edtStreamUrl: TEdit;
@@ -33,6 +34,7 @@ type
     sbVolume: TScrollBar;
     Timer1: TTimer;
     procedure btnPlayClick(Sender: TObject);
+    procedure btnStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure RadioPlayerRadioPlay(Sender: TObject);
@@ -57,16 +59,12 @@ implementation
 
 procedure TMainForm.btnPlayClick(Sender: TObject);
 begin
-  if (btnPlay.Caption = 'Play')
-  then
-  begin
-    RadioPlayer.PlayURL(edtStreamUrl.Text, sbVolume.Position);
-    btnPlay.Caption := 'Stop';
-  end else
-  begin
-    RadioPlayer.Stop();
-    btnPlay.Caption := 'Play';
-  end;
+  RadioPlayer.PlayURL(edtStreamUrl.Text, sbVolume.Position);
+end;
+
+procedure TMainForm.btnStopClick(Sender: TObject);
+begin
+  RadioPlayer.Stop();
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
