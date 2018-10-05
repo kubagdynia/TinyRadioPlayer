@@ -44,7 +44,7 @@
           </Linking>
           <Other>
             <CustomOptions Value="-dUseCThreads
--dUSE_DYNAMIC_BASS"/>
+-dRELEASE"/>
           </Other>
         </CompilerOptions>
       </Item2>
@@ -134,7 +134,6 @@
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsDwarf2"/>
-        <UseHeaptrc Value="True"/>
         <TrashVariables Value="True"/>
         <UseExternalDbgSyms Value="True"/>
       </Debugging>
@@ -145,7 +144,8 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-dUseCThreads"/>
+      <CustomOptions Value="-dUseCThreads
+-dDEBUG"/>
     </Other>
   </CompilerOptions>
   <Debugging>
