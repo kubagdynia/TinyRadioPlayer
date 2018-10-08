@@ -38,7 +38,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure RadioPlayerRadioPlay(Sender: TObject);
-    procedure RadioPlayerRadioPlayerTags(AMsg: string; AMsgNbr: byte);
+    procedure RadioPlayerRadioPlayerTags(AMsg: string; AMsgNumber: byte);
     procedure sbVolumeChange(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
   private
@@ -87,9 +87,9 @@ begin
 
 end;
 
-procedure TMainForm.RadioPlayerRadioPlayerTags(AMsg: string; AMsgNbr: byte);
+procedure TMainForm.RadioPlayerRadioPlayerTags(AMsg: string; AMsgNumber: byte);
 begin
-  case AMsgNbr of
+  case AMsgNumber of
     0: begin
          lblInfo1.Caption := 'Connecting';
        end;

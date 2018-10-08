@@ -19,11 +19,11 @@ uses
   RadioPlayerThread, lazdynamic_bass;
 
 type
-  TRadioPlayerTagsEvent = procedure(AMsg: string; AMsgNbr: byte) of object;
+  TRadioPlayerTagsEvent = procedure(AMsg: string; AMsgNumber: byte) of object;
 
   TRadioPlayer = Class(TObject)
     procedure FRadioPlayerThreadsOnStreamPlaying(ASender: TObject; AThreadIndex: integer);
-    procedure FRadioPlayerThreadsStreamGetTags(ASender: TObject; AMsg: string; AMsgNbr: byte);
+    procedure FRadioPlayerThreadsStreamGetTags(ASender: TObject; AMsg: string; AMsgNumber: byte);
     procedure FThreadWatcherTimer(Sender: TObject);
   private
     FActiveRadioPlayerThread: integer;
@@ -85,10 +85,10 @@ begin
 end;
 
 procedure TRadioPlayer.FRadioPlayerThreadsStreamGetTags(ASender: TObject;
-  AMsg: string; AMsgNbr: byte);
+  AMsg: string; AMsgNumber: byte);
 begin
   if Assigned(OnRadioPlayerTags) then
-    OnRadioPlayerTags(AMsg, AMsgNbr);
+    OnRadioPlayerTags(AMsg, AMsgNumber);
 end;
 
 procedure TRadioPlayer.FThreadWatcherTimer(Sender: TObject);
