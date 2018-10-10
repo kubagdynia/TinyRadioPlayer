@@ -16,14 +16,15 @@ interface
 
 uses
   Classes, SysUtils,  LCLIntf, Dialogs, LCLType, ExtCtrls, Consts, Helpers,
-  RadioPlayerThread, lazdynamic_bass;
+  RadioPlayerThread, lazdynamic_bass, RadioPlayerTypes;
 
 type
-  TRadioPlayerTagsEvent = procedure(AMsg: string; AMsgNumber: byte) of object;
+  TRadioPlayerTagsEvent = procedure(AMessage: string; APlayerMessageType: TPlayerMessageType) of object;
 
   TRadioPlayer = Class(TObject)
     procedure FRadioPlayerThreadsOnStreamPlaying(ASender: TObject; AThreadIndex: integer);
-    procedure FRadioPlayerThreadsStreamGetTags(ASender: TObject; AMsg: string; AMsgNumber: byte);
+    procedure FRadioPlayerThreadsStreamGetTags(ASender: TObject; AMessage:
+      string; APlayerMessageType: TPlayerMessageType);
     procedure FThreadWatcherTimer(Sender: TObject);
   private
     FActiveRadioPlayerThread: integer;
@@ -41,8 +42,7 @@ type
     constructor Create; overload;
     destructor Destroy; override;
 
-    function PlayURL(const AStreamUrl: string;
-      const AVolume: ShortInt): Boolean;
+    procedure PlayURL(const AStreamUrl: string; const AVolume: ShortInt);
 
     function Stop(): Boolean;
     procedure Volume(Value: Integer);
@@ -85,10 +85,10 @@ begin
 end;
 
 procedure TRadioPlayer.FRadioPlayerThreadsStreamGetTags(ASender: TObject;
-  AMsg: string; AMsgNumber: byte);
+  AMessage: string; APlayerMessageType: TPlayerMessageType);
 begin
   if Assigned(OnRadioPlayerTags) then
-    OnRadioPlayerTags(AMsg, AMsgNumber);
+    OnRadioPlayerTags(AMessage, APlayerMessageType);
 end;
 
 procedure TRadioPlayer.FThreadWatcherTimer(Sender: TObject);
@@ -171,7 +171,7 @@ function TRadioPlayer.LoadBassPlugins: Boolean;
 var
   fs: TSearchRec;
   Plug: HPLUGIN;
-  Info: ^Bass_PluginInfo;
+  // Info: ^Bass_PluginInfo;
   libFullPath, libPattern: string;
 begin
   try
@@ -193,11 +193,12 @@ begin
       repeat
         Plug := BASS_PluginLoad (PAnsiChar(libFullPath + fs.Name),
           0 {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF});
-        if Plug <> 0 then
-        begin
+
+        //if Plug <> 0 then
+        //begin
           // get plugin info to add e.g. to the file selector filter...
-          Info := pointer(BASS_PluginGetInfo(Plug));
-        end;
+          //Info := pointer(BASS_PluginGetInfo(Plug));
+        //end;
 
       until FindNext(fs) <> 0;
     finally
@@ -250,8 +251,8 @@ begin
   inherited Destroy;
 end;
 
-function TRadioPlayer.PlayURL(const AStreamUrl: string;
-  const AVolume: ShortInt): Boolean;
+procedure TRadioPlayer.PlayURL(const AStreamUrl: string;
+  const AVolume: ShortInt);
 var
   threadToPlayNextStream: Integer;
 begin
@@ -278,9 +279,7 @@ begin
     FRadioPlayerThreads[threadToPlayNextStream].Start;
   end;
 
-  Result := FRadioPlayerThreads[threadToPlayNextStream].PlayURL(
-      AStreamUrl, AVolume, threadToPlayNextStream);
-
+  FRadioPlayerThreads[threadToPlayNextStream].PlayURL(AStreamUrl, AVolume, threadToPlayNextStream);
 end;
 
 function TRadioPlayer.Stop(): Boolean;

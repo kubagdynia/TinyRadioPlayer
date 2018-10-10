@@ -17,7 +17,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, BCButton, BGRAFlashProgressBar, BCLabel, Forms,
   Controls, Graphics, Dialogs, LCLType, StdCtrls, ExtCtrls, Helpers,
-  RadioPlayer;
+  RadioPlayer, RadioPlayerTypes;
 
 type
 
@@ -38,7 +38,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure RadioPlayerRadioPlay(Sender: TObject);
-    procedure RadioPlayerRadioPlayerTags(AMsg: string; AMsgNumber: byte);
+    procedure RadioPlayerRadioPlayerTags(AMessage: string; APlayerMessageType: TPlayerMessageType);
     procedure sbVolumeChange(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
   private
@@ -87,32 +87,32 @@ begin
 
 end;
 
-procedure TMainForm.RadioPlayerRadioPlayerTags(AMsg: string; AMsgNumber: byte);
+procedure TMainForm.RadioPlayerRadioPlayerTags(AMessage: string;
+  APlayerMessageType: TPlayerMessageType);
 begin
-  case AMsgNumber of
-    0: begin
-         lblInfo1.Caption := 'Connecting';
-       end;
-    1: begin
-         lblInfo1.Caption := 'Idle: ' + AMsg;
-       end;
-    2: begin
-         // Buffering progress
-       end;
-    3: begin
-         // station name
-         lblInfo2.Caption := AMsg;
-       end;
-    4: begin
-         // bitrate
-       end;
-    7: begin
-         // title name, song name
-         lblInfo1.Caption := AMsg;
-       end;
-    8: begin
-         lblInfo2.Caption := AMsg; // ICY ok
-       end;
+  case APlayerMessageType of
+    Connecting: begin
+      lblInfo1.Caption := 'Connecting';
+    end;
+    Error: begin
+      lblInfo1.Caption := 'Idle: ' + AMessage;
+    end;
+    Progress: begin
+      // Buffering progress
+    end;
+    StreamName: begin
+      lblInfo2.Caption := AMessage;
+    end;
+    Bitrate: begin
+      // bitrate
+    end;
+    StreamTitle: begin
+      // title name, song name
+      lblInfo1.Caption := AMessage;
+    end;
+    Other: begin
+      lblInfo2.Caption := AMessage;
+    end;
   end;
 end;
 
