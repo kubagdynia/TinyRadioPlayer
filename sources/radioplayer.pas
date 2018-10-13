@@ -18,17 +18,16 @@ uses
   Classes, SysUtils,  LCLIntf, Dialogs, LCLType, ExtCtrls, Consts, Helpers,
   RadioPlayerThread, lazdynamic_bass, RadioPlayerTypes;
 
+const
+  MAX_PLAYER_THREADS = 3;
+
 type
   TRadioPlayerTagsEvent = procedure(AMessage: string; APlayerMessageType: TPlayerMessageType) of object;
 
   TRadioPlayer = Class(TObject)
-    procedure FRadioPlayerThreadsOnStreamPlaying(ASender: TObject; AThreadIndex: integer);
-    procedure FRadioPlayerThreadsStreamGetTags(ASender: TObject; AMessage:
-      string; APlayerMessageType: TPlayerMessageType);
-    procedure FThreadWatcherTimer(Sender: TObject);
   private
     FActiveRadioPlayerThread: integer;
-    FRadioPlayerThreads: array [1..3] of TRadioPlayerThread;
+    FRadioPlayerThreads: array [1..MAX_PLAYER_THREADS] of TRadioPlayerThread;
     FFloatable: DWord;
     FThreadWatcher: TTimer;
     FOnRadioPlayerTags: TRadioPlayerTagsEvent;
@@ -36,9 +35,13 @@ type
     procedure Error(msg: string);
     procedure RadioInit;
     function LoadBassPlugins: Boolean;
+    procedure RadioPlayerThreadsOnStreamPlaying(ASender: TObject; AThreadIndex: integer);
+    procedure RadioPlayerThreadsStreamGetTags(ASender: TObject; AMessage:
+      string; APlayerMessageType: TPlayerMessageType);
+    procedure ThreadWatcherTimer(Sender: TObject);
+    procedure TerminateThread(ThreadIndex: Integer; TerminateIfNotActive: Boolean);
+    procedure CreateAndLaunchNewThread(ThreadIndex: Integer);
   public
-    { Public declarations }
-
     constructor Create; overload;
     destructor Destroy; override;
 
@@ -49,7 +52,7 @@ type
 
     function ChannelIsActiveAndPlaying: Boolean;
     function ChannelGetLevel: DWORD;
-    function NumberOfActiveThreads: integer;
+    function NumberOfRunningThreads: integer;
 
     property OnRadioPlayerTags: TRadioPlayerTagsEvent
       read FOnRadioPlayerTags write FOnRadioPlayerTags;
@@ -61,52 +64,112 @@ var
 
 implementation
 
-{ TRadioPlayer }
+// Constructor
+constructor TRadioPlayer.Create;
+begin
+  inherited Create;
 
-procedure TRadioPlayer.FRadioPlayerThreadsOnStreamPlaying(ASender: TObject;
-  AThreadIndex: integer);
+  RadioInit;
+
+  FActiveRadioPlayerThread := Low(FRadioPlayerThreads);
+
+  // Create timer to watch threads
+  FThreadWatcher := TTimer.Create(nil);
+  FThreadWatcher.Interval := 2000;
+  FThreadWatcher.OnTimer := @ThreadWatcherTimer;
+  FThreadWatcher.Enabled := True;
+end;
+
+// Destructor
+destructor TRadioPlayer.Destroy;
 var
   i: integer;
 begin
-  try
-    FActiveRadioPlayerThread := AThreadIndex;
+  FreeAndNil(FThreadWatcher);
 
-    if Assigned(OnRadioPlay) then
-      OnRadioPlay(Self);
-
-    for i := Low(FRadioPlayerThreads) to High(FRadioPlayerThreads) do
-    begin
-      if (i <> FActiveRadioPlayerThread) and (FRadioPlayerThreads[i] <> nil) then
-        FRadioPlayerThreads[i].Stop;
-    end;
-  finally
-
-  end;
-end;
-
-procedure TRadioPlayer.FRadioPlayerThreadsStreamGetTags(ASender: TObject;
-  AMessage: string; APlayerMessageType: TPlayerMessageType);
-begin
-  if Assigned(OnRadioPlayerTags) then
-    OnRadioPlayerTags(AMessage, APlayerMessageType);
-end;
-
-procedure TRadioPlayer.FThreadWatcherTimer(Sender: TObject);
-var
-  i: integer;
-begin
   for i := Low(FRadioPlayerThreads) to High(FRadioPlayerThreads) do
   begin
-    if FRadioPlayerThreads[i] <> nil then
-    begin
-      if not FRadioPlayerThreads[i].Active then
-      begin
-        FRadioPlayerThreads[i].Terminate;
-        FRadioPlayerThreads[i].WaitFor;
-        FreeAndNil(FRadioPlayerThreads[i]);
-      end;
-    end;
+    TerminateThread(i, false)
   end;
+
+  // Close BASS
+  BASS_Free();
+
+  // release the bass library
+  Unload_BASSDLL();
+
+  inherited Destroy;
+end;
+
+procedure TRadioPlayer.PlayURL(const AStreamUrl: string;
+  const AVolume: ShortInt);
+var
+  threadToPlayNextStream: Integer;
+begin
+  if Trim(AStreamUrl) = EMPTY_STR then
+    Exit;
+
+  threadToPlayNextStream := FActiveRadioPlayerThread;
+
+  if ChannelIsActiveAndPlaying then
+  begin
+    // If the current radio player thread is active and playing then we should
+    // switch to another thread
+    Inc(threadToPlayNextStream);
+
+    if threadToPlayNextStream > High(FRadioPlayerThreads) then
+      threadToPlayNextStream := Low(FRadioPlayerThreads);
+  end;
+
+  CreateAndLaunchNewThread(threadToPlayNextStream);
+
+  FRadioPlayerThreads[threadToPlayNextStream].PlayURL(AStreamUrl, AVolume, threadToPlayNextStream);
+end;
+
+// Stop the stream from the active thread
+function TRadioPlayer.Stop(): Boolean;
+begin
+  Result := False;
+
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    Result := FRadioPlayerThreads[FActiveRadioPlayerThread].Stop;
+end;
+
+// Change volume of the active thread
+procedure TRadioPlayer.Volume(Value: Integer);
+begin
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    FRadioPlayerThreads[FActiveRadioPlayerThread].ChangeVolume(Value);
+end;
+
+// Check if channel from the active thread is active and playing
+function TRadioPlayer.ChannelIsActiveAndPlaying: Boolean;
+begin
+  Result := False;
+
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    Result := FRadioPlayerThreads[FActiveRadioPlayerThread].ChannelIsActiveAndPlaying;
+end;
+
+// Retrieves the level (peak amplitude) of the stream from the active thread
+function TRadioPlayer.ChannelGetLevel: DWORD;
+begin
+  Result := 0;
+
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    Result := FRadioPlayerThreads[FActiveRadioPlayerThread].ChannelGetLevel;
+end;
+
+// Returns the number of threads that have not been terminated
+function TRadioPlayer.NumberOfRunningThreads: integer;
+var
+  i: integer;
+begin
+  Result := 0;
+
+  for i := Low(FRadioPlayerThreads) to High(FRadioPlayerThreads) do
+    if FRadioPlayerThreads[i] <> nil then
+      Result := Result + 1;
 end;
 
 // Displays an error message
@@ -118,6 +181,7 @@ begin
   Dialogs.MessageDlg('error', s, mtError, [mbOk],0);
 end;
 
+// Init Bass library
 procedure TRadioPlayer.RadioInit;
 begin
   {$IFDEF WIN32}
@@ -167,11 +231,11 @@ begin
   LoadBassPlugins;
 end;
 
+// Load extensions libraries
 function TRadioPlayer.LoadBassPlugins: Boolean;
 var
   fs: TSearchRec;
-  Plug: HPLUGIN;
-  // Info: ^Bass_PluginInfo;
+  plug: HPLUGIN;
   libFullPath, libPattern: string;
 begin
   try
@@ -191,13 +255,13 @@ begin
     if FindFirst(libFullPath + libPattern, faAnyFile, fs) <> 0 then Exit;
     try
       repeat
-        Plug := BASS_PluginLoad (PAnsiChar(libFullPath + fs.Name),
+        plug := BASS_PluginLoad (PAnsiChar(libFullPath + fs.Name),
           0 {$IFDEF UNICODE} or BASS_UNICODE {$ENDIF});
 
-        //if Plug <> 0 then
+        //if plug <> 0 then
         //begin
           // get plugin info to add e.g. to the file selector filter...
-          //Info := pointer(BASS_PluginGetInfo(Plug));
+          //Info := pointer(BASS_PluginGetInfo(plug));
         //end;
 
       until FindNext(fs) <> 0;
@@ -212,115 +276,67 @@ begin
   end;
 end;
 
-constructor TRadioPlayer.Create;
-begin
-  inherited Create;
-
-  RadioInit;
-
-  FActiveRadioPlayerThread := Low(FRadioPlayerThreads);
-
-  FThreadWatcher := TTimer.Create(nil);
-  FThreadWatcher.Interval := 2000;
-  FThreadWatcher.OnTimer := @FThreadWatcherTimer;
-  FThreadWatcher.Enabled := True;
-end;
-
-destructor TRadioPlayer.Destroy;
+// Stop all threads that are not active. It's launch when the active thread is going to start playing.
+procedure TRadioPlayer.RadioPlayerThreadsOnStreamPlaying(ASender: TObject;
+  AThreadIndex: integer);
 var
   i: integer;
 begin
-  FreeAndNil(FThreadWatcher);
+  try
+    FActiveRadioPlayerThread := AThreadIndex;
 
-  for i := Low(FRadioPlayerThreads) to High(FRadioPlayerThreads) do
-  begin
-    if FRadioPlayerThreads[i] <> nil then
+    if Assigned(OnRadioPlay) then
+      OnRadioPlay(Self);
+
+    for i := Low(FRadioPlayerThreads) to High(FRadioPlayerThreads) do
     begin
-      FRadioPlayerThreads[i].Terminate;
-      FRadioPlayerThreads[i].WaitFor;
-      FreeAndNil(FRadioPlayerThreads[i]);
+      if (i <> FActiveRadioPlayerThread) and (FRadioPlayerThreads[i] <> nil) then
+        FRadioPlayerThreads[i].Stop;
     end;
+  finally
+
   end;
-
-  // Close BASS
-  BASS_Free();
-
-  // release the bass library
-  Unload_BASSDLL();
-
-  inherited Destroy;
 end;
 
-procedure TRadioPlayer.PlayURL(const AStreamUrl: string;
-  const AVolume: ShortInt);
-var
-  threadToPlayNextStream: Integer;
+// It's launch when new tags have been retrieved from the stream 
+procedure TRadioPlayer.RadioPlayerThreadsStreamGetTags(ASender: TObject;
+  AMessage: string; APlayerMessageType: TPlayerMessageType);
 begin
-  if Trim(AStreamUrl) = EMPTY_STR then
-    Exit;
-
-  threadToPlayNextStream := FActiveRadioPlayerThread;
-
-  if ChannelIsActiveAndPlaying then
-  begin
-    // If the current radio player thread is active and playing then we should
-    // switch to another thread
-    Inc(threadToPlayNextStream);
-
-    if threadToPlayNextStream > High(FRadioPlayerThreads) then
-      threadToPlayNextStream := Low(FRadioPlayerThreads);
-  end;
-
-  if FRadioPlayerThreads[threadToPlayNextStream] = nil then
-  begin
-    FRadioPlayerThreads[threadToPlayNextStream] := TRadioPlayerThread.Create(True, FFloatable);
-    FRadioPlayerThreads[threadToPlayNextStream].OnStreamPlaying := @FRadioPlayerThreadsOnStreamPlaying;
-    FRadioPlayerThreads[threadToPlayNextStream].OnStreamGetTags := @FRadioPlayerThreadsStreamGetTags;
-    FRadioPlayerThreads[threadToPlayNextStream].Start;
-  end;
-
-  FRadioPlayerThreads[threadToPlayNextStream].PlayURL(AStreamUrl, AVolume, threadToPlayNextStream);
+  if Assigned(OnRadioPlayerTags) then
+    OnRadioPlayerTags(AMessage, APlayerMessageType);
 end;
 
-function TRadioPlayer.Stop(): Boolean;
-begin
-  Result := False;
-
-  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
-    Result := FRadioPlayerThreads[FActiveRadioPlayerThread].Stop;
-end;
-
-procedure TRadioPlayer.Volume(Value: Integer);
-begin
-  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
-    FRadioPlayerThreads[FActiveRadioPlayerThread].ChangeVolume(Value);
-end;
-
-function TRadioPlayer.ChannelIsActiveAndPlaying: Boolean;
-begin
-  Result := False;
-
-  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
-    Result := FRadioPlayerThreads[FActiveRadioPlayerThread].ChannelIsActiveAndPlaying;
-end;
-
-function TRadioPlayer.ChannelGetLevel: DWORD;
-begin
-  Result := 0;
-
-  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
-    Result := FRadioPlayerThreads[FActiveRadioPlayerThread].ChannelGetLevel;
-end;
-
-function TRadioPlayer.NumberOfActiveThreads: integer;
+// Looking for not active threads and terminate them
+procedure TRadioPlayer.ThreadWatcherTimer(Sender: TObject);
 var
   i: integer;
 begin
-  Result := 0;
-
   for i := Low(FRadioPlayerThreads) to High(FRadioPlayerThreads) do
-    if FRadioPlayerThreads[i] <> nil then
-      Result := Result + 1;
+    TerminateThread(i, true);
+end;
+
+// Terminate the thread with the given index
+procedure TRadioPlayer.TerminateThread(ThreadIndex: Integer; TerminateIfNotActive: Boolean);
+begin
+  if FRadioPlayerThreads[ThreadIndex] = nil then Exit;
+
+  if (TerminateIfNotActive) and (FRadioPlayerThreads[ThreadIndex].Active) then Exit;
+
+  FRadioPlayerThreads[ThreadIndex].Terminate;
+  FRadioPlayerThreads[ThreadIndex].WaitFor;
+  FreeAndNil(FRadioPlayerThreads[ThreadIndex]);
+end;
+
+// Create and launch the new thread with the given index
+procedure TRadioPlayer.CreateAndLaunchNewThread(ThreadIndex: Integer);
+begin
+  if FRadioPlayerThreads[ThreadIndex] = nil then
+  begin
+    FRadioPlayerThreads[ThreadIndex] := TRadioPlayerThread.Create(True, FFloatable);
+    FRadioPlayerThreads[ThreadIndex].OnStreamPlaying := @RadioPlayerThreadsOnStreamPlaying;
+    FRadioPlayerThreads[ThreadIndex].OnStreamGetTags := @RadioPlayerThreadsStreamGetTags;
+    FRadioPlayerThreads[ThreadIndex].Start;
+  end;
 end;
 
 end.

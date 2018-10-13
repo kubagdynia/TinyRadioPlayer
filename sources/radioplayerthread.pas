@@ -289,7 +289,7 @@ begin
   Result := BASS_StreamGetFilePosition(FChannel, mode);
 end;
 
-// Check if channel is active and paused
+// Check if channel is active and playing
 function TRadioPlayerThread.ChannelIsActiveAndPlaying: Boolean;
 begin
   // The channel is playing (or recording).

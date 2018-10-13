@@ -21,8 +21,6 @@ uses
 
 type
 
-  { TMainForm }
-
   TMainForm = class(TForm)
     btnStop: TBCButton;
     pbLeftLevelMeter: TBGRAFlashProgressBar;
@@ -45,7 +43,6 @@ type
 
   public
     RadioPlayer: TRadioPlayer;
-
   end;
 
 var
@@ -55,7 +52,19 @@ implementation
 
 {$R *.lfm}
 
-{ TMainForm }
+procedure TMainForm.FormCreate(Sender: TObject);
+begin
+  MainWindowHandle := Handle;
+
+  RadioPlayer := TRadioPlayer.Create;
+  RadioPlayer.OnRadioPlayerTags := @RadioPlayerRadioPlayerTags;
+  RadioPlayer.OnRadioPlay := @RadioPlayerRadioPlay;
+end;
+
+procedure TMainForm.FormDestroy(Sender: TObject);
+begin
+  FreeAndNil(RadioPlayer);
+end;
 
 procedure TMainForm.btnPlayClick(Sender: TObject);
 begin
@@ -65,21 +74,6 @@ end;
 procedure TMainForm.btnStopClick(Sender: TObject);
 begin
   RadioPlayer.Stop();
-end;
-
-procedure TMainForm.FormCreate(Sender: TObject);
-begin
-  MainWindowHandle := Handle;
-
-  RadioPlayer := TRadioPlayer.Create;
-  RadioPlayer.OnRadioPlayerTags := @RadioPlayerRadioPlayerTags;
-  RadioPlayer.OnRadioPlay := @RadioPlayerRadioPlay;
-
-end;
-
-procedure TMainForm.FormDestroy(Sender: TObject);
-begin
-  FreeAndNil(RadioPlayer);
 end;
 
 procedure TMainForm.RadioPlayerRadioPlay(Sender: TObject);
@@ -132,6 +126,10 @@ begin
 
     pbLeftLevelMeter.Value := MulDiv(100, LoWord(level), 32768);
     pbRightLevelMeter.Value := MulDiv(100, HiWord(level), 32768);
+  end else if (pbLeftLevelMeter.Value <> 0) or (pbRightLevelMeter.Value <> 0) then
+  begin
+    pbLeftLevelMeter.Value := 0;
+    pbRightLevelMeter.Value := 0;
   end;
 end;
 
