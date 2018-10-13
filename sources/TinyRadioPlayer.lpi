@@ -44,7 +44,7 @@
           </Linking>
           <Other>
             <CustomOptions Value="-dUseCThreads
--dUSE_DYNAMIC_BASS"/>
+-dRELEASE"/>
           </Other>
         </CompilerOptions>
       </Item2>
@@ -68,7 +68,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="6">
+    <Units Count="7">
       <Unit0>
         <Filename Value="TinyRadioPlayer.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -101,6 +101,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Helpers"/>
       </Unit5>
+      <Unit6>
+        <Filename Value="radioplayertypes.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="RadioPlayerTypes"/>
+      </Unit6>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -134,7 +139,6 @@
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsDwarf2"/>
-        <UseHeaptrc Value="True"/>
         <TrashVariables Value="True"/>
         <UseExternalDbgSyms Value="True"/>
       </Debugging>
@@ -145,7 +149,8 @@
       </Options>
     </Linking>
     <Other>
-      <CustomOptions Value="-dUseCThreads"/>
+      <CustomOptions Value="-dUseCThreads
+-dDEBUG"/>
     </Other>
   </CompilerOptions>
   <Debugging>

@@ -15,39 +15,36 @@ Description:         Thread that supports stream play and all related tasks
 interface
 
 uses
-  Classes, SysUtils, LMessages, LCLIntf, Dialogs, LCLType, FileUtil, Consts,
-  lazdynamic_bass;
+  Classes, SysUtils, LCLIntf, Dialogs, LCLType, FileUtil, Consts,
+  lazdynamic_bass, RadioPlayerTypes;
 
 const
-  WM_INFO_UPDATE = WM_USER + 101;
   PLAY_PROGRESS = 25;
 
 type
-  TStreamGetTagsEvent = procedure(ASender: TObject; AMsg: string; AMsgNbr: byte) of object;
+  // Types used by events to synchronize the data
+  TStreamGetTagsEvent = procedure(ASender: TObject; AMessage: string; APlayerMessageType: TPlayerMessageType) of object;
   TStreamStatusEvent = procedure(ASender: TObject; AThreadIndex: integer) of object;
 
-  { TRadioPlayerThread }
-
+  // Custom thread class
   TRadioPlayerThread = class(TThread)
   private
     FActive: boolean;
     FThreadIndex: integer;
-    FStationId: integer;
-    FStreamId: integer;
-    FChan: HSTREAM;
+    FChannel: HSTREAM;
     FVolume: integer;  // main volume
     FReq: DWord;
     FCritSection: TCriticalSection;
-    FChannelStatus: DWord;         // BASS_ACTIVE_STOPPED, BAS_ACTIVE_PLAYING, BASS_ACTIVE_STALLED, BASS_ACTIVE_PAYSED
-    FStreamDataToPlay: string;
-
-    FStopThread: boolean;
+    FChannelStatus: DWord;
+    FStreamUrlToPlay: string;
 
     FPlayerMessage: string;
-    FPlayerMessageNbr: integer;
+    FPlayerMessageType: TPlayerMessageType;
 
     // floating-point channel support? 0 = no, else yes
     FFloatable: DWord;
+
+    // Custom events
     FOnStreamPlaying: TStreamStatusEvent;
     FOnStreamStopped: TNotifyEvent;
     FOnStreamPaused: TNotifyEvent;
@@ -57,11 +54,11 @@ type
     procedure DoFadeIn(time: integer = 1000);
     procedure DoFadeOut(time: integer = 200);
 
-    function OpenURL(url: PChar): Integer;
+    procedure OpenURL(url: PChar);
     procedure StreamStop;
     procedure MetaStream;
-    procedure SendPlayerMessage(AMsg: string; AMsgNbr: byte);
-    procedure CheckProgress;
+    procedure SendPlayerMessage(AMessage: string; AMessageType: TPlayerMessageType);
+    procedure CheckBufferProgress;
   protected
     procedure Execute; override;
     procedure SynchronizePlayerMessage;
@@ -70,8 +67,7 @@ type
     procedure SynchronizeOnStreamPaused;
     procedure SynchronizeOnStreamStalled;
   public
-    constructor Create(CreateSuspended : boolean;
-      Floatable: DWord = 0);
+    constructor Create(CreateSuspended : boolean; Floatable: DWord = 0);
     destructor Destroy; override;
 
     function ErrorGetCode: Integer;
@@ -84,8 +80,8 @@ type
     function Pause: Boolean;
     function Stop: Boolean;
     function ChangeVolume(Value: Integer): Boolean;
-    function PlayURL(AStreamData: string;
-      const AVolume: Integer; const AThreadIndex: Integer): Boolean;
+    procedure PlayURL(AStreamUrl: string;
+      const AVolume: Integer; const AThreadIndex: Integer);
 
     property OnStreamPlaying: TStreamStatusEvent read FOnStreamPlaying write FOnStreamPlaying;
     property OnStreamStopped: TNotifyEvent read FOnStreamStopped write FOnStreamStopped;
@@ -98,19 +94,6 @@ type
 
 implementation
 
-// MetaSync
-procedure StatusProc(buffer: Pointer; len, user: DWORD); stdcall;
-begin
-  //if (buffer <> nil) and (len = 0) then
-    //SendPlayerMessage(8, LPARAM(PChar(buffer)));}
-end;
-
-// MetaSync
-procedure MetaSync(handle: HSYNC; channel, data, user: DWORD); stdcall;
-begin
-  //DoMeta(channel);
-end;
-
 // Fade in effect
 procedure TRadioPlayerThread.DoFadeIn(time: integer);
 begin
@@ -118,33 +101,34 @@ begin
   // fade-in effect, which gradually increase the volume
 
   // Set 0 at the beginning
-  BASS_ChannelSetAttribute(FChan, BASS_ATTRIB_VOL, 0);
+  BASS_ChannelSetAttribute(FChannel, BASS_ATTRIB_VOL, 0);
 
   // Slides a channel's attribute from its current value to a new value.
-  BASS_ChannelSlideAttribute(FChan, BASS_ATTRIB_VOL, FVolume / 100, time);
+  BASS_ChannelSlideAttribute(FChannel, BASS_ATTRIB_VOL, FVolume / 100, time);
 end;
 
 // Fade out effect
 procedure TRadioPlayerThread.DoFadeOut(time: integer);
 begin
   // If the radio is playing we do fade-out
-  if BASS_ChannelIsActive(FChan) in [BASS_ACTIVE_PLAYING] then
+  if BASS_ChannelIsActive(FChannel) in [BASS_ACTIVE_PLAYING] then
   begin
     // Slides a channel's attribute from its current value to a new value.
-    BASS_ChannelSlideAttribute(FChan, BASS_ATTRIB_VOL, 0, time);
+    BASS_ChannelSlideAttribute(FChannel, BASS_ATTRIB_VOL, 0, time);
     // Check if an attribute of stream is sliding
-    while BASS_ChannelIsSliding(FChan, BASS_ATTRIB_VOL) do
+    while BASS_ChannelIsSliding(FChannel, BASS_ATTRIB_VOL) do
       Sleep(1);
   end;
 end;
 
-function TRadioPlayerThread.OpenURL(url: PChar): Integer;
+// Open and play url
+procedure TRadioPlayerThread.OpenURL(url: PChar);
 var
   icy: PAnsiChar;
   len, progress: DWORD;
   c, r: DWORD;
 begin
-  SendPlayerMessage('0', 2); // set progress bar to 0
+  SendPlayerMessage('0', TPlayerMessageType.Progress); // set progress bar to 0
 
   EnterCriticalSection(FCritSection);
   FReq := FReq + 1;
@@ -154,17 +138,16 @@ begin
   // If the radio is playing we do fade-out
   DoFadeOut;
 
-  BASS_StreamFree(FChan); // close old stream
+  BASS_StreamFree(FChannel); // close old stream
 
   progress := 0;
   // Send information that we try to connect
-  SendPlayerMessage('', 0);
+  SendPlayerMessage(EMPTY_STR, TPlayerMessageType.Connecting);
 
   // Creates a sample stream from an MP3, MP2, MP1, OGG, WAV, AIFF or plugin
   // supported file on the internet, optionally receiving the downloaded
   // data in a callback function.
-  c := BASS_StreamCreateURL(url, 0, BASS_STREAM_STATUS or FFloatable,
-    nil, nil);
+  c := BASS_StreamCreateURL(url, 0, BASS_STREAM_STATUS or FFloatable, nil, nil);
 
   EnterCriticalSection(FCritSection);
   if (r <> FReq) then
@@ -174,14 +157,14 @@ begin
       BASS_StreamFree(c);
     Exit;
   end;
-  FChan := c;
+  FChannel := c;
   LeaveCriticalSection(FCritSection);
 
-  if (FChan = 0) then
+  if (FChannel = 0) then
   begin
     // Catch the error here inside the Thread
     // and send it to the WndProc
-    SendPlayerMessage(IntToStr(Bass_ErrorGetCode()), 1); // Oops Error
+    SendPlayerMessage(IntToStr(Bass_ErrorGetCode()), TPlayerMessageType.Error); // Oops Error
   end
   else
   begin
@@ -191,68 +174,60 @@ begin
         Exit;
 
       // Retrieves the file position/status of a stream.
-      len := BASS_StreamGetFilePosition(FChan, BASS_FILEPOS_END);
+      len := BASS_StreamGetFilePosition(FChannel, BASS_FILEPOS_END);
         if (len = DW_Error) then
         begin
-          SendPlayerMessage(IntToStr(Bass_ErrorGetCode()), 1); // Oops Error
+          SendPlayerMessage(IntToStr(Bass_ErrorGetCode()), TPlayerMessageType.Error); // Oops Error
           Exit; // something's gone wrong! (eg. BASS_Free called)
         end;
 
-        progress := (BASS_StreamGetFilePosition(FChan, BASS_FILEPOS_DOWNLOAD) -
-          BASS_StreamGetFilePosition(FChan, BASS_FILEPOS_CURRENT)) * 100 div len;
+        progress := (BASS_StreamGetFilePosition(FChannel, BASS_FILEPOS_DOWNLOAD) -
+          BASS_StreamGetFilePosition(FChannel, BASS_FILEPOS_CURRENT)) * 100 div len;
 
         // percentage of buffer filled
-        SendPlayerMessage(IntToStr(progress), 2); // show progess bar
+        SendPlayerMessage(IntToStr(progress), TPlayerMessageType.Progress); // show progess bar
     until
       progress > PLAY_PROGRESS;
 
     DoFadeIn;
 
     // get the broadcast name and bitrate
-      icy := BASS_ChannelGetTags(FChan, BASS_TAG_ICY);
+      icy := BASS_ChannelGetTags(FChannel, BASS_TAG_ICY);
 
       if (icy = nil) then
-        icy := BASS_ChannelGetTags(FChan, BASS_TAG_HTTP); // no ICY tags, try HTTP
+        icy := BASS_ChannelGetTags(FChannel, BASS_TAG_HTTP); // no ICY tags, try HTTP
       if (icy <> nil) then
         while (icy^ <> #0) do
         begin
           if (Copy(icy, 1, 9) = 'icy-name:') then
-            SendPlayerMessage(Copy(icy, 10, MaxInt), 3)
+            SendPlayerMessage(Copy(icy, 10, MaxInt), TPlayerMessageType.StreamName)
           else if (Copy(icy, 1, 7) = 'icy-br:') then
-            SendPlayerMessage(Copy(icy, 8, MaxInt), 4); // bitrate
+            SendPlayerMessage(Copy(icy, 8, MaxInt), TPlayerMessageType.Bitrate); // bitrate
           icy := icy + Length(icy) + 1;
         end;
 
       // get the stream title and set sync for subsequent titles
       MetaStream;
 
-      // Sets up a synchronizer stream channel.
-      BASS_ChannelSetSync(FChan, BASS_SYNC_META, 0, SYNCPROC(@MetaSync), nil);
-
       // play it!
-      if BASS_ChannelPlay(FChan, FALSE) then
+      if BASS_ChannelPlay(FChannel, FALSE) then
       begin
-        SendPlayerMessage('', 25);
+        SendPlayerMessage('', TPlayerMessageType.Other);
       end;
 
   end;
 
 end;
 
-
-
 constructor TRadioPlayerThread.Create(CreateSuspended: boolean;
   Floatable: DWord = 0);
 begin
-  FStopThread := false;
   FActive := false;
   FThreadIndex := EMPTY_INT;
-  FStationID := EMPTY_INT;
-  FStreamID := EMPTY_INT;
-  FChan := 0;
+  FChannel := 0;
   FReq := 0;
 
-  FStreamDataToPlay := EMPTY_STR;
+  FStreamUrlToPlay := EMPTY_STR;
 
   FFloatable := Floatable;
 
@@ -305,34 +280,34 @@ begin
   // The level ranges linearly from 0 (silent) to 32768 (max).
   // 0 will be returned when a channel is stalled.
 
-  Result := BASS_ChannelGetLevel(FChan);
+  Result := BASS_ChannelGetLevel(FChannel);
 end;
 
 // Retrieves the file position/status of a stream.
 function TRadioPlayerThread.StreamGetFilePosition(mode: DWORD): QWORD;
 begin
-  Result := BASS_StreamGetFilePosition(FChan, mode);
+  Result := BASS_StreamGetFilePosition(FChannel, mode);
 end;
 
-// Check if channel is active and paused
+// Check if channel is active and playing
 function TRadioPlayerThread.ChannelIsActiveAndPlaying: Boolean;
 begin
   // The channel is playing (or recording).
-  Result := BASS_ChannelIsActive(FChan) = BASS_ACTIVE_PLAYING;
+  Result := BASS_ChannelIsActive(FChannel) = BASS_ACTIVE_PLAYING;
 end;
 
 // Check if channel is active and paused
 function TRadioPlayerThread.ChannelIsActiveAndPaused: Boolean;
 begin
   // The channel is paused.
-  Result := BASS_ChannelIsActive(FChan) = BASS_ACTIVE_PAUSED;
+  Result := BASS_ChannelIsActive(FChannel) = BASS_ACTIVE_PAUSED;
 end;
 
 // Check if channel is active and stopped
 function TRadioPlayerThread.ChannelIsActiveAndStopped: Boolean;
 begin
   // The channel is not active, or handle is not a valid channel.
-  Result := BASS_ChannelIsActive(FChan) = BASS_ACTIVE_PAUSED;
+  Result := BASS_ChannelIsActive(FChannel) = BASS_ACTIVE_PAUSED;
 end;
 
 // Check if channel is active and stalled
@@ -341,20 +316,20 @@ begin
   // Playback of the stream has been stalled due to a lack of sample data.
   // The playback will automatically resume once there
   // is sufficient data to do so.
-  Result := BASS_ChannelIsActive(FChan) = BASS_ACTIVE_PAUSED;
+  Result := BASS_ChannelIsActive(FChannel) = BASS_ACTIVE_PAUSED;
 end;
 
 // Pause and resume a stream
 function TRadioPlayerThread.Pause: Boolean;
 begin
-  case BASS_ChannelIsActive(FChan) of
+  case BASS_ChannelIsActive(FChannel) of
     BASS_ACTIVE_PAUSED  : begin
       DoFadeIn;
-      Result := BASS_ChannelPlay(FChan, False);
+      Result := BASS_ChannelPlay(FChannel, False);
     end;
     BASS_ACTIVE_PLAYING : begin
       DoFadeOut;
-      Result := BASS_ChannelPause(FChan);
+      Result := BASS_ChannelPause(FChannel);
     end;
     else Result := True;
   end;
@@ -365,12 +340,12 @@ function TRadioPlayerThread.Stop: Boolean;
 begin
   Result := True;
 
-  if BASS_ChannelIsActive(FChan) <> 0 then //in [BASS_ACTIVE_PLAYING, BASS_ACTIVE_PAUSED] then
+  if BASS_ChannelIsActive(FChannel) <> 0 then // in [BASS_ACTIVE_PLAYING, BASS_ACTIVE_PAUSED] then
   begin
     DoFadeOut;
 
-    Result := BASS_ChannelStop(FChan);
-    Result := BASS_StreamFree(FChan);
+    Result := BASS_ChannelStop(FChannel);
+    Result := BASS_StreamFree(FChannel);
   end;
 
   FActive := false;
@@ -380,32 +355,31 @@ end;
 function TRadioPlayerThread.ChangeVolume(Value: Integer): Boolean;
 begin
   FVolume := Value;
-  Result := BASS_ChannelSetAttribute(FChan, BASS_ATTRIB_VOL, FVolume / 100);
+  Result := BASS_ChannelSetAttribute(FChannel, BASS_ATTRIB_VOL, FVolume / 100);
 end;
 
-function TRadioPlayerThread.PlayURL(AStreamData: string;
-  const AVolume: Integer; const AThreadIndex: Integer): Boolean;
+procedure TRadioPlayerThread.PlayURL(AStreamUrl: string;
+  const AVolume: Integer; const AThreadIndex: Integer);
 begin
   StreamStop;
 
-  BASS_StreamFree(FChan);
+  BASS_StreamFree(FChannel);
 
   FVolume := AVolume;
   FThreadIndex := AThreadIndex;
   FActive := true;
   FChannelStatus := BASS_ACTIVE_STOPPED;
   // Copy these data to used it by execute method
-  FStreamDataToPlay := AStreamData;
-
+  FStreamUrlToPlay := AStreamUrl;
 end;
 
 procedure TRadioPlayerThread.StreamStop;
 begin
   // Stop a stream
-  if BASS_ChannelIsActive(FChan) <> 0 then
+  if BASS_ChannelIsActive(FChannel) <> 0 then
   begin
-    BASS_ChannelStop(FChan);
-    BASS_StreamFree(FChan);
+    BASS_ChannelStop(FChannel);
+    BASS_StreamFree(FChannel);
   end;
   FActive := false;
 end;
@@ -413,17 +387,17 @@ end;
 // Update stream info from metadata
 procedure TRadioPlayerThread.MetaStream;
 var
-  meta: PAnsiChar; //PChar;
+  meta: PAnsiChar;
   p: Integer;
   metaChanInfo: BASS_CHANNELINFO;
 begin
-  if BASS_ChannelIsActive(FChan) <> BASS_ACTIVE_PLAYING then Exit;
+  if BASS_ChannelIsActive(FChannel) <> BASS_ACTIVE_PLAYING then Exit;
 
   // Retrieves tags/headers from a channel.
   // Shoutcast metadata. A single string is returned, containing the current
   // stream title and url (usually omitted).
   // The format of the string is: StreamTitle='xxx';StreamUrl='xxx';
-  meta := BASS_ChannelGetTags(FChan, BASS_TAG_META);
+  meta := BASS_ChannelGetTags(FChannel, BASS_TAG_META);
 
   if (meta <> nil) then
   begin
@@ -431,64 +405,70 @@ begin
     if (p = 0) then
       Exit;
     p := p + 13;
-    SendPlayerMessage(Copy(meta, p, Pos(';', String(meta)) - p - 1), 7);
+    SendPlayerMessage(Copy(meta, p, Pos(';', String(meta)) - p - 1), TPlayerMessageType.StreamTitle);
   end;
 
   // Retrieves information on a channel.
-  BASS_ChannelGetInfo(FChan, metaChanInfo);
+  BASS_ChannelGetInfo(FChannel, metaChanInfo);
 
   { Mono / Stereo }
   if metaChanInfo.chans = 2 then
-    SendPlayerMessage('stereo', 10)
+    SendPlayerMessage('stereo', TPlayerMessageType.Channels)
   else
   if metaChanInfo.chans = 1 then
-    SendPlayerMessage('mono', 10);
+    SendPlayerMessage('mono', TPlayerMessageType.Channels);
 
   { Freq }
   if metaChanInfo.freq <> 0 then
-    SendPlayerMessage(IntToStr(metaChanInfo.freq), 11)
+    SendPlayerMessage(IntToStr(metaChanInfo.freq), TPlayerMessageType.Freq)
   else
-    SendPlayerMessage(EMPTY_STR, 11);
+    SendPlayerMessage(EMPTY_STR, TPlayerMessageType.Freq);
 
   // Retrieves tags/headers from a channel.
   // ICY (Shoutcast) tags. A pointer to a series of null-terminated strings
   // is returned, the final string ending with a double null.
-  meta := BASS_ChannelGetTags(FChan, BASS_TAG_ICY);
+  meta := BASS_ChannelGetTags(FChannel, BASS_TAG_ICY);
 
   // HTTP headers, only available when streaming from a HTTP server.
   // A pointer to a series of null-terminated strings is returned, the final
   // string ending with a double null.
   if (meta = nil) then
-    meta := BASS_ChannelGetTags(FChan, BASS_TAG_HTTP); // no ICY tags, try HTTP
+    meta := BASS_ChannelGetTags(FChannel, BASS_TAG_HTTP); // no ICY tags, try HTTP
 
   if (meta <> nil) then
     while (meta^ <> #0) do
     begin
       if (Copy(meta, 1, 9) = 'icy-name:') then
-        SendPlayerMessage(Copy(meta, 10, MaxInt), 3)
+        SendPlayerMessage(Copy(meta, 10, MaxInt), TPlayerMessageType.StreamName)
       else if (Copy(meta, 1, 7) = 'icy-br:') then
-        SendPlayerMessage(Copy(meta, 8, MaxInt), 4);
+        SendPlayerMessage(Copy(meta, 8, MaxInt), TPlayerMessageType.Bitrate);
       meta := meta + Length(meta) + 1;
     end;
 
 end;
 
-procedure TRadioPlayerThread.SendPlayerMessage(AMsg: string; AMsgNbr: byte);
+// Send a message via the connected event
+procedure TRadioPlayerThread.SendPlayerMessage(AMessage: string; AMessageType: TPlayerMessageType);
 begin
-  FPlayerMessage := AMsg;
-  FPlayerMessageNbr := AMsgNbr;
+  FPlayerMessage := AMessage;
+  FPlayerMessageType := AMessageType;
+
+  // Thread should not interact with the visible components so we call method
+  // through Synchronize to do it within the context of the main thread
   Synchronize(@SynchronizePlayerMessage);
 
   // 1 indicates that an error occurred, so switch active to false
   // to close a thread
-  if AMsgNbr = 1 then
+  if AMessageType = TPlayerMessageType.Error then
     FActive := false;
 end;
+
+{$REGION 'Synchronization methods that are executed by the main thread and can therefore access all GUI elements'}
 
 procedure TRadioPlayerThread.SynchronizePlayerMessage;
 begin
   if Assigned(OnStreamGetTags) then
-    OnStreamGetTags(Self, FPlayerMessage, FPlayerMessageNbr);
+    OnStreamGetTags(Self, FPlayerMessage, FPlayerMessageType);
 end;
 
 procedure TRadioPlayerThread.SynchronizeOnStreamPlaying;
@@ -515,42 +495,51 @@ begin
     OnStreamStopped(Self);
 end;
 
-procedure TRadioPlayerThread.CheckProgress;
+{$ENDREGION}
+
+procedure TRadioPlayerThread.CheckBufferProgress;
 var
   len, progress: DWORD;
 begin
-  if BASS_ChannelIsActive(FChan) <> BASS_ACTIVE_PLAYING then Exit;
+  if BASS_ChannelIsActive(FChannel) <> BASS_ACTIVE_PLAYING then Exit;
 
-  // Retrieves the file position/status of a stream.
-  len := BASS_StreamGetFilePosition(FChan, BASS_FILEPOS_END);
+  // BASS_FILEPOS_END - End of audio data. When streaming in blocks (the BASS_STREAM_BLOCK flag is
+  // in effect), the download buffer length is given.
 
-  progress := (BASS_StreamGetFilePosition(FChan, BASS_FILEPOS_DOWNLOAD) -
-    BASS_StreamGetFilePosition(FChan, BASS_FILEPOS_CURRENT)) * 100 div len;
+  // Retrieves the buffer length of a stream.
+  len := BASS_StreamGetFilePosition(FChannel, BASS_FILEPOS_END);
 
-  SendPlayerMessage(IntToStr(progress), 2); // show progess bar
+  // BASS_FILEPOS_DOWNLOAD - Download progress of an internet file stream or "buffered" user file stream.
+  // BASS_FILEPOS_CURRENT - Position that is to be decoded for playback next.
+  // This will be a bit ahead of the position actually being heard due to buffering.
+  progress := (BASS_StreamGetFilePosition(FChannel, BASS_FILEPOS_DOWNLOAD) -
+    BASS_StreamGetFilePosition(FChannel, BASS_FILEPOS_CURRENT)) * 100 div len;
+
+  SendPlayerMessage(IntToStr(progress), TPlayerMessageType.Progress); // Buffering progress
 end;
 
+// Things to be done by the thread
 procedure TRadioPlayerThread.Execute;
 var
-  chanStat: DWORD;
+  channelStatus: DWORD;
   urlPlay: string;
-  timeCounter: smallint;
 begin
-  timeCounter := 0;
   while (not Terminated) do
   begin
-    if (FStreamDataToPlay <> EmptyStr) then
+    // If a new url has appeard, it will be forwarded to open
+    if (FStreamUrlToPlay <> EmptyStr) then
     begin
-      urlPlay := FStreamDataToPlay;
-      FStreamDataToPlay := EmptyStr;
+      urlPlay := FStreamUrlToPlay;
+      FStreamUrlToPlay := EmptyStr;
       OpenURL(PChar(urlPlay));
     end;
 
-    chanStat := BASS_ChannelIsActive(FChan);
-    if chanStat <> FChannelStatus then
+    channelStatus := BASS_ChannelIsActive(FChannel);
+    if channelStatus <> FChannelStatus then
     begin
-      FChannelStatus := chanStat;
-      case chanStat of
+      FChannelStatus := channelStatus;
+      // Launch the event
+      case channelStatus of
         BASS_ACTIVE_STOPPED: Synchronize(@SynchronizeOnStreamStopped);
         BASS_ACTIVE_PLAYING: Synchronize(@SynchronizeOnStreamPlaying);
         BASS_ACTIVE_STALLED: Synchronize(@SynchronizeOnStreamStalled);
@@ -558,16 +547,11 @@ begin
       end;
     end;
 
-    Inc(timeCounter);
-
-    CheckProgress;
+    CheckBufferProgress;
 
     Sleep(100);
 
-    if not FActive then
-      StreamStop
-    else
-      MetaStream;
+    if FActive then MetaStream else StreamStop;
   end;
 
 end;

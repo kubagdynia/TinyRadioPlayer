@@ -17,11 +17,9 @@ interface
 uses
   Classes, SysUtils, FileUtil, BCButton, BGRAFlashProgressBar, BCLabel, Forms,
   Controls, Graphics, Dialogs, LCLType, StdCtrls, ExtCtrls, Helpers,
-  RadioPlayer;
+  RadioPlayer, RadioPlayerTypes;
 
 type
-
-  { TMainForm }
 
   TMainForm = class(TForm)
     btnStop: TBCButton;
@@ -38,14 +36,13 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure RadioPlayerRadioPlay(Sender: TObject);
-    procedure RadioPlayerRadioPlayerTags(AMsg: string; AMsgNbr: byte);
+    procedure RadioPlayerRadioPlayerTags(AMessage: string; APlayerMessageType: TPlayerMessageType);
     procedure sbVolumeChange(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
   private
 
   public
     RadioPlayer: TRadioPlayer;
-
   end;
 
 var
@@ -55,7 +52,19 @@ implementation
 
 {$R *.lfm}
 
-{ TMainForm }
+procedure TMainForm.FormCreate(Sender: TObject);
+begin
+  MainWindowHandle := Handle;
+
+  RadioPlayer := TRadioPlayer.Create;
+  RadioPlayer.OnRadioPlayerTags := @RadioPlayerRadioPlayerTags;
+  RadioPlayer.OnRadioPlay := @RadioPlayerRadioPlay;
+end;
+
+procedure TMainForm.FormDestroy(Sender: TObject);
+begin
+  FreeAndNil(RadioPlayer);
+end;
 
 procedure TMainForm.btnPlayClick(Sender: TObject);
 begin
@@ -67,52 +76,37 @@ begin
   RadioPlayer.Stop();
 end;
 
-procedure TMainForm.FormCreate(Sender: TObject);
-begin
-  MainWindowHandle := Handle;
-
-  RadioPlayer := TRadioPlayer.Create;
-  RadioPlayer.OnRadioPlayerTags := @RadioPlayerRadioPlayerTags;
-  RadioPlayer.OnRadioPlay := @RadioPlayerRadioPlay;
-
-end;
-
-procedure TMainForm.FormDestroy(Sender: TObject);
-begin
-  FreeAndNil(RadioPlayer);
-end;
-
 procedure TMainForm.RadioPlayerRadioPlay(Sender: TObject);
 begin
 
 end;
 
-procedure TMainForm.RadioPlayerRadioPlayerTags(AMsg: string; AMsgNbr: byte);
+procedure TMainForm.RadioPlayerRadioPlayerTags(AMessage: string;
+  APlayerMessageType: TPlayerMessageType);
 begin
-  case AMsgNbr of
-    0: begin
-         lblInfo1.Caption := 'Connecting';
-       end;
-    1: begin
-         lblInfo1.Caption := 'Idle: ' + AMsg;
-       end;
-    2: begin
-         // Buffering progress
-       end;
-    3: begin
-         // station name
-         lblInfo2.Caption := AMsg;
-       end;
-    4: begin
-         // bitrate
-       end;
-    7: begin
-         // title name, song name
-         lblInfo1.Caption := AMsg;
-       end;
-    8: begin
-         lblInfo2.Caption := AMsg; // ICY ok
-       end;
+  case APlayerMessageType of
+    Connecting: begin
+      lblInfo1.Caption := 'Connecting';
+    end;
+    Error: begin
+      lblInfo1.Caption := 'Idle: ' + AMessage;
+    end;
+    Progress: begin
+      // Buffering progress
+    end;
+    StreamName: begin
+      lblInfo2.Caption := AMessage;
+    end;
+    Bitrate: begin
+      // bitrate
+    end;
+    StreamTitle: begin
+      // title name, song name
+      lblInfo1.Caption := AMessage;
+    end;
+    Other: begin
+      lblInfo2.Caption := AMessage;
+    end;
   end;
 end;
 
@@ -132,6 +126,10 @@ begin
 
     pbLeftLevelMeter.Value := MulDiv(100, LoWord(level), 32768);
     pbRightLevelMeter.Value := MulDiv(100, HiWord(level), 32768);
+  end else if (pbLeftLevelMeter.Value <> 0) or (pbRightLevelMeter.Value <> 0) then
+  begin
+    pbLeftLevelMeter.Value := 0;
+    pbRightLevelMeter.Value := 0;
   end;
 end;
 
