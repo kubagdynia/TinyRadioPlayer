@@ -1,6 +1,6 @@
-unit Errors;
+unit TRPErrors;
 {===============================================================================
-File:                Errors.pas
+File:                TRPErrors.pas
 
 Application Name:    Tiny Radio Player
 

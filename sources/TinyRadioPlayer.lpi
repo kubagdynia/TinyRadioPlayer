@@ -107,19 +107,19 @@
         <UnitName Value="RadioPlayerTypes"/>
       </Unit6>
       <Unit7>
-        <Filename Value="errors.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="Errors"/>
-      </Unit7>
-      <Unit8>
         <Filename Value="log.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Log"/>
-      </Unit8>
-      <Unit9>
+      </Unit7>
+      <Unit8>
         <Filename Value="language.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Language"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="trperrors.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="TRPErrors"/>
       </Unit9>
     </Units>
   </ProjectOptions>
