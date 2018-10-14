@@ -19,10 +19,9 @@ uses
 
 type
 
-  { TLanguage }
-
   TLanguage = class sealed (TObject)
   private
+    // class variables and methods belongs to the class, not to the instance
     class var LanguageHashmap: TStringList;
     class var LanguageInfoLanguage: string;
     class var LanguageInfoAuthor: string;
@@ -36,7 +35,7 @@ type
     class function GetLanguageFileName(UseDefaultLanguage: Boolean = false): string;
     class function GetLanguageFilePath(LanguageName: string): string;
   public
-    // A static method
+    // static methods
     class function Get(const Item: string;
       const DefaultValue: string = EMPTY_STR): string;
     class procedure Reload();

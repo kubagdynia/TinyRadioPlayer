@@ -32,6 +32,8 @@ const
 
   LOG_NAME = 'Application.log';
 
+  SETTINGS_FILE = 'settings.trp';
+
 { - - - - - - - - - - - - - - - - - Language - - - - - - - - - - - - - - - - - }
   LANGUAGE_FILE_PREFIX = 'language-';
   LANGUAGE_FILE_EXTENSION = '.xml';

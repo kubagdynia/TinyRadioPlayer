@@ -41,6 +41,7 @@ type
     procedure Timer1Timer(Sender: TObject);
   private
     procedure LoadLoanguages;
+    procedure LoadSettings;
   public
     RadioPlayer: TRadioPlayer;
   end;
@@ -51,7 +52,7 @@ var
 implementation
 
 uses
-  Language;
+  Language, TRPSettings;
 
 {$R *.lfm}
 
@@ -63,6 +64,7 @@ begin
   RadioPlayer.OnRadioPlayerTags := @RadioPlayerRadioPlayerTags;
   RadioPlayer.OnRadioPlay := @RadioPlayerRadioPlay;
 
+  LoadSettings;
   LoadLoanguages;
 end;
 
@@ -118,6 +120,7 @@ end;
 procedure TMainForm.sbVolumeChange(Sender: TObject);
 begin
   RadioPlayer.Volume(sbVolume.Position);
+  TTRPSettings.SetValue('Volume', sbVolume.Position);
 end;
 
 procedure TMainForm.Timer1Timer(Sender: TObject);
@@ -142,6 +145,11 @@ procedure TMainForm.LoadLoanguages;
 begin
   btnPlay.Caption := GetLanguageItem('Test.Button.Play', 'Play');
   btnStop.Caption := GetLanguageItem('Test.Button.Stop', 'Stop');
+end;
+
+procedure TMainForm.LoadSettings;
+begin
+  sbVolume.Position := TTRPSettings.GetValue('Volume', 100);
 end;
 
 end.
