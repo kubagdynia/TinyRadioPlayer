@@ -17,8 +17,13 @@ interface
 uses
   Classes, SysUtils;
 
+{ - - - - - - - - - - - - - - - - - Enums - - - - - - - - - - - - - - - - - -  }
 type
   TPlayerMessageType = (Connecting=0, Error=1, Progress=2, StreamName=3, Bitrate=4, StreamTitle=7, Channels=10, Freq=11, Other=25);
+
+{ - - - - - - - - - - - - - - - - Error Type - - - - - - - - - - - - - - - - - }
+type
+  ErrorId = integer;
 
 implementation
 

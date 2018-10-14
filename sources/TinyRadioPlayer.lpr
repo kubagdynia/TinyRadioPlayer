@@ -14,8 +14,7 @@ uses
   heaptrc,
   {$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, MainFormUnit, RadioPlayerThread, Consts, RadioPlayer, Helpers, RadioPlayerTypes
-  { you can add units after this };
+  Forms, MainFormUnit;
 
 {$R *.res}
 

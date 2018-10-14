@@ -24,9 +24,19 @@ const
 
   {$IFDEF WINDOWS}
   LIB_PATH = 'data/lib/';
+  LANGUAGE_PATH = 'data/lang/';
   {$ELSE}
   LIB_PATH = 'data/lib/';
+  LANGUAGE_PATH = 'data/lang/';
   {$ENDIF}
+
+  LOG_NAME = 'Application.log';
+
+{ - - - - - - - - - - - - - - - - - Language - - - - - - - - - - - - - - - - - }
+  LANGUAGE_FILE_PREFIX = 'language-';
+  LANGUAGE_FILE_EXTENSION = '.xml';
+  DEFAULT_LANGUAGE = 'en';
+  USE_OS_LANGUAGE_INSTEAD_DEFAULT = true;
 
 implementation
 
