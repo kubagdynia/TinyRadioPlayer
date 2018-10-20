@@ -37,6 +37,7 @@ const
 { - - - - - - - - - - - - - - - - - Language - - - - - - - - - - - - - - - - - }
   LANGUAGE_FILE_PREFIX = 'language-';
   LANGUAGE_FILE_EXTENSION = '.xml';
+  LANGUAGE_FILE_PATTERN = LANGUAGE_FILE_PREFIX + '*' + LANGUAGE_FILE_EXTENSION;
   DEFAULT_LANGUAGE = 'en';
   USE_OS_LANGUAGE_INSTEAD_DEFAULT = true;
 

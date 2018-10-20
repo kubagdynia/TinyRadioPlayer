@@ -61,7 +61,7 @@ end;
 // Reload language items from the disk
 procedure ReloadLanguageItems();
 begin
-  Language.TLanguage.Reload();
+  Language.TLanguage.ReloadLanguageItems();
 end;
 
 end.

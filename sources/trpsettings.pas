@@ -19,11 +19,15 @@ uses
 
 type
 
+  { TTRPSettings }
+
   TTRPSettings = class sealed (TObject)
   private
     // class variables and methods belongs to the class, not to the instance
+
     class var SettingsHashmap: TStringList;
-    class var SettingsLoaded: Boolean;
+    // if its true, the settings should be saved before exit
+    class var IsUpdated: Boolean;
 
     class procedure CreateDefaultSettings;
     class function GetSettingsFilePath(): string;
@@ -32,9 +36,9 @@ type
   public
     // static methods
     class function GetValue(const Item: string;
-      const DefaultValue: string = EMPTY_STR): string;
+      const DefaultValue: string = EMPTY_STR; const AddIfNoExists: boolean = false): string;
     class function GetValue(const Item: string;
-      const DefaultValue: integer = EMPTY_INT): integer;
+      const DefaultValue: integer = EMPTY_INT; const AddIfNoExists: boolean = false): integer;
     class function SetValue(const Item: string; const Value: string): ErrorId;
     class function SetValue(const Item: string; const Value: integer): ErrorId;
     class procedure SaveSettings;
@@ -44,7 +48,7 @@ type
 implementation
 
 uses
-  laz2_DOM, laz2_XMLRead, laz2_XMLWrite;
+  laz2_DOM, laz2_XMLRead, laz2_XMLWrite, TRPErrors;
 
 class procedure TTRPSettings.CreateDefaultSettings;
 begin
@@ -57,44 +61,63 @@ begin
   Result := ConcatPaths([IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0))), SETTINGS_FILE]);
 end;
 
+// Fired up when settings unit is initialization
 class procedure TTRPSettings.Initialize();
 begin
+  IsUpdated := false;
   LoadSettings;
 end;
 
+// Fired up when settings unit is finalization
 class procedure TTRPSettings.Finalize();
 begin
   if Assigned(SettingsHashmap) then
   begin
-    // Save settings
-    SaveSettings;
+    // if the settings have beed changed, save them to a file
+    if IsUpdated then
+      SaveSettings;
+
     // and free at the end
     SettingsHashmap.Free;
   end;
 end;
 
-
-
 class function TTRPSettings.GetValue(const Item: string;
-  const DefaultValue: string): string;
+  const DefaultValue: string; const AddIfNoExists: boolean = false): string;
 begin
   // Get an item
   Result := SettingsHashmap.Values[Item];
 
   // Return default value if item is empty
   if Result = EMPTY_STR then
+  begin
+    if AddIfNoExists then
+      SetValue(Item, DefaultValue);
+
     Result := DefaultValue;
+  end;
 end;
 
 class function TTRPSettings.GetValue(const Item: string;
-  const DefaultValue: integer): integer;
+  const DefaultValue: integer; const AddIfNoExists: boolean = false): integer;
 begin
-  Result := StrToInt(GetValue(Item, IntToStr(DefaultValue)));
+  Result := StrToInt(GetValue(Item, IntToStr(DefaultValue), AddIfNoExists));
 end;
 
 class function TTRPSettings.SetValue(const Item: string; const Value: string): ErrorId;
+var
+  existingItemValue: string;
 begin
-  SettingsHashmap.Values[Item] := Value;
+  existingItemValue := GetValue(Item, EMPTY_STR);
+
+  if (existingItemValue <> Value) then
+  begin
+    SettingsHashmap.Values[Item] := Value;
+    IsUpdated := true;
+  end;
+
+  Result := ERR_OK;
+
 end;
 
 class function TTRPSettings.SetValue(const Item: string; const Value: integer): ErrorId;
@@ -102,6 +125,7 @@ begin
   Result := SetValue(Item, IntToStr(Value));
 end;
 
+// Saving data to a file
 class procedure TTRPSettings.SaveSettings;
 var
   i: integer;
@@ -142,6 +166,7 @@ begin
 
 end;
 
+// Load settings from a file
 class procedure TTRPSettings.LoadSettings;
 var
   xmlNode: TDOMNode;
@@ -149,9 +174,6 @@ var
   i: Integer;
   settingsPath: string;
 begin
-  if SettingsLoaded then
-    Exit;
-
   if not Assigned(SettingsHashmap) then
     SettingsHashmap := TStringList.Create;
 
@@ -196,8 +218,7 @@ begin
     xmlDoc.Free;
   end;
 
-  SettingsLoaded := True;
-
+  IsUpdated := false;
 end;
 
 initialization

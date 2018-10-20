@@ -12,6 +12,12 @@
 		<Item name="Button.Delete" type="string">Usuń</Item>
 		<Item name="Button.Open" type="string">Otwórz</Item>
 		
+		<!-- Main Menu -->
+		<Item name="MainMenu.File" type="string">Plik</Item>
+		<Item name="MainMenu.File.Exit" type="string">Zakończ</Item>
+		<Item name="MainMenu.Settings" type="string">Ustawienia</Item>
+		<Item name="MainMenu.Settings.Language" type="string">Język</Item>
+		
 		<!-- Test -->
 		<Item name="Test.Button.Play" type="string">Odtwórz</Item>
 		<Item name="Test.Button.Stop" type="string">Zatrzymaj</Item>

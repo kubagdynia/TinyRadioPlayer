@@ -16,13 +16,20 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, BCButton, BGRAFlashProgressBar, BCLabel, Forms,
-  Controls, Graphics, Dialogs, LCLType, StdCtrls, ExtCtrls, Helpers,
+  Controls, Graphics, Dialogs, LCLType, StdCtrls, ExtCtrls, Menus, Helpers,
   RadioPlayer, RadioPlayerTypes;
 
 type
 
+  { TMainForm }
+
   TMainForm = class(TForm)
     btnStop: TBCButton;
+    MainMenu1: TMainMenu;
+    miLanguage: TMenuItem;
+    miSettings: TMenuItem;
+    miExit: TMenuItem;
+    miFile: TMenuItem;
     pbLeftLevelMeter: TBGRAFlashProgressBar;
     btnPlay: TBCButton;
     edtStreamUrl: TEdit;
@@ -35,13 +42,17 @@ type
     procedure btnStopClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure miExitClick(Sender: TObject);
     procedure RadioPlayerRadioPlay(Sender: TObject);
     procedure RadioPlayerRadioPlayerTags(AMessage: string; APlayerMessageType: TPlayerMessageType);
     procedure sbVolumeChange(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
+    procedure miLanguageItemClick(Sender: TObject);
   private
     procedure LoadLoanguages;
     procedure LoadSettings;
+    procedure AddLanguageItems;
+    procedure OnLanguageChange(Sender: TObject);
   public
     RadioPlayer: TRadioPlayer;
   end;
@@ -66,11 +77,19 @@ begin
 
   LoadSettings;
   LoadLoanguages;
+  AddLanguageItems;
+
+  TLanguage.RegisterLanguageChangeEvent(@OnLanguageChange);
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
   FreeAndNil(RadioPlayer);
+end;
+
+procedure TMainForm.miExitClick(Sender: TObject);
+begin
+  Close;
 end;
 
 procedure TMainForm.btnPlayClick(Sender: TObject);
@@ -145,11 +164,53 @@ procedure TMainForm.LoadLoanguages;
 begin
   btnPlay.Caption := GetLanguageItem('Test.Button.Play', 'Play');
   btnStop.Caption := GetLanguageItem('Test.Button.Stop', 'Stop');
+
+  miFile.Caption := GetLanguageItem('MainMenu.File', 'File');
+  miExit.Caption := GetLanguageItem('MainMenu.File.Exit', 'Exit');
+  miSettings.Caption := GetLanguageItem('MainMenu.Settings', 'Settings');
+  miLanguage.Caption := GetLanguageItem('MainMenu.Settings.Language', 'Language');
 end;
 
 procedure TMainForm.LoadSettings;
 begin
   sbVolume.Position := TTRPSettings.GetValue('Volume', 100);
+end;
+
+procedure TMainForm.AddLanguageItems;
+var
+  i: integer;
+  subItem: TMenuItem;
+begin
+  for i := 0 to Pred(TLanguage.LanguageFiles.Count) do
+  begin
+    subItem := TMenuItem.Create(miLanguage);
+    subItem.Caption := TLanguage.LanguageFiles[i];
+    subItem.Tag := i;
+    subItem.OnClick := @miLanguageItemClick;
+    subItem.Checked := TLanguage.CurrentLangName = TLanguage.LanguageFiles[i];
+    miLanguage.Add(subItem);
+  end;
+end;
+
+procedure TMainForm.OnLanguageChange(Sender: TObject);
+begin
+  LoadLoanguages;
+end;
+
+procedure TMainForm.miLanguageItemClick(Sender: TObject);
+var
+  i: integer;
+  mi : TMenuItem;
+begin
+  if Sender is TMenuItem then
+  begin
+    // mark the selected item and deselect all others
+    mi := TMenuItem(Sender);
+    for i := 0 to Pred(mi.Parent.Count) do
+      mi.Parent.Items[i].Checked := mi.Parent.Items[i] = mi;
+
+    TLanguage.ChangeLanguage(mi.Caption);
+  end;
 end;
 
 end.
