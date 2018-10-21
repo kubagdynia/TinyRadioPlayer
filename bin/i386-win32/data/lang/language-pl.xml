@@ -3,6 +3,7 @@
 	<Items language="PL" author="Jakub Kurlowicz" version="0.1" date="2018-10-14" url="jakubkurlowicz.pl" email="jkurlowicz@gmail.com">
 		
 		<!-- Error Messages -->
+		<Item name="ErrorMessage.General" type="string">Błąd!</Item>
 		<Item name="ErrorMessage.UnspecifiedError" type="string">Wystąpił nieznany błąd!</Item>
 		
 		<!-- General Buttons -->
