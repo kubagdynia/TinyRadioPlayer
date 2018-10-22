@@ -68,7 +68,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="7">
+    <Units Count="11">
       <Unit0>
         <Filename Value="TinyRadioPlayer.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -106,6 +106,26 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="RadioPlayerTypes"/>
       </Unit6>
+      <Unit7>
+        <Filename Value="log.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Log"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="language.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Language"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="trperrors.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="TRPErrors"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="trpsettings.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="TRPSettings"/>
+      </Unit10>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

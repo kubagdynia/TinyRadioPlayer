@@ -1,11 +1,12 @@
 object MainForm: TMainForm
   Left = 455
-  Height = 183
+  Height = 197
   Top = 258
   Width = 372
   Caption = 'Tiny Radio Player'
-  ClientHeight = 183
+  ClientHeight = 177
   ClientWidth = 372
+  Menu = MainMenu1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   Position = poScreenCenter
@@ -424,5 +425,23 @@ object MainForm: TMainForm
     OnTimer = Timer1Timer
     left = 384
     top = 8
+  end
+  object MainMenu1: TMainMenu
+    left = 16
+    top = 144
+    object miFile: TMenuItem
+      Caption = 'File'
+      object miExit: TMenuItem
+        Caption = 'Exit'
+        ShortCut = 32883
+        OnClick = miExitClick
+      end
+    end
+    object miSettings: TMenuItem
+      Caption = 'Settings'
+      object miLanguage: TMenuItem
+        Caption = 'Language'
+      end
+    end
   end
 end

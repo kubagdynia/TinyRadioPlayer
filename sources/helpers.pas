@@ -23,9 +23,15 @@ var
 
   function GetApplicationPath: string;
   function IIF(cond: Boolean; t, f: Variant): Variant;
+  function GetLanguageItem(const Item: string;
+    const DefaultValue: string = EMPTY_STR): string;
+  procedure ReloadLanguageItems();
 
 
 implementation
+
+uses
+  Language;
 
 // This function returns the application main path
 function GetApplicationPath: string;
@@ -44,6 +50,18 @@ begin
     Result := t
   else
     Result := f;
+end;
+
+// Get language item
+function GetLanguageItem(const Item: string; const DefaultValue: string): string;
+begin
+  Result := Language.TLanguage.Get(item, defaultValue);
+end;
+
+// Reload language items from the disk
+procedure ReloadLanguageItems();
+begin
+  Language.TLanguage.ReloadLanguageItems();
 end;
 
 end.

@@ -185,12 +185,12 @@ end;
 procedure TRadioPlayer.RadioInit;
 begin
   {$IFDEF WIN32}
-  Load_BASSDLL(GetApplicationPath + '/' + LIB_PATH + 'bass.dll');
+  Load_BASSDLL(ConcatPaths([GetApplicationPath, LIB_PATH, 'bass.dll']));
   {$ELSE}
     {$IFDEF UNIX}
-    Load_BASSDLL(GetApplicationPath + '/' + LIB_PATH + 'libbass.so');
+    Load_BASSDLL(ConcatPaths([GetApplicationPath, LIB_PATH, 'libbass.so']));
     {$ELSE}
-    Load_BASSDLL(GetApplicationPath + '/' + LIB_PATH + 'libbass.dylib');
+    Load_BASSDLL(ConcatPaths([GetApplicationPath, LIB_PATH, 'libbass.dylib']));
     {$ENDIF}
   {$ENDIF}
 
