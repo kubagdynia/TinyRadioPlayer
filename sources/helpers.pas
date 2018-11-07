@@ -27,11 +27,14 @@ var
     const DefaultValue: string = EMPTY_STR): string;
   procedure ReloadLanguageItems();
 
+  procedure LogException(const Text: string;
+    const NameOfTheClass: string = EMPTY_STR; const NameOfTheMethod: string = EMPTY_STR;
+    const E: Exception = nil);
 
 implementation
 
 uses
-  Language;
+  Language, Log;
 
 // This function returns the application main path
 function GetApplicationPath: string;
@@ -62,6 +65,13 @@ end;
 procedure ReloadLanguageItems();
 begin
   Language.TLanguage.ReloadLanguageItems();
+end;
+
+// Log exception
+procedure LogException(const Text: string; const NameOfTheClass: string;
+  const NameOfTheMethod: string; const E: Exception);
+begin
+   TLog.LogException(Text, NameOfTheClass, NameOfTheMethod, E);
 end;
 
 end.

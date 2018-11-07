@@ -63,7 +63,7 @@ var
 implementation
 
 uses
-  Language, TRPSettings;
+  Language, TRPSettings, Repository;
 
 {$R *.lfm}
 
