@@ -15,7 +15,7 @@ Description:         Constants used in the application
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, Graphics;
 
 const
   EMPTY_INT         = -1;
@@ -47,6 +47,10 @@ const
 { - - - - - - - - - - - - - - - - - Database - - - - - - - - - - - - - - - - - }
   DB_TABLE_STATIONS = 'Stations';
   DB_MAIN_DB_FILE_NAME = 'database.trp';
+
+{ - - - - - - - - - - - - - - - - - Grid Colors - - - - - - - - - - - - - - - - }
+GridLineColor: TColor = (250 or (250 shl 8) or (250 shl 16)); // RGB(250, 250, 250);
+GridLineColorCurrentlyPlaying: TColor = (199 or (237 shl 8) or (252 shl 16)); // RGB(255, 187, 187);
 
 implementation
 

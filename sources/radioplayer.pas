@@ -32,6 +32,7 @@ type
     FThreadWatcher: TTimer;
     FOnRadioPlayerTags: TRadioPlayerTagsEvent;
     FOnRadioPlay: TNotifyEvent;
+    FCurrentStationId: integer;
     procedure Error(msg: string);
     procedure RadioInit;
     function LoadBassPlugins: Boolean;
@@ -57,6 +58,8 @@ type
     property OnRadioPlayerTags: TRadioPlayerTagsEvent
       read FOnRadioPlayerTags write FOnRadioPlayerTags;
     property OnRadioPlay: TNotifyEvent read FOnRadioPlay write FOnRadioPlay;
+
+    property CurrentStationId: integer read FCurrentStationId;
   end;
 
 var

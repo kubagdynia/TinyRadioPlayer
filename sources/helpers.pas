@@ -14,7 +14,7 @@ Description:         Useful functions and procedures
 interface
 
 uses
-  Classes, SysUtils, Consts, LCLType;
+  Classes, SysUtils, Graphics, Consts, LCLType;
 
 var
   ApplicationPath: string = EMPTY_STR;
@@ -30,6 +30,9 @@ var
   procedure LogException(const Text: string;
     const NameOfTheClass: string = EMPTY_STR; const NameOfTheMethod: string = EMPTY_STR;
     const E: Exception = nil);
+
+  function MixingColors(const MyColor1, MyColor2: TColor;
+    const Proportion1, Proportion2: integer): TColor;
 
 implementation
 
@@ -71,7 +74,26 @@ end;
 procedure LogException(const Text: string; const NameOfTheClass: string;
   const NameOfTheMethod: string; const E: Exception);
 begin
-   TLog.LogException(Text, NameOfTheClass, NameOfTheMethod, E);
+  TLog.LogException(Text, NameOfTheClass, NameOfTheMethod, E);
+end;
+
+// Mixing two colors together
+function MixingColors(const MyColor1, MyColor2: TColor;
+  const Proportion1, Proportion2: integer): TColor;
+var
+  color: Longint;
+  r1, g1, b1, r2, g2, b2: Byte;
+begin
+  color  := ColorToRGB(MyColor1);
+  RedGreenBlue(color, r1, g1, b1);
+
+  color  := ColorToRGB(MyColor2);
+  RedGreenBlue(color, r2, g2, b2);
+
+  r1 := Round((r1 * Proportion1 + r2 * Proportion2) / (Proportion1 + Proportion2));
+  g1 := Round((g1 * Proportion1 + g2 * Proportion2) / (Proportion1 + Proportion2));
+  b1 := Round((b1 * Proportion1 + b2 * Proportion2) / (Proportion1 + Proportion2));
+  result := (r1 or (g1 shl 8) or (b1 shl 16));
 end;
 
 end.
