@@ -29,6 +29,10 @@ const
   ERR_DB_CREATE_DML_ERROR                   = $00000007;
   ERR_DB_CREATE_DIR                         = $00000008;
   ERR_DB_ADD_STATION                        = $00000009;
+  ERR_DB_ADD_GENRE                          = $0000000A;
+  ERR_DB_ADD_COUNTRY                        = $0000000B;
+  ERR_DB_ADD_DICTIONARY                     = $0000000C;
+  ERR_DB_ADD_DICTIONARY_ROW                 = $0000000D;
 
 
   function ShowErrorMessage(Err: ErrorId): boolean;

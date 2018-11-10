@@ -38,15 +38,24 @@ const
   SETTINGS_FILE = 'settings.trp';
 
 { - - - - - - - - - - - - - - - - - Language - - - - - - - - - - - - - - - - - }
-  LANGUAGE_FILE_PREFIX = 'language-';
-  LANGUAGE_FILE_EXTENSION = '.xml';
-  LANGUAGE_FILE_PATTERN = LANGUAGE_FILE_PREFIX + '*' + LANGUAGE_FILE_EXTENSION;
-  DEFAULT_LANGUAGE = 'en';
+  LANGUAGE_FILE_PREFIX      = 'language-';
+  LANGUAGE_FILE_EXTENSION   = '.xml';
+  LANGUAGE_FILE_PATTERN     = LANGUAGE_FILE_PREFIX + '*' + LANGUAGE_FILE_EXTENSION;
+  DEFAULT_LANGUAGE          = 'en';
   USE_OS_LANGUAGE_INSTEAD_DEFAULT = true;
 
 { - - - - - - - - - - - - - - - - - Database - - - - - - - - - - - - - - - - - }
-  DB_TABLE_STATIONS = 'Stations';
-  DB_MAIN_DB_FILE_NAME = 'database.trp';
+  DB_TABLE_STATIONS         = 'Stations';
+  DB_TABLE_GENRES           = 'Genres';
+  DB_TABLE_COUNTRIES        = 'Countries';
+  DB_TABLE_DICTIONARY       = 'Dictionary';
+  DB_TABLE_DICTIONARY_ROW   = 'DictionaryRow';
+  DB_MAIN_DB_FILE_NAME      = 'database.db';
+
+{ - - - - - - - - - - - - - - - - - Dictionary - - - - - - - - - - - - - - - - }
+  DICTIONARY_GENRE_CODE     = 'Genre';
+  DICTIONARY_REGION_CODE    = 'Region';
+  DICTIONARY_COUNTRY_CODE   = 'Country';
 
 { - - - - - - - - - - - - - - - - - Grid Colors - - - - - - - - - - - - - - - - }
 GridLineColor: TColor = (250 or (250 shl 8) or (250 shl 16)); // RGB(250, 250, 250);

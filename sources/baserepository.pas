@@ -19,6 +19,8 @@ uses
 
 type
 
+  { TBaseRepository }
+
   TBaseRepository = class abstract(TObject)
   private
     FConnection: TZConnection;
@@ -33,9 +35,9 @@ type
     function CreateDDL: ErrorId; virtual;
     function CreateDML: ErrorId; virtual; abstract;
 
-    property Connection: TZConnection read FConnection;
-
     function GetUnixTimestamp: Integer;
+
+    property Connection: TZConnection read FConnection;
   public
     constructor Create; overload; virtual;
     destructor Destroy; override;
@@ -49,6 +51,21 @@ type
     function IsConnected : boolean;
 
     function AddStation(const StationName: string; const StreamUrl: string; out StationId: integer): ErrorId;
+    function AddStation(const StationName: string; const StreamUrl: string;
+      const Description: string; const WebpageUrl: string;
+      const GenreCode: string; const CountryCode: string;
+      out StationId: integer): ErrorId;
+
+    function AddDictionary(const Name: string; const Code: string;
+      const Description: string; out DictionaryId: integer): ErrorId;
+    function AddDictionary(const Name: string; const Code: string; out DictionaryId: integer): ErrorId;
+
+    function AddDictionaryRow(const Text: string; const Code: string;
+      const Position: integer; const DictionaryId: integer; const ParentDictionaryId: integer;
+      out DictionaryRowId: integer): ErrorId;
+    function AddDictionaryRow(const Text: string; const Code: string;
+      const Position: integer; const DictionaryId: integer;
+      out DictionaryRowId: integer): ErrorId;
   end;
 
 implementation
@@ -185,7 +202,6 @@ begin
         // Try connect to database
         if not FileExists(DBName) then
         begin
-
           // check if directory exists, if not create it
           filePath := ExtractFilePath(DBName);
           if not DirectoryExists(filePath) then
@@ -354,16 +370,56 @@ begin
     try
       query.Connection := FConnection;
 
-      // Station
+      // Stations
       ExecuteQuery(
         'CREATE TABLE ' + DB_TABLE_STATIONS + ' (' +
         'ID INTEGER PRIMARY KEY NOT NULL, ' +
         'Name VARCHAR NOT NULL, ' +
+        'StreamUrl VARCHAR NOT NULL, ' +
         'Description TEXT NULL, ' +
         'WebpageUrl VARCHAR NULL, ' +
-        'StreamUrl VARCHAR NOT NULL, ' +
+        'GenreCode VARCHAR NULL, ' +
+        'CountryCode VARCHAR NULL, ' +
         'Created INTEGER NOT NULL, ' +
         'Modified INTEGER NULL);');
+
+      ExecuteQuery(
+        'CREATE INDEX ' + DB_TABLE_STATIONS +'_GenreCode_Index ' +
+        'ON ' + DB_TABLE_STATIONS + '(GenreCode);' );
+      ExecuteQuery(
+        'CREATE INDEX ' + DB_TABLE_STATIONS + '_CountryCode_Index ' +
+        'ON ' + DB_TABLE_STATIONS + '(CountryCode);' );
+
+      // Dictionary
+      ExecuteQuery(
+        'CREATE TABLE ' + DB_TABLE_DICTIONARY + ' (' +
+        'ID INTEGER PRIMARY KEY NOT NULL, ' +
+        'Name VARCHAR NOT NULL, ' +
+        'Code VARCHAR NOT NULL, ' +
+        'Description VARCHAR NULL, ' +
+        'Created INTEGER NOT NULL, ' +
+        'Modified INTEGER NOT NULL);');
+
+      ExecuteQuery(
+        'CREATE INDEX ' + DB_TABLE_DICTIONARY + '_Code_Index ' +
+        'ON ' + DB_TABLE_DICTIONARY + '(Code);' );
+
+      // Dictionary Row
+      ExecuteQuery(
+        'CREATE TABLE ' + DB_TABLE_DICTIONARY_ROW + ' (' +
+        'ID INTEGER PRIMARY KEY NOT NULL, ' +
+        'DictionaryID INTEGER NOT NULL, ' +
+        'Text VARCHAR NOT NULL, ' +
+        'Code VARCHAR NOT NULL, ' +
+        'Position INTEGER NULL, ' +
+        'ParentDictionaryRowID INTEGER NULL);');
+
+      ExecuteQuery(
+        'CREATE INDEX ' + DB_TABLE_DICTIONARY_ROW + '_DictionaryID_Index ' +
+        'ON ' + DB_TABLE_DICTIONARY_ROW + '(DictionaryID);' );
+      ExecuteQuery(
+        'CREATE INDEX ' + DB_TABLE_DICTIONARY_ROW + '_Code_Index ' +
+        'ON ' + DB_TABLE_DICTIONARY_ROW + '(Code);' );
 
     finally
       query.Free;
@@ -387,6 +443,13 @@ end;
 
 function TBaseRepository.AddStation(const StationName: string;
   const StreamUrl: string; out StationId: integer): ErrorId;
+begin
+  Result := AddStation(StationName, StreamUrl, EMPTY_STR, EMPTY_STR, EMPTY_STR, EMPTY_STR, StationId);
+end;
+
+function TBaseRepository.AddStation(const StationName: string;
+  const StreamUrl: string; const Description: string; const WebpageUrl: string;
+  const GenreCode: string; const CountryCode: string; out StationId: integer): ErrorId;
 var
   query: TZQuery;
   err: ErrorId;
@@ -395,8 +458,8 @@ begin
   err := ERR_OK;
 
   try
-    dateNow := GetUnixTimestamp();
     StationId := GetNewTableKey(DB_TABLE_STATIONS);
+    dateNow := GetUnixTimestamp();
 
     query := TZQuery.Create(nil);
     try
@@ -404,13 +467,26 @@ begin
 
       query.SQL.Add(
         'INSERT INTO ' + DB_TABLE_STATIONS +
-        ' (ID, Name, StreamUrl, Created, Modified) ' +
-        'VALUES(:ID,:Name,:StreamUrl,:Created,:Modified);'
+        ' (ID, Name, StreamUrl, Description, WebpageUrl, GenreCode, CountryCode, Created, Modified) ' +
+        'VALUES(:ID,:Name,:StreamUrl,:Description,:WebpageUrl,:GenreCode,:CountryCode,:Created,:Modified);'
       );
 
       query.Params.ParamByName('ID').AsInteger := StationId;
       query.Params.ParamByName('Name').AsString := StationName;
       query.Params.ParamByName('StreamUrl').AsString := StreamUrl;
+
+      if (Description <> EMPTY_STR) then
+        query.Params.ParamByName('Description').AsString := Description;
+
+      if (WebpageUrl <> EMPTY_STR) then
+        query.Params.ParamByName('WebpageUrl').AsString := WebpageUrl;
+
+      if (GenreCode <> EMPTY_STR) then
+        query.Params.ParamByName('GenreCode').AsString := GenreCode;
+
+      if (CountryCode <> EMPTY_STR) then
+        query.Params.ParamByName('CountryCode').AsString := CountryCode;
+
       query.Params.ParamByName('Created').AsInteger := dateNow;
       query.Params.ParamByName('Modified').AsInteger := dateNow;
 
@@ -422,12 +498,123 @@ begin
   except
     on E: Exception do
       begin
-        LogException(EMPTY_STR, ClassName, 'AddStation', E);
+        LogException(EMPTY_STR, ClassName, 'AddDatabaseStation', E);
         err := ERR_DB_ADD_STATION;
       end;
   end;
 
   Result := err;
+end;
+
+function TBaseRepository.AddDictionary(const Name: string; const Code: string;
+  const Description: string; out DictionaryId: integer): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+  dateNow: integer;
+begin
+  err := ERR_OK;
+
+  try
+    DictionaryId := GetNewTableKey(DB_TABLE_DICTIONARY);
+    dateNow := GetUnixTimestamp();
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := Connection;
+
+      query.SQL.Add(
+        'INSERT INTO ' + DB_TABLE_DICTIONARY +
+        ' (ID, Name, Code, Description, Created, Modified) ' +
+        'VALUES(:ID,:Name,:Code,:Description,:Created,:Modified);'
+      );
+
+      query.Params.ParamByName('ID').AsInteger := DictionaryId;
+      query.Params.ParamByName('Name').AsString := Name;
+      query.Params.ParamByName('Code').AsString := Code;
+
+      if Description <> EMPTY_STR then
+        query.Params.ParamByName('Description').AsString := Description;
+
+      query.Params.ParamByName('Created').AsInteger := dateNow;
+      query.Params.ParamByName('Modified').AsInteger := dateNow;
+
+      query.ExecSQL;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'AddDatabaseDictionary', E);
+        err := ERR_DB_ADD_DICTIONARY;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TBaseRepository.AddDictionary(const Name: string; const Code: string;
+  out DictionaryId: integer): ErrorId;
+begin
+  Result := AddDictionary(Name, Code, EMPTY_STR, DictionaryId);
+end;
+
+function TBaseRepository.AddDictionaryRow(const Text: string;
+  const Code: string; const Position: integer; const DictionaryId: integer;
+  const ParentDictionaryId: integer; out DictionaryRowId: integer): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+begin
+  err := ERR_OK;
+
+  try
+    DictionaryRowId := GetNewTableKey(DB_TABLE_DICTIONARY_ROW);
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := Connection;
+
+      query.SQL.Add(
+        'INSERT INTO ' + DB_TABLE_DICTIONARY_ROW +
+        ' (ID, DictionaryID, Text, Code, Position, ParentDictionaryRowID) ' +
+        'VALUES(:ID,:DictionaryID,:Text,:Code,:Position,:ParentDictionaryRowID);'
+      );
+
+      query.Params.ParamByName('ID').AsInteger := DictionaryRowId;
+      query.Params.ParamByName('DictionaryID').AsInteger := DictionaryId;
+      query.Params.ParamByName('Text').AsString := Text;
+      query.Params.ParamByName('Code').AsString := Code;
+      query.Params.ParamByName('Position').AsInteger := Position;
+
+      if ParentDictionaryId <> EMPTY_INT then
+        query.Params.ParamByName('ParentDictionaryRowID').AsInteger := ParentDictionaryId;
+
+      query.ExecSQL;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'AddDatabaseDictionaryRow', E);
+        err := ERR_DB_ADD_DICTIONARY_ROW;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TBaseRepository.AddDictionaryRow(const Text: string;
+  const Code: string; const Position: integer; const DictionaryId: integer; out
+  DictionaryRowId: integer): ErrorId;
+begin
+  Result := AddDictionaryRow(Text, Code, Position, DictionaryId, EMPTY_INT, DictionaryRowId);
 end;
 
 end.
