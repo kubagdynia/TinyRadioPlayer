@@ -144,16 +144,17 @@ end;
 
 procedure TMainForm.Timer1Timer(Sender: TObject);
 var
-  level: DWORD;
+  level: integer;
 begin
 
   if RadioPlayer.ChannelIsActiveAndPlaying then
   begin
-    level := RadioPlayer.ChannelGetLevel;
+    level := integer(RadioPlayer.ChannelGetLevel);
 
     pbLeftLevelMeter.Value := MulDiv(100, LoWord(level), 32768);
     pbRightLevelMeter.Value := MulDiv(100, HiWord(level), 32768);
-  end else if (pbLeftLevelMeter.Value <> 0) or (pbRightLevelMeter.Value <> 0) then
+  end
+  else if (pbLeftLevelMeter.Value <> 0) or (pbRightLevelMeter.Value <> 0) then
   begin
     pbLeftLevelMeter.Value := 0;
     pbRightLevelMeter.Value := 0;
