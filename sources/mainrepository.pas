@@ -84,13 +84,13 @@ begin
   err := ERR_OK;
 
   // Stations
-  err := AddStation('Radio Kaszebe', 'http://stream3.nadaje.com:8048',
+  err := StationRepo.AddStation('Radio Kaszebe', 'http://stream3.nadaje.com:8048',
     EMPTY_STR, 'http://radiokaszebe.pl/', 'Pop', 'PL', stationId);
 
-  err := AddStation('Radio Malbork', 'http://78.46.246.97:9022',
+  err := StationRepo.AddStation('Radio Malbork', 'http://78.46.246.97:9022',
     EMPTY_STR, 'https://www.radiomalbork.fm/', 'Pop', 'PL', stationId);
 
-  err := AddStation('Planeta RnB', 'http://plarnb-01.cdn.eurozet.pl:8216/',
+  err := StationRepo.AddStation('Planeta RnB', 'http://plarnb-01.cdn.eurozet.pl:8216/',
     EMPTY_STR, 'https://www.planetafm.pl/', 'RnBSoul', 'PL', stationId);
 
   Result := err;

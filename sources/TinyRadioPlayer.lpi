@@ -71,7 +71,7 @@
         <PackageName Value="LCL"/>
       </Item4>
     </RequiredPackages>
-    <Units Count="14">
+    <Units Count="15">
       <Unit0>
         <Filename Value="TinyRadioPlayer.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -144,6 +144,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Repository"/>
       </Unit13>
+      <Unit14>
+        <Filename Value="stationrepository.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="StationRepository"/>
+      </Unit14>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

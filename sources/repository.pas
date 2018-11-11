@@ -5,44 +5,72 @@ unit Repository;
 interface
 
 uses
-  Classes, SysUtils, MainRepository, BaseRepository;
+  Classes, SysUtils, ZConnection, MainRepository, BaseRepository;
 
-var
-  MainRepo: TBaseRepository;
+type
+
+  { TRepository }
+
+  TRepository = class sealed (TObject)
+  private
+    class var FMainRepo: TBaseRepository;
+
+  public
+    class procedure ConnectToMainRepository();
+    class procedure DisconnectFromMainRepository();
+
+    class function GetDbConnection: TZConnection;
+    class function GetNewDbTableKey(const TableName: string): integer;
+
+    class procedure DoSomething(ShowThisText: string);
+  end;
 
 implementation
 
 uses
   RadioPlayerTypes, TRPErrors;
 
-// Local functions that can only be used inside this unit
-procedure ConnectToMainRepository(); forward;
-procedure DisconnectFromMainRepository(); forward;
+{ TRepository }
 
-procedure ConnectToMainRepository();
+class procedure TRepository.ConnectToMainRepository();
 var
   err: ErrorId;
 begin
-  MainRepo := TMainRepository.Create;
-  err := MainRepo.ConnectDB();
+  FMainRepo := TMainRepository.Create;
+  err := FMainRepo.ConnectDB();
   ShowErrorMessage(err);
 end;
 
-procedure DisconnectFromMainRepository();
+class procedure TRepository.DisconnectFromMainRepository();
 begin
-  if Assigned(MainRepo) then
+  if Assigned(FMainRepo) then
   begin
-    MainRepo.DisconnectDB();
-    FreeAndNil(MainRepo);
+    FMainRepo.DisconnectDB();
+    FreeAndNil(FMainRepo);
   end;
+
+end;
+
+class function TRepository.GetDbConnection: TZConnection;
+begin
+  Result := FMainRepo.Connection;
+end;
+
+class function TRepository.GetNewDbTableKey(const TableName: string): integer;
+begin
+  Result := FMainRepo.GetNewTableKey(TableName);
+end;
+
+class procedure TRepository.DoSomething(ShowThisText: string);
+begin
+  FMainRepo.StationRepo.DoSomething(ShowThisText);
 end;
 
 initialization
-  ConnectToMainRepository();
+  TRepository.ConnectToMainRepository();
 
 finalization
-  DisconnectFromMainRepository();
-
+  TRepository.DisconnectFromMainRepository();
 
 end.
 

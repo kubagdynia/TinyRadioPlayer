@@ -15,7 +15,7 @@ Description:         Database management, the base repository class
 interface
 
 uses
-  Classes, SysUtils, ZConnection, RadioPlayerTypes;
+  Classes, SysUtils, ZConnection, RadioPlayerTypes, StationRepository;
 
 type
 
@@ -24,6 +24,8 @@ type
   TBaseRepository = class abstract(TObject)
   private
     FConnection: TZConnection;
+
+    FStationRepository: TStationRepository;
 
     function Connect(const DBName: string): ErrorId;
     function Disconnect: ErrorId;
@@ -34,38 +36,34 @@ type
 
     function CreateDDL: ErrorId; virtual;
     function CreateDML: ErrorId; virtual; abstract;
-
-    function GetUnixTimestamp: Integer;
-
-    property Connection: TZConnection read FConnection;
   public
     constructor Create; overload; virtual;
     destructor Destroy; override;
 
-    function GetNewTableKey(const TableName: string): integer;
     function GetDBName: string; virtual; abstract;
 
-    function ConnectDB(DBName: string = '';
-      const ApplicationPath: string = ''): ErrorId; virtual;
+    function ConnectDB(DBName: string = ''; const ApplicationPath: string = ''): ErrorId; virtual;
     function DisconnectDB: ErrorId;
     function IsConnected : boolean;
 
-    function AddStation(const StationName: string; const StreamUrl: string; out StationId: integer): ErrorId;
-    function AddStation(const StationName: string; const StreamUrl: string;
-      const Description: string; const WebpageUrl: string;
-      const GenreCode: string; const CountryCode: string;
-      out StationId: integer): ErrorId;
+    function GetNewTableKey(const TableName: string): integer;
 
+    // Add Dictionary
     function AddDictionary(const Name: string; const Code: string;
       const Description: string; out DictionaryId: integer): ErrorId;
     function AddDictionary(const Name: string; const Code: string; out DictionaryId: integer): ErrorId;
 
+    // Add Dictionary Row
     function AddDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryId: integer; const ParentDictionaryId: integer;
       out DictionaryRowId: integer): ErrorId;
     function AddDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryId: integer;
       out DictionaryRowId: integer): ErrorId;
+
+    property StationRepo: TStationRepository read FStationRepository;
+
+    property Connection: TZConnection read FConnection;
   end;
 
 implementation
@@ -76,10 +74,15 @@ uses
 constructor TBaseRepository.Create;
 begin
   inherited Create;
+
+
 end;
 
 destructor TBaseRepository.Destroy;
 begin
+  if Assigned(FStationRepository) then
+    FreeAndNil(FStationRepository);
+
   inherited Destroy;
 end;
 
@@ -220,6 +223,10 @@ begin
           FConnection.Connect;
           SetDBSettings;
         end;
+
+        // Create other repositories
+        if not Assigned(FStationRepository) then
+          FStationRepository := TStationRepository.Create;
 
       except
         on E: Exception do
@@ -431,76 +438,6 @@ begin
       LogException(EmptyStr, ClassName, 'CreateDDL', E);
       err := ERR_DB_CREATE_DDL_ERROR;
     end;
-  end;
-
-  Result := err;
-end;
-
-function TBaseRepository.GetUnixTimestamp: Integer;
-begin
-  Result := DateTimeToUnix(LocalTimeToUniversal(Now));
-end;
-
-function TBaseRepository.AddStation(const StationName: string;
-  const StreamUrl: string; out StationId: integer): ErrorId;
-begin
-  Result := AddStation(StationName, StreamUrl, EMPTY_STR, EMPTY_STR, EMPTY_STR, EMPTY_STR, StationId);
-end;
-
-function TBaseRepository.AddStation(const StationName: string;
-  const StreamUrl: string; const Description: string; const WebpageUrl: string;
-  const GenreCode: string; const CountryCode: string; out StationId: integer): ErrorId;
-var
-  query: TZQuery;
-  err: ErrorId;
-  dateNow: integer;
-begin
-  err := ERR_OK;
-
-  try
-    StationId := GetNewTableKey(DB_TABLE_STATIONS);
-    dateNow := GetUnixTimestamp();
-
-    query := TZQuery.Create(nil);
-    try
-      query.Connection := Connection;
-
-      query.SQL.Add(
-        'INSERT INTO ' + DB_TABLE_STATIONS +
-        ' (ID, Name, StreamUrl, Description, WebpageUrl, GenreCode, CountryCode, Created, Modified) ' +
-        'VALUES(:ID,:Name,:StreamUrl,:Description,:WebpageUrl,:GenreCode,:CountryCode,:Created,:Modified);'
-      );
-
-      query.Params.ParamByName('ID').AsInteger := StationId;
-      query.Params.ParamByName('Name').AsString := StationName;
-      query.Params.ParamByName('StreamUrl').AsString := StreamUrl;
-
-      if (Description <> EMPTY_STR) then
-        query.Params.ParamByName('Description').AsString := Description;
-
-      if (WebpageUrl <> EMPTY_STR) then
-        query.Params.ParamByName('WebpageUrl').AsString := WebpageUrl;
-
-      if (GenreCode <> EMPTY_STR) then
-        query.Params.ParamByName('GenreCode').AsString := GenreCode;
-
-      if (CountryCode <> EMPTY_STR) then
-        query.Params.ParamByName('CountryCode').AsString := CountryCode;
-
-      query.Params.ParamByName('Created').AsInteger := dateNow;
-      query.Params.ParamByName('Modified').AsInteger := dateNow;
-
-      query.ExecSQL;
-
-    finally
-      query.Free;
-    end;
-  except
-    on E: Exception do
-      begin
-        LogException(EMPTY_STR, ClassName, 'AddDatabaseStation', E);
-        err := ERR_DB_ADD_STATION;
-      end;
   end;
 
   Result := err;

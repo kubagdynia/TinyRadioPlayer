@@ -14,7 +14,7 @@ uses
   heaptrc,
   {$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, zcomponent, MainFormUnit;
+  Forms, MainFormUnit;
 
 {$R *.res}
 
