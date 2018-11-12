@@ -25,6 +25,7 @@ type
 
   TMainForm = class(TForm)
     btnStop: TBCButton;
+    edtSearch: TEdit;
     MainMenu1: TMainMenu;
     miLanguage: TMenuItem;
     miSettings: TMenuItem;
@@ -39,14 +40,17 @@ type
     pbRightLevelMeter: TBGRAFlashProgressBar;
     sbVolume: TScrollBar;
     Timer1: TTimer;
+    SearchTimer: TTimer;
     procedure btnPlayClick(Sender: TObject);
     procedure btnStopClick(Sender: TObject);
+    procedure edtSearchChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure miExitClick(Sender: TObject);
     procedure RadioPlayerRadioPlay(Sender: TObject);
     procedure RadioPlayerRadioPlayerTags(AMessage: string; APlayerMessageType: TPlayerMessageType);
     procedure sbVolumeChange(Sender: TObject);
+    procedure SearchTimerTimer(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure miLanguageItemClick(Sender: TObject);
   private
@@ -55,7 +59,6 @@ type
     procedure AddLanguageItems;
     procedure OnLanguageChange(Sender: TObject);
     procedure CreateVstStationList;
-    procedure AddTestDataToVstStationList;
     procedure VstStationListGetNodeDataSize(Sender: TBaseVirtualTree;
       var NodeDataSize: Integer);
 
@@ -111,7 +114,7 @@ begin
 
   TLanguage.RegisterLanguageChangeEvent(@OnLanguageChange);
 
-  AddTestDataToVstStationList;
+  TRepository.LoadStations(VstStationList, edtSearch.Text);
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
@@ -132,6 +135,12 @@ end;
 procedure TMainForm.btnStopClick(Sender: TObject);
 begin
   RadioPlayer.Stop();
+end;
+
+procedure TMainForm.edtSearchChange(Sender: TObject);
+begin
+  SearchTimer.Enabled := False;
+  SearchTimer.Enabled := True;
 end;
 
 procedure TMainForm.RadioPlayerRadioPlay(Sender: TObject);
@@ -172,6 +181,12 @@ procedure TMainForm.sbVolumeChange(Sender: TObject);
 begin
   RadioPlayer.Volume(sbVolume.Position);
   TTRPSettings.SetValue('Volume', sbVolume.Position);
+end;
+
+procedure TMainForm.SearchTimerTimer(Sender: TObject);
+begin
+  SearchTimer.Enabled := False;
+  TRepository.LoadStations(VstStationList, edtSearch.Text);
 end;
 
 procedure TMainForm.Timer1Timer(Sender: TObject);
@@ -476,48 +491,6 @@ procedure TMainForm.VstStationListGetNodeDataSize(Sender: TBaseVirtualTree;
   var NodeDataSize: Integer);
 begin
   NodeDataSize := SizeOf(TStationNodeRec);
-end;
-
-procedure TMainForm.AddTestDataToVstStationList;
-var
-  node: PVirtualNode;
-  data: PStationNodeRec;
-  i: integer;
-begin
-  VstStationList.Clear;
-  VstStationList.RootNodeCount := 11;
-  VstStationList.ReinitNode(VstStationList.RootNode, True);
-
-  VstStationList.BeginUpdate;
-
-  node := nil;
-  try
-
-    for i := 0 to 10 do
-    begin
-      if node = nil then
-        node := VstStationList.GetFirst
-      else
-        node := VstStationList.GetNext(node);
-
-      data := VstStationList.GetNodeData(node);
-
-      data^.snd := TStationNodeData.Create(
-        i,
-        'Test Name ' + IntToStr(i),
-        'Test Genre ' + IntToStr(i),
-        'Test Country ' + IntToStr(i)
-      );
-    end;
-
-
-
-
-  finally
-    Finalize(node^);
-  end;
-
-  VstStationList.EndUpdate;
 end;
 
 end.

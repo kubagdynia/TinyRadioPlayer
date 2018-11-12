@@ -1,7 +1,7 @@
 object MainForm: TMainForm
   Left = 455
   Height = 420
-  Top = 258
+  Top = 259
   Width = 473
   Caption = 'Tiny Radio Player'
   ClientHeight = 400
@@ -427,6 +427,14 @@ object MainForm: TMainForm
     Width = 458
     TabOrder = 2
   end
+  object edtSearch: TEdit
+    Left = 58
+    Height = 23
+    Top = 321
+    Width = 224
+    OnChange = edtSearchChange
+    TabOrder = 3
+  end
   object Timer1: TTimer
     Interval = 33
     OnTimer = Timer1Timer
@@ -450,5 +458,12 @@ object MainForm: TMainForm
         Caption = 'Language'
       end
     end
+  end
+  object SearchTimer: TTimer
+    Enabled = False
+    Interval = 500
+    OnTimer = SearchTimerTimer
+    left = 408
+    top = 304
   end
 end

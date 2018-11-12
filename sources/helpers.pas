@@ -36,6 +36,16 @@ var
   function MixingColors(const MyColor1, MyColor2: TColor;
     const Proportion1, Proportion2: integer): TColor;
 
+  procedure Split(const Delimiter: char; const Input: string; const Strings: TStrings);
+
+  function CreateMultipleStatements(
+      const BasicStatement: string;
+      const StartFrom: integer;
+      const Count: integer;
+      const Delimimiter: string;
+      const OpenBracket: string = '(';
+      const EndBracket: string = ')'): string;
+
 implementation
 
 uses
@@ -101,6 +111,32 @@ begin
   g1 := Round((g1 * Proportion1 + g2 * Proportion2) / (Proportion1 + Proportion2));
   b1 := Round((b1 * Proportion1 + b2 * Proportion2) / (Proportion1 + Proportion2));
   result := (r1 or (g1 shl 8) or (b1 shl 16));
+end;
+
+procedure Split(const Delimiter: char; const Input: string; const Strings: TStrings);
+begin
+  Assert(Assigned(Strings));
+  Strings.Clear;
+  Strings.StrictDelimiter := False;
+  Strings.Delimiter := Delimiter;
+  Strings.DelimitedText := Input;
+end;
+
+
+// Create multiple statements e.g. for sql where section
+function CreateMultipleStatements(const BasicStatement: string;
+  const StartFrom: integer; const Count: integer; const Delimimiter: string;
+  const OpenBracket: string; const EndBracket: string): string;
+var
+  i: integer;
+  endOn: integer;
+begin
+  endOn := StartFrom + Count - 1;
+
+  Result := OpenBracket;
+  for i := StartFrom to endOn do
+    Result := Result + OpenBracket + Format(BasicStatement, [i]) + EndBracket
+                     + IIF(i <> endOn, Delimimiter, EndBracket);
 end;
 
 end.
