@@ -100,8 +100,6 @@ end;
 procedure TMainForm.btnStopClick(Sender: TObject);
 begin
   RadioPlayer.Stop();
-  TRepository.DoSomething('Hello World from repo');
-
 end;
 
 procedure TMainForm.RadioPlayerRadioPlay(Sender: TObject);

@@ -48,7 +48,7 @@ begin
   // Save a message
   SaveToFile(
     Format('%s %s.%s:%s error raised, with message: %s',
-      [DateTimeToStr(Now), NameOfTheClass, NameOfTheMethod, E.ClassName,
+      [DateTimeToStr(Now), NameOfTheClass, NameOfTheMethod, NameOfTheClass,
        Message + IIF(exceptionMessage <> EMPTY_STR, #13#10 + exceptionMessage, EMPTY_STR)]
     )
   );

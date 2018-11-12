@@ -1,11 +1,21 @@
 unit StationRepository;
+{===============================================================================
+File:                StationRepository.pas
+
+Application Name:    Tiny Radio Player
+
+Created:             2018 Jakub Kurlowicz (jakubkurlowicz.pl)
+
+Description:         Database operations related to station data management
+
+================================================================================}
 
 {$mode objfpc}{$H+}
 
 interface
 
 uses
-  Classes, SysUtils, ZConnection, RadioPlayerTypes;
+  Classes, SysUtils, RadioPlayerTypes;
 
 type
 
@@ -20,8 +30,6 @@ type
     constructor Create; overload;
     destructor Destroy; override;
 
-    procedure DoSomething(ShowThisText: string);
-
     function AddStation(const StationName: string; const StreamUrl: string;
       out StationId: integer): ErrorId;
     function AddStation(const StationName: string; const StreamUrl: string;
@@ -32,7 +40,8 @@ type
 
 implementation
 
-uses Dialogs, ZDataset, Consts, Helpers, Repository, TRPErrors;
+uses
+  Dialogs, ZDataset, Consts, Helpers, Repository, TRPErrors;
 
 { TStationRepository }
 
@@ -48,29 +57,6 @@ begin
   // Code here
 
   inherited Destroy;
-end;
-
-procedure TStationRepository.DoSomething(ShowThisText: string);
-var
-  query: TZQuery;
-  nextId: Integer;
-begin
-  query := TZQuery.Create(nil);
-  try
-    query.Connection := TRepository.GetDbConnection;
-
-    query.SQL.Add('SELECT coalesce(MAX(ID),0)+1 FROM ' + DB_TABLE_STATIONS + ';');
-
-    query.Open;
-
-    if query.RecordCount = 1 then
-      nextId := query.Fields[0].AsInteger;
-
-    ShowMessage(IntToStr(nextId));
-  finally
-    query.Free;
-  end;
-
 end;
 
 function TStationRepository.AddStation(const StationName: string;

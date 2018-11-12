@@ -15,7 +15,7 @@ Description:         Database management, the base repository class
 interface
 
 uses
-  Classes, SysUtils, ZConnection, RadioPlayerTypes, StationRepository;
+  Classes, SysUtils, ZConnection, RadioPlayerTypes, StationRepository, DictionaryRepository;
 
 type
 
@@ -26,10 +26,15 @@ type
     FConnection: TZConnection;
 
     FStationRepository: TStationRepository;
+    FDictionaryRepository: TDictionaryRepository;
 
     function Connect(const DBName: string): ErrorId;
     function Disconnect: ErrorId;
     procedure SetDBSettings;
+
+    function GetConnection: TZConnection;
+    function GetStationRepository: TStationRepository;
+    function GetDictionaryRepository: TDictionaryRepository;
   protected
     function GetDBPath: string; virtual; abstract;
     function CreateDB: ErrorId; virtual;
@@ -48,34 +53,25 @@ type
 
     function GetNewTableKey(const TableName: string): integer;
 
-    // Add Dictionary
-    function AddDictionary(const Name: string; const Code: string;
-      const Description: string; out DictionaryId: integer): ErrorId;
-    function AddDictionary(const Name: string; const Code: string; out DictionaryId: integer): ErrorId;
-
-    // Add Dictionary Row
-    function AddDictionaryRow(const Text: string; const Code: string;
-      const Position: integer; const DictionaryId: integer; const ParentDictionaryId: integer;
-      out DictionaryRowId: integer): ErrorId;
-    function AddDictionaryRow(const Text: string; const Code: string;
-      const Position: integer; const DictionaryId: integer;
-      out DictionaryRowId: integer): ErrorId;
-
-    property StationRepo: TStationRepository read FStationRepository;
-
-    property Connection: TZConnection read FConnection;
+    property Connection: TZConnection read GetConnection;
+    property StationRepo: TStationRepository read GetStationRepository;
+    property DictionaryRepo: TDictionaryRepository read GetDictionaryRepository;
   end;
 
 implementation
 
 uses
-  Forms, ZDataset, TRPErrors, Helpers, Consts, dateutils;
+  Forms, ZDataset, TRPErrors, Helpers, Consts, dateutils, Dialogs;
 
 constructor TBaseRepository.Create;
 begin
   inherited Create;
 
-
+  // Create other repositories
+  if not Assigned(FStationRepository) then
+    FStationRepository := TStationRepository.Create;
+  if not Assigned(FDictionaryRepository) then
+    FDictionaryRepository := TDictionaryRepository.Create;
 end;
 
 destructor TBaseRepository.Destroy;
@@ -83,7 +79,55 @@ begin
   if Assigned(FStationRepository) then
     FreeAndNil(FStationRepository);
 
+  if Assigned(FDictionaryRepository) then
+    FreeAndNil(FDictionaryRepository);
+
   inherited Destroy;
+end;
+
+function TBaseRepository.GetConnection: TZConnection;
+begin
+  if not Assigned(FConnection) then
+  begin
+    LogException(
+      GetLanguageItem('ErrorMessage.DbConnectionNotEstablished'),
+        ClassName, 'GetStationRepository');
+
+    raise Exception.Create(
+      GetLanguageItem('ErrorMessage.DbConnectionNotEstablished'));
+  end;
+
+  Result := FConnection;
+end;
+
+function TBaseRepository.GetStationRepository: TStationRepository;
+begin
+  if not Assigned(FStationRepository) then
+  begin
+    LogException(
+      GetLanguageItem('ErrorMessage.StationRepositoryNotAssigned'),
+        ClassName, 'GetStationRepository');
+
+    raise Exception.Create(
+      GetLanguageItem('ErrorMessage.StationRepositoryNotAssigned'));
+  end;
+
+  Result := FStationRepository;
+end;
+
+function TBaseRepository.GetDictionaryRepository: TDictionaryRepository;
+begin
+  if not Assigned(FDictionaryRepository) then
+  begin
+    LogException(
+      GetLanguageItem('ErrorMessage.DictionaryRepositoryNotAssigned'),
+        ClassName, 'GetStationRepository');
+
+    raise Exception.Create(
+      GetLanguageItem('ErrorMessage.DictionaryRepositoryNotAssigned'));
+  end;
+
+  Result := FDictionaryRepository;
 end;
 
 // Retrieves a new key for the table
@@ -223,10 +267,6 @@ begin
           FConnection.Connect;
           SetDBSettings;
         end;
-
-        // Create other repositories
-        if not Assigned(FStationRepository) then
-          FStationRepository := TStationRepository.Create;
 
       except
         on E: Exception do
@@ -441,117 +481,6 @@ begin
   end;
 
   Result := err;
-end;
-
-function TBaseRepository.AddDictionary(const Name: string; const Code: string;
-  const Description: string; out DictionaryId: integer): ErrorId;
-var
-  query: TZQuery;
-  err: ErrorId;
-  dateNow: integer;
-begin
-  err := ERR_OK;
-
-  try
-    DictionaryId := GetNewTableKey(DB_TABLE_DICTIONARY);
-    dateNow := GetUnixTimestamp();
-
-    query := TZQuery.Create(nil);
-    try
-      query.Connection := Connection;
-
-      query.SQL.Add(
-        'INSERT INTO ' + DB_TABLE_DICTIONARY +
-        ' (ID, Name, Code, Description, Created, Modified) ' +
-        'VALUES(:ID,:Name,:Code,:Description,:Created,:Modified);'
-      );
-
-      query.Params.ParamByName('ID').AsInteger := DictionaryId;
-      query.Params.ParamByName('Name').AsString := Name;
-      query.Params.ParamByName('Code').AsString := Code;
-
-      if Description <> EMPTY_STR then
-        query.Params.ParamByName('Description').AsString := Description;
-
-      query.Params.ParamByName('Created').AsInteger := dateNow;
-      query.Params.ParamByName('Modified').AsInteger := dateNow;
-
-      query.ExecSQL;
-
-    finally
-      query.Free;
-    end;
-
-  except
-    on E: Exception do
-      begin
-        LogException(EMPTY_STR, ClassName, 'AddDatabaseDictionary', E);
-        err := ERR_DB_ADD_DICTIONARY;
-      end;
-  end;
-
-  Result := err;
-end;
-
-function TBaseRepository.AddDictionary(const Name: string; const Code: string;
-  out DictionaryId: integer): ErrorId;
-begin
-  Result := AddDictionary(Name, Code, EMPTY_STR, DictionaryId);
-end;
-
-function TBaseRepository.AddDictionaryRow(const Text: string;
-  const Code: string; const Position: integer; const DictionaryId: integer;
-  const ParentDictionaryId: integer; out DictionaryRowId: integer): ErrorId;
-var
-  query: TZQuery;
-  err: ErrorId;
-begin
-  err := ERR_OK;
-
-  try
-    DictionaryRowId := GetNewTableKey(DB_TABLE_DICTIONARY_ROW);
-
-    query := TZQuery.Create(nil);
-    try
-      query.Connection := Connection;
-
-      query.SQL.Add(
-        'INSERT INTO ' + DB_TABLE_DICTIONARY_ROW +
-        ' (ID, DictionaryID, Text, Code, Position, ParentDictionaryRowID) ' +
-        'VALUES(:ID,:DictionaryID,:Text,:Code,:Position,:ParentDictionaryRowID);'
-      );
-
-      query.Params.ParamByName('ID').AsInteger := DictionaryRowId;
-      query.Params.ParamByName('DictionaryID').AsInteger := DictionaryId;
-      query.Params.ParamByName('Text').AsString := Text;
-      query.Params.ParamByName('Code').AsString := Code;
-      query.Params.ParamByName('Position').AsInteger := Position;
-
-      if ParentDictionaryId <> EMPTY_INT then
-        query.Params.ParamByName('ParentDictionaryRowID').AsInteger := ParentDictionaryId;
-
-      query.ExecSQL;
-
-    finally
-      query.Free;
-    end;
-
-  except
-    on E: Exception do
-      begin
-        LogException(EMPTY_STR, ClassName, 'AddDatabaseDictionaryRow', E);
-        err := ERR_DB_ADD_DICTIONARY_ROW;
-      end;
-  end;
-
-  Result := err;
-end;
-
-function TBaseRepository.AddDictionaryRow(const Text: string;
-  const Code: string; const Position: integer; const DictionaryId: integer; out
-  DictionaryRowId: integer): ErrorId;
-begin
-  Result := AddDictionaryRow(Text, Code, Position, DictionaryId, EMPTY_INT, DictionaryRowId);
 end;
 
 end.

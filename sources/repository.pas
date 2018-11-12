@@ -1,11 +1,21 @@
 unit Repository;
+{===============================================================================
+File:                Repository.pas
+
+Application Name:    Tiny Radio Player
+
+Created:             2018 Jakub Kurlowicz (jakubkurlowicz.pl)
+
+Description:         Repository wrapper
+
+================================================================================}
 
 {$mode objfpc}{$H+}
 
 interface
 
 uses
-  Classes, SysUtils, ZConnection, MainRepository, BaseRepository;
+  Classes, SysUtils, ZConnection, RadioPlayerTypes, MainRepository, BaseRepository;
 
 type
 
@@ -22,13 +32,31 @@ type
     class function GetDbConnection: TZConnection;
     class function GetNewDbTableKey(const TableName: string): integer;
 
-    class procedure DoSomething(ShowThisText: string);
+    // Stations
+    class function AddStation(const StationName: string; const StreamUrl: string;
+      out StationId: integer): ErrorId;
+    class function AddStation(const StationName: string; const StreamUrl: string;
+      const Description: string; const WebpageUrl: string;
+      const GenreCode: string; const CountryCode: string;
+      out StationId: integer): ErrorId;
+
+    // Dictionary
+    class function AddDictionary(const Name: string; const Code: string;
+      const Description: string; out DictionaryId: integer): ErrorId;
+    class function AddDictionary(const Name: string; const Code: string;
+      out DictionaryId: integer): ErrorId;
+    function AddDictionaryRow(const Text: string; const Code: string;
+      const Position: integer; const DictionaryId: integer; const ParentDictionaryId: integer;
+      out DictionaryRowId: integer): ErrorId;
+    function AddDictionaryRow(const Text: string; const Code: string;
+      const Position: integer; const DictionaryId: integer;
+      out DictionaryRowId: integer): ErrorId;
   end;
 
 implementation
 
 uses
-  RadioPlayerTypes, TRPErrors;
+  TRPErrors;
 
 { TRepository }
 
@@ -61,9 +89,46 @@ begin
   Result := FMainRepo.GetNewTableKey(TableName);
 end;
 
-class procedure TRepository.DoSomething(ShowThisText: string);
+class function TRepository.AddStation(const StationName: string;
+  const StreamUrl: string; out StationId: integer): ErrorId;
 begin
-  FMainRepo.StationRepo.DoSomething(ShowThisText);
+  FMainRepo.StationRepo.AddStation(StationName, StreamUrl, StationId);
+end;
+
+class function TRepository.AddStation(const StationName: string;
+  const StreamUrl: string; const Description: string; const WebpageUrl: string;
+  const GenreCode: string; const CountryCode: string; out StationId: integer): ErrorId;
+begin
+  FMainRepo.StationRepo.AddStation(StationName, StreamUrl, Description,
+    WebpageUrl, GenreCode, CountryCode, StationId);
+end;
+
+class function TRepository.AddDictionary(const Name: string;
+  const Code: string; const Description: string; out DictionaryId: integer): ErrorId;
+begin
+  FMainRepo.DictionaryRepo.AddDictionary(Name, Code, Description, DictionaryId);
+end;
+
+class function TRepository.AddDictionary(const Name: string;
+  const Code: string; out DictionaryId: integer): ErrorId;
+begin
+  FMainRepo.DictionaryRepo.AddDictionary(Name, Code, DictionaryId);
+end;
+
+function TRepository.AddDictionaryRow(const Text: string; const Code: string;
+  const Position: integer; const DictionaryId: integer;
+  const ParentDictionaryId: integer; out DictionaryRowId: integer): ErrorId;
+begin
+  FMainRepo.DictionaryRepo.AddDictionaryRow(Text, Code, Position, DictionaryId,
+    ParentDictionaryId, DictionaryRowId);
+end;
+
+function TRepository.AddDictionaryRow(const Text: string; const Code: string;
+  const Position: integer; const DictionaryId: integer; out
+  DictionaryRowId: integer): ErrorId;
+begin
+  FMainRepo.DictionaryRepo.AddDictionaryRow(Text, Code, Position, DictionaryId,
+    DictionaryRowId);
 end;
 
 initialization
