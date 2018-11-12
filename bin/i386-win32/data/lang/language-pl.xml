@@ -5,6 +5,9 @@
 		<!-- Error Messages -->
 		<Item name="ErrorMessage.General" type="string">Błąd!</Item>
 		<Item name="ErrorMessage.UnspecifiedError" type="string">Wystąpił nieznany błąd!</Item>
+		<Item name="ErrorMessage.DbConnectionNotEstablished" type="string">Nie nawiązano jeszcze połączenia z bazą danych!</Item>
+		<Item name="ErrorMessage.StationRepositoryNotAssigned" type="string">Repozytorium stacji nie zostało jeszcze przypisane!</Item>
+		<Item name="ErrorMessage.DictionaryRepositoryNotAssigned" type="string">Repozytorium słowników nie zostało jeszcze przypisane!</Item>
 		
 		<!-- General Buttons -->
 		<Item name="Button.Close" type="string">Zamknij</Item>
