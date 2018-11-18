@@ -61,7 +61,7 @@ type
 implementation
 
 uses
-  Forms, ZDataset, TRPErrors, Helpers, Consts, dateutils, Dialogs;
+  Forms, ZDataset, TRPErrors, Helpers, Consts, dateutils;
 
 constructor TBaseRepository.Create;
 begin
@@ -333,58 +333,53 @@ end;
 
 function TBaseRepository.CreateDB: ErrorId;
 var
-  query: TZQuery;
   err: ErrorId;
 begin
   err := ERR_OK;
 
   try
-    query := TZQuery.Create(nil);
-    try
-      // Database settings
+    // Database settings
 
-      // The Boolean synchronous value controls whether or not the
-      // library will wait for disk writes to be fully written to disk
-      // before continuing. In typical use the library may spend a lot of
-      // time just waiting on the file system.
-      // Setting "PRAGMA synchronous=OFF" can make a major speed difference.
-      FConnection.ExecuteDirect('PRAGMA synchronous = OFF;');
+    // The Boolean synchronous value controls whether or not the
+    // library will wait for disk writes to be fully written to disk
+    // before continuing. In typical use the library may spend a lot of
+    // time just waiting on the file system.
+    // Setting "PRAGMA synchronous=OFF" can make a major speed difference.
+    FConnection.ExecuteDirect('PRAGMA synchronous = OFF;');
 
-      // The temp_store values specifies the type of database back-end to use
-      // for temporary files.
-      // The choices are DEFAULT (0), FILE (1), and MEMORY (2).
-      // The use of a memory database for temporary tables can produce
-      // signifigant savings. DEFAULT specifies the compiled-in default,
-      // which is FILE unless the source has been modified.
-      FConnection.ExecuteDirect('PRAGMA temp_store = MEMORY;');
+    // The temp_store values specifies the type of database back-end to use
+    // for temporary files.
+    // The choices are DEFAULT (0), FILE (1), and MEMORY (2).
+    // The use of a memory database for temporary tables can produce
+    // signifigant savings. DEFAULT specifies the compiled-in default,
+    // which is FILE unless the source has been modified.
+    FConnection.ExecuteDirect('PRAGMA temp_store = MEMORY;');
 
-      // The default behavior of the LIKE operator is to ignore case for
-      // .SCII characters
-      FConnection.ExecuteDirect('PRAGMA case_sensitive_like = OFF;');
+    // The default behavior of the LIKE operator is to ignore case for
+    // .SCII characters
+    FConnection.ExecuteDirect('PRAGMA case_sensitive_like = OFF;');
 
-      // Unless already in a transaction, each SQL statement has a new
-      // transaction started for it. This is very expensive, since it requires
-      // reopening, writing to, and closing the journal file for each statement.
-      // This can be avoided by wrapping sequences of SQL statements with
-      // BEGIN TRANSACTION; and END TRANSACTION; statements.
-      // This speedup is also obtained for statements which don't alter
-      // the database.
-      // The keyword COMMIT is a synonym for END TRANSACTION.
-      FConnection.ExecuteDirect('BEGIN TRANSACTION;');
+    // Unless already in a transaction, each SQL statement has a new
+    // transaction started for it. This is very expensive, since it requires
+    // reopening, writing to, and closing the journal file for each statement.
+    // This can be avoided by wrapping sequences of SQL statements with
+    // BEGIN TRANSACTION; and END TRANSACTION; statements.
+    // This speedup is also obtained for statements which don't alter
+    // the database.
+    // The keyword COMMIT is a synonym for END TRANSACTION.
+    FConnection.ExecuteDirect('BEGIN TRANSACTION;');
 
-      err := CreateDDL;
+    err := CreateDDL;
 
-      if err = ERR_OK then
-        err := CreateDML;
+    if err = ERR_OK then
+      err := CreateDML;
 
-      if (err = ERR_OK) and (not FConnection.ExecuteDirect('COMMIT;')) then
-        err := ERR_DB_CREATE_ERROR;
+    if (err = ERR_OK) and (not FConnection.ExecuteDirect('COMMIT;')) then
+      err := ERR_DB_CREATE_ERROR;
 
-      if err <> ERR_OK then
-        FConnection.ExecuteDirect('ROLLBACK;');
-    finally
-      query.Free;
-    end;
+    if err <> ERR_OK then
+      FConnection.ExecuteDirect('ROLLBACK;');
+
   except
     on E: Exception do
     begin

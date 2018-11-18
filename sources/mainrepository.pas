@@ -63,8 +63,8 @@ begin
   err := ERR_OK;
 
   try
-    err := CreateStations;
     err := CreateDictionaries;
+    err := CreateStations;
   except
     on E: Exception do
     begin
