@@ -27,11 +27,16 @@ var
     const DefaultValue: string = EMPTY_STR): string;
   procedure ReloadLanguageItems();
 
+  function GetUnixTimestamp: Integer;
+
+  procedure LogException(const Text: string;
+    const NameOfTheClass: string = EMPTY_STR; const NameOfTheMethod: string = EMPTY_STR;
+    const E: Exception = nil);
 
 implementation
 
 uses
-  Language;
+  dateutils, Language, Log;
 
 // This function returns the application main path
 function GetApplicationPath: string;
@@ -62,6 +67,18 @@ end;
 procedure ReloadLanguageItems();
 begin
   Language.TLanguage.ReloadLanguageItems();
+end;
+
+function GetUnixTimestamp: Integer;
+begin
+  Result := DateTimeToUnix(LocalTimeToUniversal(Now));
+end;
+
+// Log exception
+procedure LogException(const Text: string; const NameOfTheClass: string;
+  const NameOfTheMethod: string; const E: Exception);
+begin
+   TLog.LogException(Text, NameOfTheClass, NameOfTheMethod, E);
 end;
 
 end.

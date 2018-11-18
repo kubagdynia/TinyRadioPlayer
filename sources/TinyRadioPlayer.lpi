@@ -57,18 +57,21 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="3">
+    <RequiredPackages Count="4">
       <Item1>
-        <PackageName Value="bgracontrols"/>
+        <PackageName Value="zcomponent"/>
       </Item1>
       <Item2>
-        <PackageName Value="lclextensions_package"/>
+        <PackageName Value="bgracontrols"/>
       </Item2>
       <Item3>
-        <PackageName Value="LCL"/>
+        <PackageName Value="lclextensions_package"/>
       </Item3>
+      <Item4>
+        <PackageName Value="LCL"/>
+      </Item4>
     </RequiredPackages>
-    <Units Count="11">
+    <Units Count="16">
       <Unit0>
         <Filename Value="TinyRadioPlayer.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -126,6 +129,31 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="TRPSettings"/>
       </Unit10>
+      <Unit11>
+        <Filename Value="baserepository.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="BaseRepository"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="mainrepository.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="MainRepository"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="repository.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Repository"/>
+      </Unit13>
+      <Unit14>
+        <Filename Value="stationrepository.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="StationRepository"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="dictionaryrepository.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="DictionaryRepository"/>
+      </Unit15>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

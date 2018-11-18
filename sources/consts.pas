@@ -21,13 +21,16 @@ const
   EMPTY_INT         = -1;
   EMPTY_STR         = '';
   NEW_LINE          = #13#10;
+  INVALID_INT       = -1;
 
   {$IFDEF WINDOWS}
-  LIB_PATH = 'data/lib/';
-  LANGUAGE_PATH = 'data/lang/';
+  LIB_PATH = 'data\lib\';
+  LANGUAGE_PATH = 'data\lang\';
+  DB_PATH = 'data\db\';
   {$ELSE}
   LIB_PATH = 'data/lib/';
   LANGUAGE_PATH = 'data/lang/';
+  DB_PATH = 'data/db/';
   {$ENDIF}
 
   LOG_NAME = 'Application.log';
@@ -35,11 +38,24 @@ const
   SETTINGS_FILE = 'settings.trp';
 
 { - - - - - - - - - - - - - - - - - Language - - - - - - - - - - - - - - - - - }
-  LANGUAGE_FILE_PREFIX = 'language-';
-  LANGUAGE_FILE_EXTENSION = '.xml';
-  LANGUAGE_FILE_PATTERN = LANGUAGE_FILE_PREFIX + '*' + LANGUAGE_FILE_EXTENSION;
-  DEFAULT_LANGUAGE = 'en';
+  LANGUAGE_FILE_PREFIX      = 'language-';
+  LANGUAGE_FILE_EXTENSION   = '.xml';
+  LANGUAGE_FILE_PATTERN     = LANGUAGE_FILE_PREFIX + '*' + LANGUAGE_FILE_EXTENSION;
+  DEFAULT_LANGUAGE          = 'en';
   USE_OS_LANGUAGE_INSTEAD_DEFAULT = true;
+
+{ - - - - - - - - - - - - - - - - - Database - - - - - - - - - - - - - - - - - }
+  DB_TABLE_STATIONS         = 'Stations';
+  DB_TABLE_GENRES           = 'Genres';
+  DB_TABLE_COUNTRIES        = 'Countries';
+  DB_TABLE_DICTIONARY       = 'Dictionary';
+  DB_TABLE_DICTIONARY_ROW   = 'DictionaryRow';
+  DB_MAIN_DB_FILE_NAME      = 'database.db';
+
+{ - - - - - - - - - - - - - - - - - Dictionary - - - - - - - - - - - - - - - - }
+  DICTIONARY_GENRE_CODE     = 'Genre';
+  DICTIONARY_REGION_CODE    = 'Region';
+  DICTIONARY_COUNTRY_CODE   = 'Country';
 
 implementation
 
