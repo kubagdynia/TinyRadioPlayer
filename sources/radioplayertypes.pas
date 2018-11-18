@@ -25,7 +25,46 @@ type
 type
   ErrorId = integer;
 
+{ - - - - - - - - - - - - - - - TStationNodeData  - - - - - - - - - - - - - - - }
+type
+
+  { TStationNodeData }
+
+  TStationNodeData = class
+  protected
+    FID      : integer;
+    FName    : string;
+    FGenre   : string;
+    FCountry : string;
+  public
+    constructor Create(const Id: integer;
+      const Name, Genre, Country: string); overload;
+
+    property ID       : integer  read FID       write FID;
+    property Name     : string   read FName     write FName;
+    property Genre    : string   read FGenre    write FGenre;
+    property Country  : string   read FCountry  write FCountry;
+  end;
+
+  PStationNodeRec = ^TStationNodeRec;
+  TStationNodeRec =
+  record
+     snd : TStationNodeData;
+  end;
+
 implementation
+
+{ TStationNodeData }
+
+constructor TStationNodeData.Create(const Id: integer; const Name, Genre,
+  Country: string);
+begin
+  inherited Create;
+    FID       := Id;
+    FName     := Name;
+    FGenre    := Genre;
+    FCountry  := Country;
+end;
 
 end.
 

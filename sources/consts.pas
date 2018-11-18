@@ -15,7 +15,7 @@ Description:         Constants used in the application
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, Graphics;
 
 const
   EMPTY_INT         = -1;
@@ -56,6 +56,10 @@ const
   DICTIONARY_GENRE_CODE     = 'Genre';
   DICTIONARY_REGION_CODE    = 'Region';
   DICTIONARY_COUNTRY_CODE   = 'Country';
+
+{ - - - - - - - - - - - - - - - - - Grid Colors - - - - - - - - - - - - - - - - }
+GridLineColor: TColor = (250 or (250 shl 8) or (250 shl 16)); // RGB(250, 250, 250);
+GridLineColorCurrentlyPlaying: TColor = (199 or (237 shl 8) or (252 shl 16)); // RGB(255, 187, 187);
 
 implementation
 

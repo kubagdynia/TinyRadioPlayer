@@ -15,7 +15,8 @@ Description:         Repository wrapper
 interface
 
 uses
-  Classes, SysUtils, ZConnection, RadioPlayerTypes, MainRepository, BaseRepository;
+  Classes, SysUtils, ZConnection, RadioPlayerTypes, MainRepository,
+  BaseRepository, VirtualTrees;
 
 type
 
@@ -39,6 +40,7 @@ type
       const Description: string; const WebpageUrl: string;
       const GenreCode: string; const CountryCode: string;
       out StationId: integer): ErrorId;
+    class function LoadStations(var VstList: TVirtualStringTree; const Text: string): ErrorId;
 
     // Dictionary
     class function AddDictionary(const Name: string; const Code: string;
@@ -92,34 +94,40 @@ end;
 class function TRepository.AddStation(const StationName: string;
   const StreamUrl: string; out StationId: integer): ErrorId;
 begin
-  FMainRepo.StationRepo.AddStation(StationName, StreamUrl, StationId);
+  Result := FMainRepo.StationRepo.AddStation(StationName, StreamUrl, StationId);
 end;
 
 class function TRepository.AddStation(const StationName: string;
   const StreamUrl: string; const Description: string; const WebpageUrl: string;
   const GenreCode: string; const CountryCode: string; out StationId: integer): ErrorId;
 begin
-  FMainRepo.StationRepo.AddStation(StationName, StreamUrl, Description,
+  Result := FMainRepo.StationRepo.AddStation(StationName, StreamUrl, Description,
     WebpageUrl, GenreCode, CountryCode, StationId);
+end;
+
+class function TRepository.LoadStations(var VstList: TVirtualStringTree;
+  const Text: string): ErrorId;
+begin
+  Result := FMainRepo.StationRepo.LoadStations(VstList, Text);
 end;
 
 class function TRepository.AddDictionary(const Name: string;
   const Code: string; const Description: string; out DictionaryId: integer): ErrorId;
 begin
-  FMainRepo.DictionaryRepo.AddDictionary(Name, Code, Description, DictionaryId);
+  Result := FMainRepo.DictionaryRepo.AddDictionary(Name, Code, Description, DictionaryId);
 end;
 
 class function TRepository.AddDictionary(const Name: string;
   const Code: string; out DictionaryId: integer): ErrorId;
 begin
-  FMainRepo.DictionaryRepo.AddDictionary(Name, Code, DictionaryId);
+  Result := FMainRepo.DictionaryRepo.AddDictionary(Name, Code, DictionaryId);
 end;
 
 function TRepository.AddDictionaryRow(const Text: string; const Code: string;
   const Position: integer; const DictionaryId: integer;
   const ParentDictionaryId: integer; out DictionaryRowId: integer): ErrorId;
 begin
-  FMainRepo.DictionaryRepo.AddDictionaryRow(Text, Code, Position, DictionaryId,
+  Result := FMainRepo.DictionaryRepo.AddDictionaryRow(Text, Code, Position, DictionaryId,
     ParentDictionaryId, DictionaryRowId);
 end;
 
@@ -127,7 +135,7 @@ function TRepository.AddDictionaryRow(const Text: string; const Code: string;
   const Position: integer; const DictionaryId: integer; out
   DictionaryRowId: integer): ErrorId;
 begin
-  FMainRepo.DictionaryRepo.AddDictionaryRow(Text, Code, Position, DictionaryId,
+  Result := FMainRepo.DictionaryRepo.AddDictionaryRow(Text, Code, Position, DictionaryId,
     DictionaryRowId);
 end;
 
