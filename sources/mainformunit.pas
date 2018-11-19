@@ -15,15 +15,20 @@ Description:         Main Form
 interface
 
 uses
-  Classes, SysUtils, FileUtil, BCButton, BGRAFlashProgressBar, BCLabel, Forms,
-  Controls, Graphics, Dialogs, LCLType, StdCtrls, ExtCtrls, Menus, Helpers,
-  RadioPlayer, RadioPlayerTypes, VirtualTrees, ImgList;
+  Classes, SysUtils, FileUtil, BCButton, BGRAFlashProgressBar, BCLabel, BCPanel,
+  Forms, Controls, Graphics, Dialogs, LCLType, StdCtrls, ExtCtrls, Menus,
+  Helpers, RadioPlayer, RadioPlayerTypes, VirtualTrees, ImgList, CTRPTextScroll;
 
 type
 
   { TMainForm }
 
   TMainForm = class(TForm)
+    MainPanel: TBCPanel;
+    PeakmeterPanel: TBCPanel;
+    SearchPanel: TBCPanel;
+    BottomFunctionPanel: TBCPanel;
+    TopInfoPanel: TBCPanel;
     btnStop: TBCButton;
     edtSearch: TEdit;
     MainMenu1: TMainMenu;
@@ -31,12 +36,10 @@ type
     miSettings: TMenuItem;
     miExit: TMenuItem;
     miFile: TMenuItem;
-    MainPanel: TPanel;
+    StationListPanel: TPanel;
     pbLeftLevelMeter: TBGRAFlashProgressBar;
     btnPlay: TBCButton;
     edtStreamUrl: TEdit;
-    lblInfo1: TLabel;
-    lblInfo2: TLabel;
     pbRightLevelMeter: TBGRAFlashProgressBar;
     sbVolume: TScrollBar;
     Timer1: TTimer;
@@ -59,6 +62,8 @@ type
     procedure AddLanguageItems;
     procedure OnLanguageChange(Sender: TObject);
     procedure CreateVstStationList;
+    procedure TextScrollMouseEnter(Sender: TObject);
+    procedure TextScrollMouseLeave(Sender: TObject);
     procedure VstStationListGetNodeDataSize(Sender: TBaseVirtualTree;
       var NodeDataSize: Integer);
 
@@ -85,7 +90,9 @@ type
   public
     RadioPlayer: TRadioPlayer;
 
-    VstStationList: TVirtualStringTree
+    VstStationList: TVirtualStringTree;
+
+    TextScroll: TCTRPTextScroll;
   end;
 
 var
@@ -108,6 +115,33 @@ begin
 
   CreateVstStationList;
 
+  TextScroll := TCTRPTextScroll.Create(Self);
+  TextScroll.Parent := TopInfoPanel;
+
+  TextScroll.Lines.TextScrollLine1.BackgroundColor := RGBToColor(0, 175, 240);
+  TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderColor := RGBToColor(0, 175, 240);
+  TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderWidth := 2;
+  TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderColor := RGBToColor(0, 175, 240);
+  TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderWidth := 2;
+  TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderColor := RGBToColor(0, 175, 240);
+  TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderWidth := 2;
+  TextScroll.Lines.TextScrollLine1.ScrollText := 'Tiny Radio Player';
+
+  TextScroll.Lines.TextScrollLine2.BackgroundColor := RGBToColor(0, 175, 240);
+  TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderColor := RGBToColor(0, 175, 240);
+  TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderWidth := 2;
+  TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderColor := RGBToColor(0, 175, 240);
+  TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderWidth := 2;
+  TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderColor := RGBToColor(0, 175, 240);
+  TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderWidth := 2;
+  TextScroll.Lines.TextScrollLine2.ScrollText := 'ver. 0.1';
+
+  TextScroll.OnMouseEnter := @TextScrollMouseEnter;
+  TextScroll.OnMouseLeave := @TextScrollMouseLeave;
+
+  TextScroll.Align := alClient;
+  //TextScroll.PopupMenu := pmRedTextScroll;
+
   LoadSettings;
   LoadLoanguages;
   AddLanguageItems;
@@ -120,6 +154,8 @@ end;
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
   FreeAndNil(RadioPlayer);
+
+  FreeAndNil(TextScroll);
 end;
 
 procedure TMainForm.miExitClick(Sender: TObject);
@@ -153,26 +189,26 @@ procedure TMainForm.RadioPlayerRadioPlayerTags(AMessage: string;
 begin
   case APlayerMessageType of
     Connecting: begin
-      lblInfo1.Caption := 'Connecting';
+      TextScroll.Lines.TextScrollLine1.ScrollText := 'Connecting';
     end;
     Error: begin
-      lblInfo1.Caption := 'Idle: ' + AMessage;
+      TextScroll.Lines.TextScrollLine1.ScrollText := 'Idle: ' + AMessage;
     end;
     Progress: begin
       // Buffering progress
     end;
     StreamName: begin
-      lblInfo2.Caption := AMessage;
+      TextScroll.Lines.TextScrollLine2.ScrollText := AMessage;
     end;
     Bitrate: begin
       // bitrate
     end;
     StreamTitle: begin
       // title name, song name
-      lblInfo1.Caption := AMessage;
+      TextScroll.Lines.TextScrollLine1.ScrollText := AMessage;
     end;
     Other: begin
-      lblInfo2.Caption := AMessage;
+      TextScroll.Lines.TextScrollLine2.ScrollText := AMessage;
     end;
   end;
 end;
@@ -305,6 +341,18 @@ begin
   VstStationList.Header.SortDirection := sdAscending;
   VstStationList.Header.SortColumn := 0;
 
+end;
+
+procedure TMainForm.TextScrollMouseEnter(Sender: TObject);
+begin
+  TextScroll.Lines.TextScrollLine1.BackgroundColor := RGBToColor(0, 168, 229);
+  TextScroll.Lines.TextScrollLine2.BackgroundColor := RGBToColor(0, 168, 229);
+end;
+
+procedure TMainForm.TextScrollMouseLeave(Sender: TObject);
+begin
+  TextScroll.Lines.TextScrollLine1.BackgroundColor := RGBToColor(0, 175, 240);
+  TextScroll.Lines.TextScrollLine2.BackgroundColor := RGBToColor(0, 175, 240);
 end;
 
 procedure TMainForm.miLanguageItemClick(Sender: TObject);

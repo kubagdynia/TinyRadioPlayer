@@ -74,7 +74,7 @@
         <PackageName Value="LCL"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="16">
+    <Units Count="19">
       <Unit0>
         <Filename Value="TinyRadioPlayer.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -157,6 +157,21 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="DictionaryRepository"/>
       </Unit15>
+      <Unit16>
+        <Filename Value="ctrpcommon.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="CTRPCommon"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="ctrppersistent.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="CTRPPersistent"/>
+      </Unit17>
+      <Unit18>
+        <Filename Value="ctrptextscroll.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="CTRPTextScroll"/>
+      </Unit18>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
