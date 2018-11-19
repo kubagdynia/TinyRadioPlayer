@@ -459,7 +459,9 @@ end;
 // Triggered when double clicked
 procedure TMainForm.VstStationListDblClick(Sender: TObject);
 begin
-  // TODO: RadioPlayer.PlayStation(
+  RadioPlayer.PlayStation(
+    RadioPlayer.GetSelectedStationId(VstStationList),
+    sbVolume.Position);
 end;
 
 // Triggered when key pressed

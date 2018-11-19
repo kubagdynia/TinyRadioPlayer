@@ -41,6 +41,7 @@ type
       const GenreCode: string; const CountryCode: string;
       out StationId: integer): ErrorId;
     class function LoadStations(var VstList: TVirtualStringTree; const Text: string): ErrorId;
+    class function LoadStation(var StationInfo: TStationInfo; const StationId: integer): ErrorId;
 
     // Dictionary
     class function AddDictionary(const Name: string; const Code: string;
@@ -109,6 +110,12 @@ class function TRepository.LoadStations(var VstList: TVirtualStringTree;
   const Text: string): ErrorId;
 begin
   Result := FMainRepo.StationRepo.LoadStations(VstList, Text);
+end;
+
+class function TRepository.LoadStation(var StationInfo: TStationInfo;
+  const StationId: integer): ErrorId;
+begin
+  Result := FMainRepo.StationRepo.LoadStation(StationInfo, StationId);
 end;
 
 class function TRepository.AddDictionary(const Name: string;

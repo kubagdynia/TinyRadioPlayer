@@ -25,11 +25,20 @@ type
 type
   ErrorId = integer;
 
+{ - - - - - - - - - - - - - - - - StationInfo - - - - - - - - - - - - - - - - - }
+type
+  TStationInfo = packed record
+     Id                  : integer;
+     Name                : string;
+     StreamUrl           : string;
+     Description         : string;
+     WebpageUrl          : string;
+     GenreCode           : string;
+     CountryCode         : string;
+  end;
+
 { - - - - - - - - - - - - - - - TStationNodeData  - - - - - - - - - - - - - - - }
 type
-
-  { TStationNodeData }
-
   TStationNodeData = class
   protected
     FID      : integer;
@@ -53,8 +62,6 @@ type
   end;
 
 implementation
-
-{ TStationNodeData }
 
 constructor TStationNodeData.Create(const Id: integer; const Name, Genre,
   Country: string);

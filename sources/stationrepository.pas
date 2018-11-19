@@ -36,7 +36,7 @@ type
       const Description: string; const WebpageUrl: string;
       const GenreCode: string; const CountryCode: string;
       out StationId: integer): ErrorId;
-
+    function LoadStation(var StationInfo: TStationInfo; const StationId: integer): ErrorId;
     function LoadStations(var VstList: TVirtualStringTree; const Text: string): ErrorId;
   end;
 
@@ -120,6 +120,59 @@ begin
       begin
         LogException(EMPTY_STR, ClassName, 'AddDatabaseStation', E);
         err := ERR_DB_ADD_STATION;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TStationRepository.LoadStation(var StationInfo: TStationInfo;
+  const StationId: integer): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+begin
+  err := ERR_OK;
+
+  try
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'SELECT ' +
+        '  S.ID, S.Name, S.StreamUrl, S.Description, S.WebpageUrl, S.GenreCode, S.CountryCode ' +
+        'FROM ' + DB_TABLE_STATIONS + ' S ' +
+        'WHERE S.ID = :StationId;');
+
+      query.ParamByName('StationId').AsInteger := StationId;
+
+      query.Open;
+
+      if (not query.EOF) and (query.RecordCount = 1) then
+      begin
+        with StationInfo do
+        begin
+          Id := query.FieldByName('ID').AsInteger;
+          Name := query.FieldByName('Name').AsString;
+          StreamUrl := query.FieldByName('StreamUrl').AsString;
+          Description := query.FieldByName('Description').AsString;
+          WebpageUrl := query.FieldByName('WebpageUrl').AsString;
+          GenreCode := query.FieldByName('GenreCode').AsString;
+          CountryCode := query.FieldByName('CountryCode').AsString;
+        end;
+      end;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'LoadStation', E);
+        err := ERR_DB_LOAD_STATION;
       end;
   end;
 
