@@ -74,7 +74,7 @@
         <PackageName Value="LCL"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="19">
+    <Units Count="20">
       <Unit0>
         <Filename Value="TinyRadioPlayer.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -172,6 +172,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="CTRPTextScroll"/>
       </Unit18>
+      <Unit19>
+        <Filename Value="ctrptrackbar.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="CTRPTrackBar"/>
+      </Unit19>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

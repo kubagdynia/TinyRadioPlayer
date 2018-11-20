@@ -468,7 +468,7 @@ begin
     ColorToBGRA(Lines.TextScrollLine1.BackgroundColor), dmSet);
 
   FBmp.FontHeight := FFontSize;
-  FBmp.FontAntialias := False;
+  FBmp.FontAntialias := false;
   FBmp.FontName := 'Verdana';//'Arial';//'Verdana';
 
   // Left

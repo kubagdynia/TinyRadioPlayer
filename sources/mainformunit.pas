@@ -17,7 +17,8 @@ interface
 uses
   Classes, SysUtils, FileUtil, BCButton, BGRAFlashProgressBar, BCLabel, BCPanel,
   Forms, Controls, Graphics, Dialogs, LCLType, StdCtrls, ExtCtrls, Menus,
-  Helpers, RadioPlayer, RadioPlayerTypes, VirtualTrees, ImgList, CTRPTextScroll;
+  Helpers, RadioPlayer, RadioPlayerTypes, VirtualTrees, ImgList,
+  CTRPTextScroll, CTRPTrackBar;
 
 type
 
@@ -41,7 +42,6 @@ type
     btnPlay: TBCButton;
     edtStreamUrl: TEdit;
     pbRightLevelMeter: TBGRAFlashProgressBar;
-    sbVolume: TScrollBar;
     Timer1: TTimer;
     SearchTimer: TTimer;
     procedure btnPlayClick(Sender: TObject);
@@ -52,7 +52,6 @@ type
     procedure miExitClick(Sender: TObject);
     procedure RadioPlayerRadioPlay(Sender: TObject);
     procedure RadioPlayerRadioPlayerTags(AMessage: string; APlayerMessageType: TPlayerMessageType);
-    procedure sbVolumeChange(Sender: TObject);
     procedure SearchTimerTimer(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure miLanguageItemClick(Sender: TObject);
@@ -64,6 +63,7 @@ type
     procedure CreateVstStationList;
     procedure TextScrollMouseEnter(Sender: TObject);
     procedure TextScrollMouseLeave(Sender: TObject);
+    procedure VolumeTrackBarPositionChange(ASender: TObject; APosition: integer);
     procedure VstStationListGetNodeDataSize(Sender: TBaseVirtualTree;
       var NodeDataSize: Integer);
 
@@ -93,6 +93,7 @@ type
     VstStationList: TVirtualStringTree;
 
     TextScroll: TCTRPTextScroll;
+    VolumeTrackBar: TCTRPTrackBar
   end;
 
 var
@@ -115,6 +116,18 @@ begin
 
   CreateVstStationList;
 
+  // Create volume control
+  VolumeTrackBar := TCTRPTrackBar.Create(Self);
+  VolumeTrackBar.Parent := BottomFunctionPanel;
+  VolumeTrackBar.Width := 130;
+  VolumeTrackBar.Top := 2;
+  VolumeTrackBar.Left := VolumeTrackBar.Parent.Width - VolumeTrackBar.Width - 2;
+  VolumeTrackBar.Anchors := [akRight, akTop, akBottom];
+  VolumeTrackBar.Position := 100;
+  VolumeTrackBar.OnPositionChange := @VolumeTrackBarPositionChange;
+  VolumeTrackBar.Show;
+
+  // Create text scroll
   TextScroll := TCTRPTextScroll.Create(Self);
   TextScroll.Parent := TopInfoPanel;
 
@@ -165,7 +178,7 @@ end;
 
 procedure TMainForm.btnPlayClick(Sender: TObject);
 begin
-  RadioPlayer.PlayURL(edtStreamUrl.Text, sbVolume.Position);
+  RadioPlayer.PlayURL(edtStreamUrl.Text, VolumeTrackBar.Position);
 end;
 
 procedure TMainForm.btnStopClick(Sender: TObject);
@@ -213,12 +226,6 @@ begin
   end;
 end;
 
-procedure TMainForm.sbVolumeChange(Sender: TObject);
-begin
-  RadioPlayer.Volume(sbVolume.Position);
-  TTRPSettings.SetValue('Volume', sbVolume.Position);
-end;
-
 procedure TMainForm.SearchTimerTimer(Sender: TObject);
 begin
   SearchTimer.Enabled := False;
@@ -257,7 +264,7 @@ end;
 
 procedure TMainForm.LoadSettings;
 begin
-  sbVolume.Position := TTRPSettings.GetValue('Volume', 100);
+  VolumeTrackBar.Position := TTRPSettings.GetValue('Volume', 100);
 end;
 
 procedure TMainForm.AddLanguageItems;
@@ -353,6 +360,13 @@ procedure TMainForm.TextScrollMouseLeave(Sender: TObject);
 begin
   TextScroll.Lines.TextScrollLine1.BackgroundColor := RGBToColor(0, 175, 240);
   TextScroll.Lines.TextScrollLine2.BackgroundColor := RGBToColor(0, 175, 240);
+end;
+
+procedure TMainForm.VolumeTrackBarPositionChange(ASender: TObject;
+  APosition: integer);
+begin
+  RadioPlayer.Volume(VolumeTrackBar.Position);
+  TTRPSettings.SetValue('Volume', VolumeTrackBar.Position);
 end;
 
 procedure TMainForm.miLanguageItemClick(Sender: TObject);
@@ -509,7 +523,7 @@ procedure TMainForm.VstStationListDblClick(Sender: TObject);
 begin
   RadioPlayer.PlayStation(
     RadioPlayer.GetSelectedStationId(VstStationList),
-    sbVolume.Position);
+    VolumeTrackBar.Position);
 end;
 
 // Triggered when key pressed

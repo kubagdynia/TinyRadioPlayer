@@ -390,17 +390,6 @@ object MainForm: TMainForm
     Rounding.RoundY = 1
     Rounding.RoundOptions = [rrTopLeftSquare, rrTopRightSquare, rrBottomRightSquare, rrBottomLeftSquare]
     TabOrder = 0
-    object sbVolume: TScrollBar
-      Left = 336
-      Height = 17
-      Top = 10
-      Width = 121
-      Anchors = [akTop, akRight]
-      PageSize = 0
-      Position = 50
-      TabOrder = 0
-      OnChange = sbVolumeChange
-    end
     object btnStop: TBCButton
       Left = 232
       Height = 25
