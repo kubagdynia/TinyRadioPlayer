@@ -18,19 +18,24 @@ uses
   Classes, SysUtils, FileUtil, BCButton, BGRAFlashProgressBar, BCLabel, BCPanel,
   Forms, Controls, Graphics, Dialogs, LCLType, StdCtrls, ExtCtrls, Menus,
   Helpers, RadioPlayer, RadioPlayerTypes, VirtualTrees, ImgList,
-  CTRPTextScroll, CTRPTrackBar;
+  CTRPTextScroll, CTRPTrackBar, zipper;
 
 type
 
   { TMainForm }
 
   TMainForm = class(TForm)
+    btnRec: TBCButton;
+    btnPrev: TBCButton;
+    btnNext: TBCButton;
+    btnOpen: TBCButton;
+    btnStop: TBCButton;
+    btnPause: TBCButton;
     MainPanel: TBCPanel;
     PeakmeterPanel: TBCPanel;
     SearchPanel: TBCPanel;
     BottomFunctionPanel: TBCPanel;
     TopInfoPanel: TBCPanel;
-    btnStop: TBCButton;
     edtSearch: TEdit;
     MainMenu1: TMainMenu;
     miLanguage: TMenuItem;
@@ -44,12 +49,14 @@ type
     pbRightLevelMeter: TBGRAFlashProgressBar;
     Timer1: TTimer;
     SearchTimer: TTimer;
+    procedure BottomFunctionPanelResize(Sender: TObject);
     procedure btnPlayClick(Sender: TObject);
     procedure btnStopClick(Sender: TObject);
     procedure edtSearchChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure miExitClick(Sender: TObject);
+    procedure PeakmeterPanelResize(Sender: TObject);
     procedure RadioPlayerRadioPlay(Sender: TObject);
     procedure RadioPlayerRadioPlayerTags(AMessage: string; APlayerMessageType: TPlayerMessageType);
     procedure SearchTimerTimer(Sender: TObject);
@@ -58,6 +65,7 @@ type
   private
     procedure LoadLoanguages;
     procedure LoadSettings;
+    procedure LoadSkin;
     procedure AddLanguageItems;
     procedure OnLanguageChange(Sender: TObject);
     procedure CreateVstStationList;
@@ -87,6 +95,10 @@ type
     procedure VstStationListKeyPress(Sender: TObject; var Key: char);
     procedure VstStationListFocusChanged(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Column: TColumnIndex);
+    procedure ZipFileCreateStream(Sender: TObject; var AStream: TStream;
+      AItem: TFullZipFileEntry);
+    procedure ZipFileDoneStream(Sender: TObject; var AStream: TStream;
+      AItem: TFullZipFileEntry);
   public
     RadioPlayer: TRadioPlayer;
 
@@ -156,12 +168,22 @@ begin
   //TextScroll.PopupMenu := pmRedTextScroll;
 
   LoadSettings;
+  LoadSkin;
   LoadLoanguages;
   AddLanguageItems;
 
   TLanguage.RegisterLanguageChangeEvent(@OnLanguageChange);
 
   TRepository.LoadStations(VstStationList, edtSearch.Text);
+
+  // Calculating position of function buttons and volume
+  btnPrev.Tag := (BottomFunctionPanel.Width div 2) - btnPrev.Left;
+  btnPlay.Tag := (BottomFunctionPanel.Width div 2) - btnPlay.Left;
+  btnPause.Tag := (BottomFunctionPanel.Width div 2) - btnPause.Left;
+  btnStop.Tag := (BottomFunctionPanel.Width div 2) - btnStop.Left;
+  btnNext.Tag := (BottomFunctionPanel.Width div 2) - btnNext.Left;
+  btnRec.Tag := (BottomFunctionPanel.Width div 2) - btnRec.Left;
+  btnOpen.Tag := (BottomFunctionPanel.Width div 2) - btnOpen.Left;
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
@@ -176,20 +198,54 @@ begin
   Close;
 end;
 
-procedure TMainForm.btnPlayClick(Sender: TObject);
+procedure TMainForm.PeakmeterPanelResize(Sender: TObject);
+var
+  panelCenter: integer;
 begin
-  RadioPlayer.PlayURL(edtStreamUrl.Text, VolumeTrackBar.Position);
-end;
+  panelCenter := PeakmeterPanel.Width div 2;
 
-procedure TMainForm.btnStopClick(Sender: TObject);
-begin
-  RadioPlayer.Stop();
+  pbLeftLevelMeter.Width := panelCenter - 2;
+  pbRightLevelMeter.Left := panelCenter + 2;
+  pbRightLevelMeter.Width := panelCenter - 2;
+
 end;
 
 procedure TMainForm.edtSearchChange(Sender: TObject);
 begin
   SearchTimer.Enabled := False;
   SearchTimer.Enabled := True;
+end;
+
+procedure TMainForm.BottomFunctionPanelResize(Sender: TObject);
+var
+  panelCenter: integer;
+begin
+  panelCenter := BottomFunctionPanel.Width div 2;
+
+  btnPrev.Left := panelCenter - btnPrev.Tag;
+  btnPrev.Tag := panelCenter - btnPrev.Left;
+  btnPlay.Left := panelCenter - btnPlay.Tag;
+  btnPlay.Tag := panelCenter - btnPlay.Left;
+  btnPause.Left := panelCenter - btnPause.Tag;
+  btnPause.Tag := panelCenter - btnPause.Left;
+  btnStop.Left := panelCenter - btnStop.Tag;
+  btnStop.Tag := panelCenter - btnStop.Left;
+  btnNext.Left := panelCenter - btnNext.Tag;
+  btnNext.Tag := panelCenter - btnNext.Left;
+  btnRec.Left := panelCenter - btnRec.Tag;
+  btnRec.Tag := panelCenter - btnRec.Left;
+  btnOpen.Left := panelCenter - btnOpen.Tag;
+  btnOpen.Tag := panelCenter - btnOpen.Left;
+end;
+
+procedure TMainForm.btnPlayClick(Sender: TObject);
+begin
+  RadioPlayer.PlayURL(edtStreamUrl.Caption, VolumeTrackBar.Position);
+end;
+
+procedure TMainForm.btnStopClick(Sender: TObject);
+begin
+  RadioPlayer.Stop();
 end;
 
 procedure TMainForm.RadioPlayerRadioPlay(Sender: TObject);
@@ -253,9 +309,6 @@ end;
 
 procedure TMainForm.LoadLoanguages;
 begin
-  btnPlay.Caption := GetLanguageItem('Test.Button.Play', 'Play');
-  btnStop.Caption := GetLanguageItem('Test.Button.Stop', 'Stop');
-
   miFile.Caption := GetLanguageItem('MainMenu.File', 'File');
   miExit.Caption := GetLanguageItem('MainMenu.File.Exit', 'Exit');
   miSettings.Caption := GetLanguageItem('MainMenu.Settings', 'Settings');
@@ -265,6 +318,41 @@ end;
 procedure TMainForm.LoadSettings;
 begin
   VolumeTrackBar.Position := TTRPSettings.GetValue('Volume', 100);
+end;
+
+procedure TMainForm.LoadSkin;
+var
+  zipFile: TUnZipper;
+  items: TStringList;
+begin
+  items := TStringList.Create;
+  try
+    // Search icon
+    items.Add('icoSearch.png');
+
+    // Bottom function panel
+    items.Add('btnPlay.png');
+    items.Add('btnPause.png');
+    items.Add('btnPrev.png');
+    items.Add('btnStop.png');
+    items.Add('btnNext.png');
+    items.Add('btnRec.png');
+    items.Add('btnOpen.png');
+
+    zipFile := TUnZipper.Create;
+    try
+      zipFile.FileName := GetSkinPath;
+      zipFile.OnCreateStream := @ZipFileCreateStream;
+      zipFile.OnDoneStream := @ZipFileDoneStream;
+      zipFile.UnZipFiles(items);
+    finally
+      FreeAndNil(zipFile);
+    end;
+
+  finally
+    FreeAndNil(items);
+  end;
+
 end;
 
 procedure TMainForm.AddLanguageItems;
@@ -547,6 +635,47 @@ begin
     if NewNode <> nil then
       NodeHeight[NewNode] := round(DefaultNodeHeight * 1.1);
   end;}
+end;
+
+procedure TMainForm.ZipFileCreateStream(Sender: TObject; var AStream: TStream;
+  AItem: TFullZipFileEntry);
+begin
+  AStream := TMemoryStream.Create;
+end;
+
+procedure TMainForm.ZipFileDoneStream(Sender: TObject; var AStream: TStream;
+  AItem: TFullZipFileEntry);
+var
+  picture: TPicture;
+begin
+  AStream.Position := 0;
+
+  // Using TPicture to avoid black background instead of transparent
+  picture := TPicture.Create;
+  try
+    picture.LoadFromStream(AStream);
+
+    case StringToCaseSelect(AItem.DiskFileName,
+          ['icoStations.png','icoFavorites.png','icoRecords.png',
+          'icoScheduled.png', 'icoEqualizer.png', 'icoOptions.png',
+          'icoHistory.png', 'icoSearch.png', 'icoPlayStation.png', 'btnAdd.png',
+          'btnEdit.png', 'btnDelete.png', 'btnPlay.png', 'btnPause.png',
+          'btnPrev.png', 'btnStop.png', 'btnNext.png', 'btnRec.png',
+          'btnOpen.png']) of
+       12: btnPlay.Glyph.Assign(picture.Bitmap);
+       13: btnPause.Glyph.Assign(picture.Bitmap);
+       14: btnPrev.Glyph.Assign(picture.Bitmap);
+       15: btnStop.Glyph.Assign(picture.Bitmap);
+       16: btnNext.Glyph.Assign(picture.Bitmap);
+       17: btnRec.Glyph.Assign(picture.Bitmap);
+       18: btnOpen.Glyph.Assign(picture.Bitmap);
+    end;
+
+  finally
+    picture.Free;
+  end;
+
+  Astream.Free;
 end;
 
 // Triggered when access to a node's data happens the first time but the actual

@@ -37,6 +37,7 @@ var
     const Proportion1, Proportion2: integer): TColor;
 
   procedure Split(const Delimiter: char; const Input: string; const Strings: TStrings);
+  function StringToCaseSelect(Selector: string; CaseList: array of string): Integer;
 
   function CreateMultipleStatements(
       const BasicStatement: string;
@@ -45,6 +46,8 @@ var
       const Delimimiter: string;
       const OpenBracket: string = '(';
       const EndBracket: string = ')'): string;
+
+  function GetSkinPath: string;
 
 implementation
 
@@ -58,7 +61,6 @@ begin
     ApplicationPath := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0)));
 
   Result := ApplicationPath;
-
 end;
 
 // Inline if
@@ -122,6 +124,20 @@ begin
   Strings.DelimitedText := Input;
 end;
 
+function StringToCaseSelect(Selector: string; CaseList: array of string): Integer;
+var
+  cnt: integer;
+begin
+  Result := -1;
+  for cnt := 0 to Length(CaseList)-1 do
+  begin
+    if CompareText(Selector, CaseList[cnt]) = 0 then
+    begin
+      Result := cnt;
+      Break;
+    end;
+  end;
+end;
 
 // Create multiple statements e.g. for sql where section
 function CreateMultipleStatements(const BasicStatement: string;
@@ -137,6 +153,11 @@ begin
   for i := StartFrom to endOn do
     Result := Result + OpenBracket + Format(BasicStatement, [i]) + EndBracket
                      + IIF(i <> endOn, Delimimiter, EndBracket);
+end;
+
+function GetSkinPath: string;
+begin
+  Result := ConcatPaths([GetApplicationPath, SKINS_PATH, DEFAULT_SKIN]);
 end;
 
 end.

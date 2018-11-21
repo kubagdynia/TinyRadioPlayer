@@ -27,10 +27,12 @@ const
   LIB_PATH = 'data\lib\';
   LANGUAGE_PATH = 'data\lang\';
   DB_PATH = 'data\db\';
+  SKINS_PATH = 'data\skins\';
   {$ELSE}
   LIB_PATH = 'data/lib/';
   LANGUAGE_PATH = 'data/lang/';
   DB_PATH = 'data/db/';
+  SKINS_PATH = 'data/skins/';
   {$ENDIF}
 
   LOG_NAME = 'Application.log';
@@ -43,6 +45,9 @@ const
   LANGUAGE_FILE_PATTERN     = LANGUAGE_FILE_PREFIX + '*' + LANGUAGE_FILE_EXTENSION;
   DEFAULT_LANGUAGE          = 'en';
   USE_OS_LANGUAGE_INSTEAD_DEFAULT = true;
+
+{ - - - - - - - - - - - - - - - - - - Skins - - - - - - - - - - - - - - - - - - }
+  DEFAULT_SKIN              = 'skin.zip';
 
 { - - - - - - - - - - - - - - - - - Database - - - - - - - - - - - - - - - - - }
   DB_TABLE_STATIONS         = 'Stations';
