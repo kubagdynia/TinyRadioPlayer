@@ -25,6 +25,10 @@ type
 type
   ErrorId = integer;
 
+{ - - - - - - - - - - - - - - - - - - Forms - - - - - - - - - - - - - - - - - -}
+type
+  TOpenMode = (omNew, omEdit, omDelete, omNormal);
+
 { - - - - - - - - - - - - - - - - StationInfo - - - - - - - - - - - - - - - - - }
 type
   TStationInfo = packed record

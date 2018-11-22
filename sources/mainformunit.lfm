@@ -86,20 +86,12 @@ object MainForm: TMainForm
       Rounding.RoundOptions = []
       TabOrder = 0
       object edtSearch: TEdit
-        Left = 264
+        Left = 272
         Height = 23
         Top = 8
         Width = 192
         OnChange = edtSearchChange
         TabOrder = 0
-      end
-      object edtStreamUrl: TEdit
-        Left = 8
-        Height = 23
-        Top = 8
-        Width = 248
-        TabOrder = 1
-        Text = 'http://78.46.246.97:9022'
       end
     end
     object PeakmeterPanel: TBCPanel
@@ -1553,6 +1545,7 @@ object MainForm: TMainForm
       DropDownArrowSize = 8
       GlobalOpacity = 255
       InnerMargin = 0
+      OnClick = btnOpenClick
       ParentColor = False
       Rounding.RoundX = 1
       Rounding.RoundY = 1
@@ -1594,5 +1587,14 @@ object MainForm: TMainForm
     OnTimer = SearchTimerTimer
     left = 408
     top = 304
+  end
+  object MainActionList: TActionList
+    left = 340
+    top = 116
+    object OpenUrlAction: TAction
+      Caption = 'Open URL...'
+      OnExecute = OpenUrlActionExecute
+      ShortCut = 16463
+    end
   end
 end

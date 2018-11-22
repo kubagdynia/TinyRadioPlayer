@@ -66,6 +66,11 @@ const
 GridLineColor: TColor = (250 or (250 shl 8) or (250 shl 16)); // RGB(250, 250, 250);
 GridLineColorCurrentlyPlaying: TColor = (199 or (237 shl 8) or (252 shl 16)); // RGB(255, 187, 187);
 
+{ - - - - - - - - - - - - - - - - - - Colors - - - - - - - - - - - - - - - - - }
+ColorBlue: TColor = (220 or (234 shl 8) or (248 shl 16));
+ColorGreen: TColor = (220 or (245 shl 8) or (193 shl 16));
+ColorRed: TColor = (249 or (226 shl 8) or (225 shl 16));
+
 implementation
 
 end.

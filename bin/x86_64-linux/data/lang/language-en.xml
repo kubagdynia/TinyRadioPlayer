@@ -25,6 +25,10 @@
 		<!-- Test -->
 		<Item name="Test.Button.Play" type="string">Play</Item>
 		<Item name="Test.Button.Stop" type="string">Stop</Item>
+		
+		<!-- Open URL -->
+		<Item name="OpenURL.Name" type="string">Open URL</Item>
+		<Item name="OpenURL.Title" type="string">Enter the URL to open:</Item>
 
 	</Items>
 </Resource>

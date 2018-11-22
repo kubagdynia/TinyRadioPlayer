@@ -74,7 +74,7 @@
         <PackageName Value="LCL"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="20">
+    <Units Count="22">
       <Unit0>
         <Filename Value="TinyRadioPlayer.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -177,6 +177,22 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="CTRPTrackBar"/>
       </Unit19>
+      <Unit20>
+        <Filename Value="baseformunit.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="BaseForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="BaseFormUnit"/>
+      </Unit20>
+      <Unit21>
+        <Filename Value="openstationurlformunit.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="OpenStationUrlForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="OpenStationUrlFormUnit"/>
+      </Unit21>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

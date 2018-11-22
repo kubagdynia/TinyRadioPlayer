@@ -17,14 +17,16 @@ interface
 uses
   Classes, SysUtils, FileUtil, BCButton, BGRAFlashProgressBar, BCLabel, BCPanel,
   Forms, Controls, Graphics, Dialogs, LCLType, StdCtrls, ExtCtrls, Menus,
-  Helpers, RadioPlayer, RadioPlayerTypes, VirtualTrees, ImgList,
-  CTRPTextScroll, CTRPTrackBar, zipper;
+  Helpers, RadioPlayer, RadioPlayerTypes, VirtualTrees, ImgList, ActnList,
+  CTRPTextScroll, CTRPTrackBar, zipper, OpenStationUrlFormUnit;
 
 type
 
   { TMainForm }
 
   TMainForm = class(TForm)
+    OpenUrlAction: TAction;
+    MainActionList: TActionList;
     btnRec: TBCButton;
     btnPrev: TBCButton;
     btnNext: TBCButton;
@@ -45,17 +47,18 @@ type
     StationListPanel: TPanel;
     pbLeftLevelMeter: TBGRAFlashProgressBar;
     btnPlay: TBCButton;
-    edtStreamUrl: TEdit;
     pbRightLevelMeter: TBGRAFlashProgressBar;
     Timer1: TTimer;
     SearchTimer: TTimer;
     procedure BottomFunctionPanelResize(Sender: TObject);
+    procedure btnOpenClick(Sender: TObject);
     procedure btnPlayClick(Sender: TObject);
     procedure btnStopClick(Sender: TObject);
     procedure edtSearchChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure miExitClick(Sender: TObject);
+    procedure OpenUrlActionExecute(Sender: TObject);
     procedure PeakmeterPanelResize(Sender: TObject);
     procedure RadioPlayerRadioPlay(Sender: TObject);
     procedure RadioPlayerRadioPlayerTags(AMessage: string; APlayerMessageType: TPlayerMessageType);
@@ -198,6 +201,22 @@ begin
   Close;
 end;
 
+procedure TMainForm.OpenUrlActionExecute(Sender: TObject);
+begin
+  if not Assigned(OpenStationUrlForm) then
+  begin
+    OpenStationUrlForm := TOpenStationUrlForm.Create(Self);
+    try
+     if OpenStationUrlForm.ShowModal = mrOK then
+     begin
+       RadioPlayer.PlayURL(OpenStationUrlForm.Url, VolumeTrackBar.Position);
+     end;
+    finally
+      FreeAndNil(OpenStationUrlForm);
+    end;
+  end;
+end;
+
 procedure TMainForm.PeakmeterPanelResize(Sender: TObject);
 var
   panelCenter: integer;
@@ -238,9 +257,14 @@ begin
   btnOpen.Tag := panelCenter - btnOpen.Left;
 end;
 
+procedure TMainForm.btnOpenClick(Sender: TObject);
+begin
+  OpenUrlActionExecute(Self);
+end;
+
 procedure TMainForm.btnPlayClick(Sender: TObject);
 begin
-  RadioPlayer.PlayURL(edtStreamUrl.Caption, VolumeTrackBar.Position);
+  //RadioPlayer.PlayURL(edtStreamUrl.Caption, VolumeTrackBar.Position);
 end;
 
 procedure TMainForm.btnStopClick(Sender: TObject);
