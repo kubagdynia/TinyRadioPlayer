@@ -49,6 +49,8 @@ var
 
   function GetSkinPath: string;
 
+  function StrToColor(const rgbColor: string): TColor;
+
 implementation
 
 uses
@@ -157,7 +159,25 @@ end;
 
 function GetSkinPath: string;
 begin
-  Result := ConcatPaths([GetApplicationPath, SKINS_PATH, DEFAULT_SKIN]);
+  Result := ConcatPaths([GetApplicationPath, SKINS_PATH, DEFAULT_SKIN + SKIN_FILE_EXTENSION]);
+end;
+
+function StrToColor(const rgbColor: string): TColor;
+var
+  rgbList: TStringList;
+begin
+  if rgbColor = EMPTY_STR then
+    Result := ColorBlack
+  else
+  begin
+    rgbList := TStringList.Create;
+    try
+      Split(',', rgbColor, rgbList);
+      Result := RGBToColor(StrToInt(rgbList[0]), StrToInt(rgbList[1]), StrToInt(rgbList[2]));
+    finally
+      rgbList.Free;
+    end;
+  end;
 end;
 
 end.

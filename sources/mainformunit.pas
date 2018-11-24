@@ -18,13 +18,14 @@ uses
   Classes, SysUtils, FileUtil, BCButton, BGRAFlashProgressBar, BCLabel, BCPanel,
   Forms, Controls, Graphics, Dialogs, LCLType, StdCtrls, ExtCtrls, Menus,
   Helpers, RadioPlayer, RadioPlayerTypes, VirtualTrees, ImgList, ActnList,
-  CTRPTextScroll, CTRPTrackBar, zipper, OpenStationUrlFormUnit;
+  CTRPTextScroll, CTRPTrackBar, zipper, OpenStationUrlFormUnit, Skins;
 
 type
 
   { TMainForm }
 
   TMainForm = class(TForm)
+    miSkins: TMenuItem;
     OpenUrlAction: TAction;
     MainActionList: TActionList;
     btnRec: TBCButton;
@@ -64,16 +65,22 @@ type
     procedure RadioPlayerRadioPlayerTags(AMessage: string; APlayerMessageType: TPlayerMessageType);
     procedure SearchTimerTimer(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
-    procedure miLanguageItemClick(Sender: TObject);
   private
     procedure LoadLoanguages;
     procedure LoadSettings;
     procedure LoadSkin;
     procedure AddLanguageItems;
+    procedure AddSkinItems;
     procedure OnLanguageChange(Sender: TObject);
     procedure CreateVstStationList;
+    procedure miLanguageItemClick(Sender: TObject);
+    procedure miSkinsItemClick(Sender: TObject);
     procedure TextScrollMouseEnter(Sender: TObject);
     procedure TextScrollMouseLeave(Sender: TObject);
+    procedure SkinDoneStream(Sender: TObject; var AStream: TStream;
+      AItem: TFullZipFileEntry);
+    procedure SkinLoaded(Sender: TObject;
+      var ASkinData: TSkinData);
     procedure VolumeTrackBarPositionChange(ASender: TObject; APosition: integer);
     procedure VstStationListGetNodeDataSize(Sender: TBaseVirtualTree;
       var NodeDataSize: Integer);
@@ -98,10 +105,6 @@ type
     procedure VstStationListKeyPress(Sender: TObject; var Key: char);
     procedure VstStationListFocusChanged(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Column: TColumnIndex);
-    procedure ZipFileCreateStream(Sender: TObject; var AStream: TStream;
-      AItem: TFullZipFileEntry);
-    procedure ZipFileDoneStream(Sender: TObject; var AStream: TStream;
-      AItem: TFullZipFileEntry);
   public
     RadioPlayer: TRadioPlayer;
 
@@ -174,6 +177,7 @@ begin
   LoadSkin;
   LoadLoanguages;
   AddLanguageItems;
+  AddSkinItems;
 
   TLanguage.RegisterLanguageChangeEvent(@OnLanguageChange);
 
@@ -337,6 +341,7 @@ begin
   miExit.Caption := GetLanguageItem('MainMenu.File.Exit', 'Exit');
   miSettings.Caption := GetLanguageItem('MainMenu.Settings', 'Settings');
   miLanguage.Caption := GetLanguageItem('MainMenu.Settings.Language', 'Language');
+  miSkins.Caption := GetLanguageItem('MainMenu.Settings.Skins', 'Skins');
 end;
 
 procedure TMainForm.LoadSettings;
@@ -345,38 +350,10 @@ begin
 end;
 
 procedure TMainForm.LoadSkin;
-var
-  zipFile: TUnZipper;
-  items: TStringList;
 begin
-  items := TStringList.Create;
-  try
-    // Search icon
-    items.Add('icoSearch.png');
-
-    // Bottom function panel
-    items.Add('btnPlay.png');
-    items.Add('btnPause.png');
-    items.Add('btnPrev.png');
-    items.Add('btnStop.png');
-    items.Add('btnNext.png');
-    items.Add('btnRec.png');
-    items.Add('btnOpen.png');
-
-    zipFile := TUnZipper.Create;
-    try
-      zipFile.FileName := GetSkinPath;
-      zipFile.OnCreateStream := @ZipFileCreateStream;
-      zipFile.OnDoneStream := @ZipFileDoneStream;
-      zipFile.UnZipFiles(items);
-    finally
-      FreeAndNil(zipFile);
-    end;
-
-  finally
-    FreeAndNil(items);
-  end;
-
+  TSkins.OnSkinDoneStream := @SkinDoneStream;
+  TSkins.OnSkinLoaded := @SkinLoaded;
+  TSkins.LoadSkin();
 end;
 
 procedure TMainForm.AddLanguageItems;
@@ -392,6 +369,22 @@ begin
     subItem.OnClick := @miLanguageItemClick;
     subItem.Checked := TLanguage.CurrentLangName = TLanguage.LanguageFiles[i];
     miLanguage.Add(subItem);
+  end;
+end;
+
+procedure TMainForm.AddSkinItems;
+var
+  i: integer;
+  subItem: TMenuItem;
+begin
+  for i := 0 to Pred(TSkins.SkinFiles.Count) do
+  begin
+    subItem := TMenuItem.Create(miSkins);
+    subItem.Caption := TSkins.SkinFiles[i];
+    subItem.Tag := i;
+    subItem.OnClick:= @miSkinsItemClick;
+    subItem.Checked := TSkins.CurrentSkinName = TSkins.SkinFiles[i];
+    miSkins.Add(subItem);
   end;
 end;
 
@@ -494,6 +487,22 @@ begin
       mi.Parent.Items[i].Checked := mi.Parent.Items[i] = mi;
 
     TLanguage.ChangeLanguage(mi.Caption);
+  end;
+end;
+
+procedure TMainForm.miSkinsItemClick(Sender: TObject);
+var
+  i: integer;
+  mi : TMenuItem;
+begin
+  if Sender is TMenuItem then
+  begin
+    // mark the selected item and deselect all others
+    mi := TMenuItem(Sender);
+    for i := 0 to Pred(mi.Parent.Count) do
+      mi.Parent.Items[i].Checked := mi.Parent.Items[i] = mi;
+
+    TSkins.ChangeSkin(mi.Caption);
   end;
 end;
 
@@ -661,19 +670,11 @@ begin
   end;}
 end;
 
-procedure TMainForm.ZipFileCreateStream(Sender: TObject; var AStream: TStream;
-  AItem: TFullZipFileEntry);
-begin
-  AStream := TMemoryStream.Create;
-end;
-
-procedure TMainForm.ZipFileDoneStream(Sender: TObject; var AStream: TStream;
+procedure TMainForm.SkinDoneStream(Sender: TObject; var AStream: TStream;
   AItem: TFullZipFileEntry);
 var
   picture: TPicture;
 begin
-  AStream.Position := 0;
-
   // Using TPicture to avoid black background instead of transparent
   picture := TPicture.Create;
   try
@@ -698,8 +699,15 @@ begin
   finally
     picture.Free;
   end;
+end;
 
-  Astream.Free;
+procedure TMainForm.SkinLoaded(Sender: TObject; var ASkinData: TSkinData);
+begin
+  VolumeTrackBar.Track.TrackBackground.BackgroundColor :=
+    ASkinData.GetColorItem('VolumeTrackBar.Track.TrackBackground.BackgroundColor');
+
+  VolumeTrackBar.Thumb.ThumbFontColor :=
+    ASkinData.GetColorItem('VolumeTrackBar.Thumb.ThumbFontColor');
 end;
 
 // Triggered when access to a node's data happens the first time but the actual

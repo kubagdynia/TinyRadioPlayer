@@ -47,7 +47,9 @@ const
   USE_OS_LANGUAGE_INSTEAD_DEFAULT = true;
 
 { - - - - - - - - - - - - - - - - - - Skins - - - - - - - - - - - - - - - - - - }
-  DEFAULT_SKIN              = 'skin.zip';
+  SKIN_FILE_EXTENSION       = '.zip';
+  DEFAULT_SKIN              = 'skin';
+  SKIN_FILE_PATTERN         = '*' + SKIN_FILE_EXTENSION;
 
 { - - - - - - - - - - - - - - - - - Database - - - - - - - - - - - - - - - - - }
   DB_TABLE_STATIONS         = 'Stations';
@@ -70,6 +72,7 @@ GridLineColorCurrentlyPlaying: TColor = (199 or (237 shl 8) or (252 shl 16)); //
 ColorBlue: TColor = (220 or (234 shl 8) or (248 shl 16));
 ColorGreen: TColor = (220 or (245 shl 8) or (193 shl 16));
 ColorRed: TColor = (249 or (226 shl 8) or (225 shl 16));
+ColorBlack: TColor = (0 or (0 shl 8) or (0 shl 16));
 
 implementation
 

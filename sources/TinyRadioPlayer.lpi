@@ -74,7 +74,7 @@
         <PackageName Value="LCL"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="22">
+    <Units Count="23">
       <Unit0>
         <Filename Value="TinyRadioPlayer.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -193,6 +193,11 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="OpenStationUrlFormUnit"/>
       </Unit21>
+      <Unit22>
+        <Filename Value="skins.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Skins"/>
+      </Unit22>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

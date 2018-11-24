@@ -1579,6 +1579,9 @@ object MainForm: TMainForm
       object miLanguage: TMenuItem
         Caption = 'Language'
       end
+      object miSkins: TMenuItem
+        Caption = 'Skins'
+      end
     end
   end
   object SearchTimer: TTimer

@@ -21,6 +21,7 @@
 		<Item name="MainMenu.File.Exit" type="string">Exit</Item>
 		<Item name="MainMenu.Settings" type="string">Settings</Item>
 		<Item name="MainMenu.Settings.Language" type="string">Language</Item>
+		<Item name="MainMenu.Settings.Skins" type="string">Skins</Item>
 		
 		<!-- Test -->
 		<Item name="Test.Button.Play" type="string">Play</Item>
