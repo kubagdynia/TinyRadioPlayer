@@ -25,6 +25,7 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    btnSearch: TBCButton;
     miSkins: TMenuItem;
     OpenUrlAction: TAction;
     MainActionList: TActionList;
@@ -140,10 +141,12 @@ begin
   VolumeTrackBar.Width := 130;
   VolumeTrackBar.Top := 2;
   VolumeTrackBar.Left := VolumeTrackBar.Parent.Width - VolumeTrackBar.Width - 2;
-  VolumeTrackBar.Anchors := [akRight, akTop, akBottom];
+  //VolumeTrackBar.Anchors := [akRight, akBottom];
+  VolumeTrackBar.Anchors := [akBottom];
   VolumeTrackBar.Position := 100;
   VolumeTrackBar.OnPositionChange := @VolumeTrackBarPositionChange;
   VolumeTrackBar.Show;
+  VolumeTrackBar.Tag := VolumeTrackBar.Width;
 
   // Create text scroll
   TextScroll := TCTRPTextScroll.Create(Self);
@@ -242,23 +245,48 @@ end;
 procedure TMainForm.BottomFunctionPanelResize(Sender: TObject);
 var
   panelCenter: integer;
+  buttonCount: byte;
+  buttonWidth: byte;
+  buttonSpace: byte;
+  button7: integer;
 begin
+  buttonCount := 7;
+  buttonWidth := 23;
+  buttonSpace := 2;
+
   panelCenter := BottomFunctionPanel.Width div 2;
 
-  btnPrev.Left := panelCenter - btnPrev.Tag;
-  btnPrev.Tag := panelCenter - btnPrev.Left;
-  btnPlay.Left := panelCenter - btnPlay.Tag;
-  btnPlay.Tag := panelCenter - btnPlay.Left;
-  btnPause.Left := panelCenter - btnPause.Tag;
-  btnPause.Tag := panelCenter - btnPause.Left;
-  btnStop.Left := panelCenter - btnStop.Tag;
-  btnStop.Tag := panelCenter - btnStop.Left;
-  btnNext.Left := panelCenter - btnNext.Tag;
-  btnNext.Tag := panelCenter - btnNext.Left;
-  btnRec.Left := panelCenter - btnRec.Tag;
-  btnRec.Tag := panelCenter - btnRec.Left;
-  btnOpen.Left := panelCenter - btnOpen.Tag;
-  btnOpen.Tag := panelCenter - btnOpen.Left;
+  button7 := round( panelCenter + (buttonWidth * (buttonCount / 2) + ((buttonCount / 2) * buttonSpace)  ) );
+
+  if (VolumeTrackBar.Left - 5 < button7) then
+    button7 := VolumeTrackBar.Left - 5;
+
+  if button7 <  buttonCount * buttonWidth + ((buttonCount - 1) * buttonSpace) then
+   button7 := buttonCount * buttonWidth + ((buttonCount - 1) * buttonSpace);
+
+  VolumeTrackBar.Left := BottomFunctionPanel.Width - VolumeTrackBar.Width - 3;
+
+  if (VolumeTrackBar.Left < button7) or ((VolumeTrackBar.Left > button7) and (VolumeTrackBar.Width < VolumeTrackBar.Tag))  then
+  begin
+    VolumeTrackBar.Left := button7;
+    VolumeTrackBar.Width := BottomFunctionPanel.Width - button7 - 3;
+  end else
+    VolumeTrackBar.Width := VolumeTrackBar.Tag;
+
+  if VolumeTrackBar.Width > VolumeTrackBar.Tag then
+  begin
+    VolumeTrackBar.Width := VolumeTrackBar.Tag;
+    VolumeTrackBar.Left := BottomFunctionPanel.Width - VolumeTrackBar.Width - 3;
+  end;
+
+  btnPrev.Left := button7 - (7 * buttonWidth) - (6 * buttonSpace);
+  btnPlay.Left := button7 - (6 * buttonWidth) - (5 * buttonSpace);
+  btnPause.Left := button7 - (5 * buttonWidth) - (4 * buttonSpace);
+  btnStop.Left := button7 - (4 * buttonWidth) - (3 * buttonSpace);
+  btnNext.Left := button7 - (3 * buttonWidth) - (2 * buttonSpace);
+  btnRec.Left := button7 - (2 * buttonWidth) - buttonSpace;
+  btnOpen.Left := button7 - buttonWidth;
+
 end;
 
 procedure TMainForm.btnOpenClick(Sender: TObject);
@@ -687,6 +715,7 @@ begin
           'btnEdit.png', 'btnDelete.png', 'btnPlay.png', 'btnPause.png',
           'btnPrev.png', 'btnStop.png', 'btnNext.png', 'btnRec.png',
           'btnOpen.png']) of
+       7: btnSearch.Glyph.Assign(picture.Bitmap);
        12: btnPlay.Glyph.Assign(picture.Bitmap);
        13: btnPause.Glyph.Assign(picture.Bitmap);
        14: btnPrev.Glyph.Assign(picture.Bitmap);
