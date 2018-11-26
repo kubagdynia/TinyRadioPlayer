@@ -1772,4 +1772,37 @@ object MainForm: TMainForm
       ShortCut = 16463
     end
   end
+  object PopupMenuStationList: TPopupMenu
+    left = 330
+    top = 192
+    object miShowStationName: TMenuItem
+      Caption = 'Show Station Name'
+      Checked = True
+      OnClick = miShowVstColumnClick
+    end
+    object miShowGenre: TMenuItem
+      Tag = 1
+      Caption = 'Show Genre'
+      Checked = True
+      OnClick = miShowVstColumnClick
+    end
+    object miShowCountry: TMenuItem
+      Tag = 2
+      Caption = 'Show Country'
+      Checked = True
+      OnClick = miShowVstColumnClick
+    end
+    object miSpaceLine: TMenuItem
+      Caption = '-'
+    end
+    object miAddStation: TMenuItem
+      Caption = 'Add Station'
+    end
+    object miEditStation: TMenuItem
+      Caption = 'Edit Station'
+    end
+    object miDeleteStation: TMenuItem
+      Caption = 'Delete Station'
+    end
+  end
 end

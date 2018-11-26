@@ -176,6 +176,11 @@ begin
     items.Add('btnRec.png');
     items.Add('btnOpen.png');
 
+    // Station List Popup Menu
+    items.Add('btnAdd.png');
+    items.Add('btnEdit.png');
+    items.Add('btnDelete.png');
+
     // xml
     items.Add('skin.xml');
 

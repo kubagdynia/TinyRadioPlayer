@@ -21,6 +21,12 @@
 		<Item name="MainMenu.File.Exit" type="string">Exit</Item>
 		<Item name="MainMenu.Settings" type="string">Settings</Item>
 		<Item name="MainMenu.Settings.Language" type="string">Language</Item>
+		<Item name="MainMenu.Settings.Skins" type="string">Skins</Item>
+		
+		<!-- Main Form - Station List -->
+		<Item name="MainForm.StationList.StationName" type="string">Station Name</Item>
+		<Item name="MainForm.StationList.Genre" type="string">Genre</Item>
+		<Item name="MainForm.StationList.Country" type="string">Country</Item>
 		
 		<!-- Test -->
 		<Item name="Test.Button.Play" type="string">Play</Item>

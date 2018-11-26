@@ -26,6 +26,13 @@ type
 
   TMainForm = class(TForm)
     btnSearch: TBCButton;
+    miSpaceLine: TMenuItem;
+    miDeleteStation: TMenuItem;
+    miEditStation: TMenuItem;
+    miAddStation: TMenuItem;
+    miShowStationName: TMenuItem;
+    miShowGenre: TMenuItem;
+    miShowCountry: TMenuItem;
     miSkins: TMenuItem;
     OpenUrlAction: TAction;
     MainActionList: TActionList;
@@ -37,6 +44,7 @@ type
     btnPause: TBCButton;
     MainPanel: TBCPanel;
     PeakmeterPanel: TBCPanel;
+    PopupMenuStationList: TPopupMenu;
     SearchPanel: TBCPanel;
     BottomFunctionPanel: TBCPanel;
     TopInfoPanel: TBCPanel;
@@ -59,6 +67,7 @@ type
     procedure edtSearchChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure miShowVstColumnClick(Sender: TObject);
     procedure miExitClick(Sender: TObject);
     procedure OpenUrlActionExecute(Sender: TObject);
     procedure PeakmeterPanelResize(Sender: TObject);
@@ -83,6 +92,8 @@ type
     procedure SkinLoaded(Sender: TObject;
       var ASkinData: TSkinData);
     procedure VolumeTrackBarPositionChange(ASender: TObject; APosition: integer);
+    procedure VstStationListAfterColumnWidthTracking(Sender: TVTHeader;
+      Column: TColumnIndex);
     procedure VstStationListGetNodeDataSize(Sender: TBaseVirtualTree;
       var NodeDataSize: Integer);
 
@@ -201,6 +212,32 @@ begin
   FreeAndNil(RadioPlayer);
 
   FreeAndNil(TextScroll);
+end;
+
+procedure TMainForm.miShowVstColumnClick(Sender: TObject);
+var
+  menuItem: TMenuItem;
+  columnVisibility: string;
+begin
+   if Sender is TMenuItem then
+   begin
+     menuItem := TMenuItem(Sender);
+
+     menuItem.Checked := not menuItem.Checked;
+
+     if menuItem.Checked then
+        VstStationList.Header.Columns[menuItem.Tag].Options := VstStationList.Header.Columns[menuItem.Tag].Options + [coVisible]
+     else
+       VstStationList.Header.Columns[menuItem.Tag].Options := VstStationList.Header.Columns[menuItem.Tag].Options - [coVisible];
+
+     columnVisibility := string(IIF(menuItem.Checked, 'true', 'false'));
+     case menuItem.Tag of
+       0: TTRPSettings.SetValue('StationList.ColumnVisibility.StationName', columnVisibility);
+       1: TTRPSettings.SetValue('StationList.ColumnVisibility.Genre', columnVisibility);
+       2: TTRPSettings.SetValue('StationList.ColumnVisibility.Country', columnVisibility);
+     end;
+
+   end;
 end;
 
 procedure TMainForm.miExitClick(Sender: TObject);
@@ -370,6 +407,13 @@ begin
   miSettings.Caption := GetLanguageItem('MainMenu.Settings', 'Settings');
   miLanguage.Caption := GetLanguageItem('MainMenu.Settings.Language', 'Language');
   miSkins.Caption := GetLanguageItem('MainMenu.Settings.Skins', 'Skins');
+
+  VstStationList.Header.Columns[0].Text :=
+    GetLanguageItem('MainForm.StationList.StationName', 'Station Name');
+  VstStationList.Header.Columns[1].Text :=
+    GetLanguageItem('MainForm.StationList.Genre', 'Genre');
+  VstStationList.Header.Columns[2].Text :=
+    GetLanguageItem('MainForm.StationList.Country', 'Country');
 end;
 
 procedure TMainForm.LoadSettings;
@@ -433,6 +477,8 @@ begin
   VstStationList.SelectionCurveRadius := 5;
   VstStationList.TabOrder := 0;
 
+  VstStationList.PopupMenu := PopupMenuStationList;
+
   // Events
   VstStationList.OnBeforeItemErase := @VstStationListBeforeItemErase;
   VstStationList.OnHeaderClick := @VstStationListHeaderClick;
@@ -444,17 +490,34 @@ begin
   VstStationList.OnKeyPress := @VstStationListKeyPress;
   VstStationList.OnFocusChanged := @VstStationListFocusChanged;
   VstStationList.OnGetNodeDataSize := @VstStationListGetNodeDataSize;
+  VstStationList.OnAfterColumnWidthTracking := @VstStationListAfterColumnWidthTracking;
 
   // Add columns
   VstStationList.Header.Columns.Add.Text :=
-    GetLanguageItem('MainForm.Grid.StationName', 'Station Name');
-  VstStationList.Header.Columns[0].Width := 240;
+    GetLanguageItem('MainForm.StationList.StationName', 'Station Name');
+  VstStationList.Header.Columns[0].Width := TTRPSettings.GetValue('StationList.ColumnWidth.StationName', 240);
   VstStationList.Header.Columns.Add.Text :=
-    GetLanguageItem('MainForm.Grid.Genre', 'Genre');
-  VstStationList.Header.Columns[1].Width := 100;
+    GetLanguageItem('MainForm.StationList.Genre', 'Genre');
+  VstStationList.Header.Columns[1].Width := TTRPSettings.GetValue('StationList.ColumnWidth.Genre', 120);
   VstStationList.Header.Columns.Add.Text :=
-    GetLanguageItem('MainForm.Grid.Country', 'Country');
-  VstStationList.Header.Columns[2].Width := 90;
+    GetLanguageItem('MainForm.StationList.Country', 'Country');
+  VstStationList.Header.Columns[2].Width := TTRPSettings.GetValue('StationList.ColumnWidth.Country', 90);
+
+  // Columns visibility
+  if (TTRPSettings.GetValue('StationList.ColumnVisibility.StationName', 'true') = 'false') then
+  begin
+    VstStationList.Header.Columns[0].Options := VstStationList.Header.Columns[0].Options - [coVisible];
+    miShowStationName.Checked := false;
+  end;
+  if (TTRPSettings.GetValue('StationList.ColumnVisibility.Genre', 'true') = 'false') then begin
+    VstStationList.Header.Columns[1].Options := VstStationList.Header.Columns[1].Options - [coVisible];
+    miShowGenre.Checked := false;
+  end;
+  if (TTRPSettings.GetValue('StationList.ColumnVisibility.Country', 'true') = 'false') then
+  begin
+    VstStationList.Header.Columns[2].Options := VstStationList.Header.Columns[2].Options - [coVisible];
+    miShowCountry.Checked := false;
+  end;
 
   // Visibility of the header columns
   VstStationList.Header.Options := [hoVisible, hoColumnResize, hoHotTrack, hoOwnerDraw, hoShowHint, hoShowImages, hoShowSortGlyphs];
@@ -475,12 +538,12 @@ begin
   VstStationList.Colors.UnfocusedSelectionColor := MixingColors(clHighlight,clWindow,60,40);
   VstStationList.Colors.UnfocusedSelectionBorderColor :=MixingColors(clHighlight,clWindow,60,40);
 
-  VstStationList.Show;
-
   // Sort direction
-  VstStationList.Header.SortDirection := sdAscending;
-  VstStationList.Header.SortColumn := 0;
+  VstStationList.Header.SortDirection :=
+    IIF(TTRPSettings.GetValue('StationList.SortDirection', 'ASC') = 'ASC', TSortDirection.sdAscending, TSortDirection.sdDescending);
+  VstStationList.Header.SortColumn := TTRPSettings.GetValue('StationList.SortColumn', 0);
 
+  VstStationList.Show;
 end;
 
 procedure TMainForm.TextScrollMouseEnter(Sender: TObject);
@@ -568,10 +631,17 @@ procedure TMainForm.VstStationListHeaderClick(Sender: TVTHeader;
 begin
   // We determine the sort direction but only if click on the same column
   if (Sender.SortColumn = HitInfo.Column) then
+  begin
     if Sender.SortDirection = sdAscending then
       Sender.SortDirection := sdDescending
     else
       Sender.SortDirection := sdAscending;
+
+    TTRPSettings.SetValue('StationList.SortDirection',
+      string(IIF(Sender.SortDirection = TSortDirection.sdAscending, 'ASC', 'DESC')));
+  end;
+
+  TTRPSettings.SetValue('StationList.SortColumn', HitInfo.Column);
 
   // show SortGlyph
   Sender.SortColumn := HitInfo.Column;
@@ -698,6 +768,17 @@ begin
   end;}
 end;
 
+// Set columns width
+procedure TMainForm.VstStationListAfterColumnWidthTracking(Sender: TVTHeader;
+  Column: TColumnIndex);
+begin
+  case Column of
+    0: TTRPSettings.SetValue('StationList.ColumnWidth.StationName', Sender.Columns[Column].Width);
+    1: TTRPSettings.SetValue('StationList.ColumnWidth.Genre', Sender.Columns[Column].Width);
+    2: TTRPSettings.SetValue('StationList.ColumnWidth.Country', Sender.Columns[Column].Width);
+  end;
+end;
+
 procedure TMainForm.SkinDoneStream(Sender: TObject; var AStream: TStream;
   AItem: TFullZipFileEntry);
 var
@@ -716,6 +797,9 @@ begin
           'btnPrev.png', 'btnStop.png', 'btnNext.png', 'btnRec.png',
           'btnOpen.png']) of
        7: btnSearch.Glyph.Assign(picture.Bitmap);
+       9: miAddStation.Bitmap.Assign(picture.Bitmap);
+       10: miEditStation.Bitmap.Assign(picture.Bitmap);
+       11: miDeleteStation.Bitmap.Assign(picture.Bitmap);
        12: btnPlay.Glyph.Assign(picture.Bitmap);
        13: btnPause.Glyph.Assign(picture.Bitmap);
        14: btnPrev.Glyph.Assign(picture.Bitmap);
