@@ -11,6 +11,11 @@
       <UseXPManifest Value="True"/>
       <Icon Value="0"/>
     </General>
+    <VersionInfo>
+      <UseVersionInfo Value="True"/>
+      <MinorVersionNr Value="2"/>
+      <StringTable CompanyName="Jakub Kurlowicz" ProductName="Tiny Radio Player"/>
+    </VersionInfo>
     <BuildModes Count="2">
       <Item1 Name="Debug" Default="True"/>
       <Item2 Name="Release">
@@ -57,21 +62,24 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="4">
+    <RequiredPackages Count="5">
       <Item1>
-        <PackageName Value="zcomponent"/>
+        <PackageName Value="virtualtreeview_package"/>
       </Item1>
       <Item2>
-        <PackageName Value="bgracontrols"/>
+        <PackageName Value="zcomponent"/>
       </Item2>
       <Item3>
-        <PackageName Value="lclextensions_package"/>
+        <PackageName Value="bgracontrols"/>
       </Item3>
       <Item4>
-        <PackageName Value="LCL"/>
+        <PackageName Value="lclextensions_package"/>
       </Item4>
+      <Item5>
+        <PackageName Value="LCL"/>
+      </Item5>
     </RequiredPackages>
-    <Units Count="16">
+    <Units Count="23">
       <Unit0>
         <Filename Value="TinyRadioPlayer.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -154,6 +162,47 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="DictionaryRepository"/>
       </Unit15>
+      <Unit16>
+        <Filename Value="ctrpcommon.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="CTRPCommon"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="ctrppersistent.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="CTRPPersistent"/>
+      </Unit17>
+      <Unit18>
+        <Filename Value="ctrptextscroll.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="CTRPTextScroll"/>
+      </Unit18>
+      <Unit19>
+        <Filename Value="ctrptrackbar.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="CTRPTrackBar"/>
+      </Unit19>
+      <Unit20>
+        <Filename Value="baseformunit.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="BaseForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="BaseFormUnit"/>
+      </Unit20>
+      <Unit21>
+        <Filename Value="openstationurlformunit.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="OpenStationUrlForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="OpenStationUrlFormUnit"/>
+      </Unit21>
+      <Unit22>
+        <Filename Value="skins.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Skins"/>
+      </Unit22>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

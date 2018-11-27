@@ -15,7 +15,7 @@ Description:         Constants used in the application
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, Graphics;
 
 const
   EMPTY_INT         = -1;
@@ -27,10 +27,12 @@ const
   LIB_PATH = 'data\lib\';
   LANGUAGE_PATH = 'data\lang\';
   DB_PATH = 'data\db\';
+  SKINS_PATH = 'data\skins\';
   {$ELSE}
   LIB_PATH = 'data/lib/';
   LANGUAGE_PATH = 'data/lang/';
   DB_PATH = 'data/db/';
+  SKINS_PATH = 'data/skins/';
   {$ENDIF}
 
   LOG_NAME = 'Application.log';
@@ -44,6 +46,11 @@ const
   DEFAULT_LANGUAGE          = 'en';
   USE_OS_LANGUAGE_INSTEAD_DEFAULT = true;
 
+{ - - - - - - - - - - - - - - - - - - Skins - - - - - - - - - - - - - - - - - - }
+  SKIN_FILE_EXTENSION       = '.zip';
+  DEFAULT_SKIN              = 'skin';
+  SKIN_FILE_PATTERN         = '*' + SKIN_FILE_EXTENSION;
+
 { - - - - - - - - - - - - - - - - - Database - - - - - - - - - - - - - - - - - }
   DB_TABLE_STATIONS         = 'Stations';
   DB_TABLE_GENRES           = 'Genres';
@@ -56,6 +63,16 @@ const
   DICTIONARY_GENRE_CODE     = 'Genre';
   DICTIONARY_REGION_CODE    = 'Region';
   DICTIONARY_COUNTRY_CODE   = 'Country';
+
+{ - - - - - - - - - - - - - - - - - Grid Colors - - - - - - - - - - - - - - - - }
+GridLineColor: TColor = (250 or (250 shl 8) or (250 shl 16)); // RGB(250, 250, 250);
+GridLineColorCurrentlyPlaying: TColor = (199 or (237 shl 8) or (252 shl 16)); // RGB(255, 187, 187);
+
+{ - - - - - - - - - - - - - - - - - - Colors - - - - - - - - - - - - - - - - - }
+ColorBlue: TColor = (220 or (234 shl 8) or (248 shl 16));
+ColorGreen: TColor = (220 or (245 shl 8) or (193 shl 16));
+ColorRed: TColor = (249 or (226 shl 8) or (225 shl 16));
+ColorBlack: TColor = (0 or (0 shl 8) or (0 shl 16));
 
 implementation
 

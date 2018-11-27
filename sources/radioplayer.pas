@@ -16,13 +16,15 @@ interface
 
 uses
   Classes, SysUtils,  LCLIntf, Dialogs, LCLType, ExtCtrls, Consts, Helpers,
-  RadioPlayerThread, lazdynamic_bass, RadioPlayerTypes;
+  RadioPlayerThread, lazdynamic_bass, RadioPlayerTypes, VirtualTrees;
 
 const
   MAX_PLAYER_THREADS = 3;
 
 type
   TRadioPlayerTagsEvent = procedure(AMessage: string; APlayerMessageType: TPlayerMessageType) of object;
+
+  { TRadioPlayer }
 
   TRadioPlayer = Class(TObject)
   private
@@ -32,6 +34,7 @@ type
     FThreadWatcher: TTimer;
     FOnRadioPlayerTags: TRadioPlayerTagsEvent;
     FOnRadioPlay: TNotifyEvent;
+    FCurrentStationId: integer;
     procedure Error(msg: string);
     procedure RadioInit;
     function LoadBassPlugins: Boolean;
@@ -46,6 +49,8 @@ type
     destructor Destroy; override;
 
     procedure PlayURL(const AStreamUrl: string; const AVolume: ShortInt);
+    procedure PlayStation(const StationId: integer; const Volume: ShortInt);
+    function GetSelectedStationId(var VstStationsList: TVirtualStringTree): integer;
 
     function Stop(): Boolean;
     procedure Volume(Value: Integer);
@@ -57,12 +62,17 @@ type
     property OnRadioPlayerTags: TRadioPlayerTagsEvent
       read FOnRadioPlayerTags write FOnRadioPlayerTags;
     property OnRadioPlay: TNotifyEvent read FOnRadioPlay write FOnRadioPlay;
+
+    property CurrentStationId: integer read FCurrentStationId;
   end;
 
 var
   Proxy: array [0..99] of char; // proxy server
 
 implementation
+
+uses
+  Repository;
 
 // Constructor
 constructor TRadioPlayer.Create;
@@ -124,6 +134,32 @@ begin
   CreateAndLaunchNewThread(threadToPlayNextStream);
 
   FRadioPlayerThreads[threadToPlayNextStream].PlayURL(AStreamUrl, AVolume, threadToPlayNextStream);
+end;
+
+procedure TRadioPlayer.PlayStation(const StationId: integer;
+  const Volume: ShortInt);
+var
+  StationInfo: TStationInfo;
+begin
+  TRepository.LoadStation(StationInfo, StationId);
+  PlayURL(StationInfo.StreamUrl, Volume);
+end;
+
+function TRadioPlayer.GetSelectedStationId(var VstStationsList: TVirtualStringTree): integer;
+var
+  node: PVirtualNode;
+  data: PStationNodeRec;
+begin
+  Result := EMPTY_INT;
+
+  node := VstStationsList.GetFirstSelected;
+
+  if Node <> nil then
+    data := VstStationsList.GetNodeData(node)
+  else
+    exit;
+
+  Result := data^.snd.ID;
 end;
 
 // Stop the stream from the active thread
