@@ -26,6 +26,7 @@ type
 
   TMainForm = class(TForm)
     btnSearch: TBCButton;
+    miShowBothScrollBars: TMenuItem;
     miSpaceLine: TMenuItem;
     miDeleteStation: TMenuItem;
     miEditStation: TMenuItem;
@@ -67,6 +68,8 @@ type
     procedure edtSearchChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure FormResize(Sender: TObject);
+    procedure miShowBothScrollBarsClick(Sender: TObject);
     procedure miShowVstColumnClick(Sender: TObject);
     procedure miExitClick(Sender: TObject);
     procedure OpenUrlActionExecute(Sender: TObject);
@@ -152,7 +155,6 @@ begin
   VolumeTrackBar.Width := 130;
   VolumeTrackBar.Top := 2;
   VolumeTrackBar.Left := VolumeTrackBar.Parent.Width - VolumeTrackBar.Width - 2;
-  //VolumeTrackBar.Anchors := [akRight, akBottom];
   VolumeTrackBar.Anchors := [akBottom];
   VolumeTrackBar.Position := 100;
   VolumeTrackBar.OnPositionChange := @VolumeTrackBarPositionChange;
@@ -205,6 +207,9 @@ begin
   btnNext.Tag := (BottomFunctionPanel.Width div 2) - btnNext.Left;
   btnRec.Tag := (BottomFunctionPanel.Width div 2) - btnRec.Left;
   btnOpen.Tag := (BottomFunctionPanel.Width div 2) - btnOpen.Left;
+
+  MainForm.Width := TTRPSettings.GetValue('MainForm.Width', 485);
+  MainForm.Height := TTRPSettings.GetValue('MainForm.Height', 516);
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
@@ -212,6 +217,35 @@ begin
   FreeAndNil(RadioPlayer);
 
   FreeAndNil(TextScroll);
+end;
+
+procedure TMainForm.FormResize(Sender: TObject);
+begin
+  TTRPSettings.SetValue('MainForm.Width', MainForm.Width);
+  TTRPSettings.SetValue('MainForm.Height', MainForm.Height);
+end;
+
+procedure TMainForm.miShowBothScrollBarsClick(Sender: TObject);
+var
+  menuItem: TMenuItem;
+begin
+  if Sender is TMenuItem then
+  begin
+    menuItem := TMenuItem(Sender);
+
+    menuItem.Checked := not menuItem.Checked;
+
+    if menuItem.Checked then
+    begin
+      VstStationList.ScrollBarOptions.ScrollBars := ssBoth;
+      TTRPSettings.SetValue('StationList.ScrollBars.Both', 'true');
+    end
+    else
+    begin
+      VstStationList.ScrollBarOptions.ScrollBars := ssVertical;
+      TTRPSettings.SetValue('StationList.ScrollBars.Both', 'false');
+    end;
+  end;
 end;
 
 procedure TMainForm.miShowVstColumnClick(Sender: TObject);
@@ -414,6 +448,22 @@ begin
     GetLanguageItem('MainForm.StationList.Genre', 'Genre');
   VstStationList.Header.Columns[2].Text :=
     GetLanguageItem('MainForm.StationList.Country', 'Country');
+
+  miShowStationName.Caption :=
+    GetLanguageItem('MainForm.StationList.PopupMenu.ShowStationName', 'Show Station Name');
+  miShowGenre.Caption :=
+    GetLanguageItem('MainForm.StationList.PopupMenu.ShowGenre', 'Show Genre');
+  miShowCountry.Caption :=
+    GetLanguageItem('MainForm.StationList.PopupMenu.ShowCountry', 'Show Country');
+  miShowBothScrollBars.Caption :=
+    GetLanguageItem('MainForm.StationList.PopupMenu.ShowBothScrollBars', 'Show Both Scroll Bars');
+
+  miAddStation.Caption :=
+    GetLanguageItem('MainForm.StationList.PopupMenu.AddStation', 'Add Station');
+  miEditStation.Caption :=
+    GetLanguageItem('MainForm.StationList.PopupMenu.EditStation', 'Edit Station');
+  miDeleteStation.Caption :=
+    GetLanguageItem('MainForm.StationList.PopupMenu.DeleteStation', 'Delete Station');
 end;
 
 procedure TMainForm.LoadSettings;
@@ -536,12 +586,24 @@ begin
   VstStationList.Colors.FocusedSelectionBorderColor := MixingColors(clHighlight,clWindow,70,20);
   VstStationList.Colors.HotColor := clWhite;
   VstStationList.Colors.UnfocusedSelectionColor := MixingColors(clHighlight,clWindow,60,40);
-  VstStationList.Colors.UnfocusedSelectionBorderColor :=MixingColors(clHighlight,clWindow,60,40);
+  VstStationList.Colors.UnfocusedSelectionBorderColor := MixingColors(clHighlight,clWindow,60,40);
 
   // Sort direction
   VstStationList.Header.SortDirection :=
     IIF(TTRPSettings.GetValue('StationList.SortDirection', 'ASC') = 'ASC', TSortDirection.sdAscending, TSortDirection.sdDescending);
   VstStationList.Header.SortColumn := TTRPSettings.GetValue('StationList.SortColumn', 0);
+
+  // Scroll bars
+  if (TTRPSettings.GetValue('StationList.ScrollBars.Both', 'false') = 'true') then
+  begin
+    VstStationList.ScrollBarOptions.ScrollBars := ssBoth;
+    miShowBothScrollBars.Checked := true;
+  end
+  else
+  begin
+    VstStationList.ScrollBarOptions.ScrollBars := ssVertical;
+    miShowBothScrollBars.Checked := false;
+  end;
 
   VstStationList.Show;
 end;

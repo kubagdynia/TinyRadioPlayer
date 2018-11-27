@@ -12,6 +12,7 @@ object MainForm: TMainForm
   Menu = MainMenu1
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnResize = FormResize
   Position = poScreenCenter
   LCLVersion = '1.8.4.0'
   object StationListPanel: TPanel
@@ -1791,6 +1792,10 @@ object MainForm: TMainForm
       Caption = 'Show Country'
       Checked = True
       OnClick = miShowVstColumnClick
+    end
+    object miShowBothScrollBars: TMenuItem
+      Caption = 'Show Both Scroll Bars'
+      OnClick = miShowBothScrollBarsClick
     end
     object miSpaceLine: TMenuItem
       Caption = '-'
