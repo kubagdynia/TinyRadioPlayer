@@ -28,6 +28,15 @@
 		<Item name="MainForm.StationList.Genre" type="string">Gatunek</Item>
 		<Item name="MainForm.StationList.Country" type="string">Kraj</Item>
 		
+		<!-- Main Form - Station List - PopupMenu -->
+		<Item name="MainForm.StationList.PopupMenu.ShowStationName" type="string">Pokaż Nazwę Stacji</Item>
+		<Item name="MainForm.StationList.PopupMenu.ShowGenre" type="string">Pokaż Gatunek</Item>
+		<Item name="MainForm.StationList.PopupMenu.ShowCountry" type="string">Pokaż Kraj</Item>
+		<Item name="MainForm.StationList.PopupMenu.ShowBothScrollBars" type="string">Pokaż oba paski przewijania</Item>
+		<Item name="MainForm.StationList.PopupMenu.AddStation" type="string">Dodaj Stację</Item>
+		<Item name="MainForm.StationList.PopupMenu.EditStation" type="string">Edytuj Stację</Item>
+		<Item name="MainForm.StationList.PopupMenu.DeleteStation" type="string">Usuń Stację</Item>
+		
 		<!-- Test -->
 		<Item name="Test.Button.Play" type="string">Odtwórz</Item>
 		<Item name="Test.Button.Stop" type="string">Zatrzymaj</Item>
@@ -35,6 +44,12 @@
 		<!-- Open URL -->
 		<Item name="OpenURL.Name" type="string">Otwórz adres URL</Item>
 		<Item name="OpenURL.Title" type="string">Wprowadź adres URL do otwarcia:</Item>
+		
+		<!-- Station Detail -->
+		<Item name="StationDetail.WindowName" type="string">Szczegóły stacji</Item>
+		<Item name="StationDetail.TitleNew" type="string">Dodaj nową stację</Item>
+		<Item name="StationDetail.TitleEdit" type="string">Edytuj stację</Item>
+		<Item name="StationDetail.TitleDelete" type="string">Usuń stację</Item>
 
 	</Items>
 </Resource>

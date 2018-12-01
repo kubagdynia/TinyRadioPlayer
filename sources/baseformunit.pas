@@ -52,10 +52,11 @@ type
     procedure LoadSkins; virtual;
   public
     constructor Create(AOwner: TComponent); override;
-    constructor Create(AOwner: TComponent; OpenMode: TOpenMode); overload;
+    constructor Create(AOwner: TComponent; AOpenMode: TOpenMode); overload;
     destructor Destroy; override;
 
     property SkinsPath: string read GetSkinsPath;
+    property OpenMode: TOpenMode read FOpenMode;
   end;
 
 implementation
@@ -72,11 +73,11 @@ begin
   Create(AOwner, omNormal);
 end;
 
-constructor TBaseForm.Create(AOwner: TComponent; OpenMode: TOpenMode);
+constructor TBaseForm.Create(AOwner: TComponent; AOpenMode: TOpenMode);
 begin
   inherited Create(AOwner);
 
-  FOpenMode := OpenMode;
+  FOpenMode := AOpenMode;
 
   case FOpenMode of
     omNew: ModeNew;

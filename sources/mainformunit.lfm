@@ -1772,10 +1772,35 @@ object MainForm: TMainForm
       OnExecute = OpenUrlActionExecute
       ShortCut = 16463
     end
+    object AddStationAction: TAction
+      Caption = 'AddStation'
+      OnExecute = AddStationActionExecute
+    end
+    object EditStationAction: TAction
+      Caption = 'EditStationAction'
+      OnExecute = EditStationActionExecute
+    end
+    object DeleteStationAction: TAction
+      Caption = 'DeleteStationAction'
+      OnExecute = DeleteStationActionExecute
+    end
   end
   object PopupMenuStationList: TPopupMenu
+    OnPopup = PopupMenuStationListPopup
     left = 330
     top = 192
+    object miAddStation: TMenuItem
+      Action = AddStationAction
+    end
+    object miEditStation: TMenuItem
+      Action = EditStationAction
+    end
+    object miDeleteStation: TMenuItem
+      Action = DeleteStationAction
+    end
+    object miSpaceLine: TMenuItem
+      Caption = '-'
+    end
     object miShowStationName: TMenuItem
       Caption = 'Show Station Name'
       Checked = True
@@ -1796,18 +1821,6 @@ object MainForm: TMainForm
     object miShowBothScrollBars: TMenuItem
       Caption = 'Show Both Scroll Bars'
       OnClick = miShowBothScrollBarsClick
-    end
-    object miSpaceLine: TMenuItem
-      Caption = '-'
-    end
-    object miAddStation: TMenuItem
-      Caption = 'Add Station'
-    end
-    object miEditStation: TMenuItem
-      Caption = 'Edit Station'
-    end
-    object miDeleteStation: TMenuItem
-      Caption = 'Delete Station'
     end
   end
 end

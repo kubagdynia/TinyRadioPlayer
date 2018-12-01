@@ -44,6 +44,12 @@
 		<!-- Open URL -->
 		<Item name="OpenURL.Name" type="string">Otwórz adres URL</Item>
 		<Item name="OpenURL.Title" type="string">Wprowadź adres URL do otwarcia:</Item>
+		
+		<!-- Station Detail -->
+		<Item name="StationDetail.WindowName" type="string">Szczegóły stacji</Item>
+		<Item name="StationDetail.TitleNew" type="string">Dodaj nową stację</Item>
+		<Item name="StationDetail.TitleEdit" type="string">Edytuj stację</Item>
+		<Item name="StationDetail.TitleDelete" type="string">Usuń stację</Item>
 
 	</Items>
 </Resource>

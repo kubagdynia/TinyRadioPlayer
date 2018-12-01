@@ -132,6 +132,7 @@ object BaseForm: TBaseForm
       FontEx.Style = []
       FontEx.TextAlignment = bcaCenter
       FontEx.WordBreak = False
+      InnerMargin = 0
       Rounding.RoundX = 1
       Rounding.RoundY = 1
       Rounding.RoundOptions = []

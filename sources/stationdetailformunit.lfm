@@ -1,0 +1,26 @@
+inherited StationDetailForm: TStationDetailForm
+  Height = 401
+  Width = 525
+  ClientHeight = 401
+  ClientWidth = 525
+  inherited TitlePanel: TBCPanel
+    Width = 525
+    inherited lblTitle: TBCLabel
+      Width = 23
+    end
+  end
+  inherited MainPanel: TBCPanel
+    Height = 315
+    Width = 525
+  end
+  inherited BottomPanel: TBCPanel
+    Top = 356
+    Width = 525
+    inherited btnCancel: TBCButton
+      Left = 286
+    end
+    inherited btnOk: TBCButton
+      Left = 404
+    end
+  end
+end
