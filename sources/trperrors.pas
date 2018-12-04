@@ -21,6 +21,8 @@ uses
 const
   ERR_OK                                    = $00000000;
   ERR_UNSPECIFIED_ERROR                     = $00000001;
+
+  // Database core
   ERR_DB_NO_DATABASE_NAME                   = $00000002;
   ERR_DB_CONNECT_ERROR                      = $00000003;
   ERR_DB_DISCONNECT_ERROR                   = $00000004;
@@ -28,13 +30,20 @@ const
   ERR_DB_CREATE_DDL_ERROR                   = $00000006;
   ERR_DB_CREATE_DML_ERROR                   = $00000007;
   ERR_DB_CREATE_DIR                         = $00000008;
+
+  // Station Repository
   ERR_DB_ADD_STATION                        = $00000009;
   ERR_DB_LOAD_STATIONS                      = $0000000A;
   ERR_DB_LOAD_STATION                       = $0000000B;
+
+  // Dictionary Repository
   ERR_DB_ADD_GENRE                          = $0000000C;
   ERR_DB_ADD_COUNTRY                        = $0000000D;
   ERR_DB_ADD_DICTIONARY                     = $0000000E;
   ERR_DB_ADD_DICTIONARY_ROW                 = $0000000F;
+  ERR_DB_LOAD_DICTIONARY                    = $00000010;
+  ERR_DB_CLEAR_DICTIONARY                   = $00000011;
+  ERR_ADD_DICTIONARY_ITEMS_TO_COMBOBOX      = $00000012;
 
 
   function ShowErrorMessage(Err: ErrorId): boolean;

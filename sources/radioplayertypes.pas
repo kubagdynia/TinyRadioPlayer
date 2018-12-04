@@ -29,17 +29,31 @@ type
 type
   TOpenMode = (omNew, omEdit, omDelete, omNormal);
 
+{ - - - - - - - - - - - - - - - - - Dictionary - - - - - - - - - - - - - - - - }
+type
+  TDictionaryKind = (dkGenre, dkRegion, dkCountry);
+
 { - - - - - - - - - - - - - - - - StationInfo - - - - - - - - - - - - - - - - - }
 type
   TStationInfo = packed record
-     Id                  : integer;
-     Name                : string;
-     StreamUrl           : string;
-     Description         : string;
-     WebpageUrl          : string;
-     GenreCode           : string;
-     CountryCode         : string;
+    Id                  : integer;
+    Name                : string;
+    StreamUrl           : string;
+    Description         : string;
+    WebpageUrl          : string;
+    GenreCode           : string;
+    CountryCode         : string;
   end;
+
+{ - - - - - - - - - - - - - - - - DictionaryTable - - - - - - - - - - - - - - -}
+type
+  PDictionaryTable = ^TDictionaryTable;
+  TDictionaryTable = record
+    Id          : integer;
+    Text        : string;
+    Code        : string;
+  end;
+
 
 { - - - - - - - - - - - - - - - TStationNodeData  - - - - - - - - - - - - - - - }
 type

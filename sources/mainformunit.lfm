@@ -1773,16 +1773,19 @@ object MainForm: TMainForm
       ShortCut = 16463
     end
     object AddStationAction: TAction
-      Caption = 'AddStation'
+      Caption = 'AddStationAction'
       OnExecute = AddStationActionExecute
+      ShortCut = 16449
     end
     object EditStationAction: TAction
       Caption = 'EditStationAction'
       OnExecute = EditStationActionExecute
+      ShortCut = 16453
     end
     object DeleteStationAction: TAction
       Caption = 'DeleteStationAction'
       OnExecute = DeleteStationActionExecute
+      ShortCut = 16452
     end
   end
   object PopupMenuStationList: TPopupMenu
@@ -1791,36 +1794,46 @@ object MainForm: TMainForm
     top = 192
     object miAddStation: TMenuItem
       Action = AddStationAction
+      Caption = 'Add Station'
     end
     object miEditStation: TMenuItem
       Action = EditStationAction
+      Caption = 'Edit Station'
     end
     object miDeleteStation: TMenuItem
       Action = DeleteStationAction
+      Caption = 'Delete Station'
     end
     object miSpaceLine: TMenuItem
       Caption = '-'
     end
-    object miShowStationName: TMenuItem
-      Caption = 'Show Station Name'
-      Checked = True
-      OnClick = miShowVstColumnClick
-    end
-    object miShowGenre: TMenuItem
-      Tag = 1
-      Caption = 'Show Genre'
-      Checked = True
-      OnClick = miShowVstColumnClick
-    end
-    object miShowCountry: TMenuItem
-      Tag = 2
-      Caption = 'Show Country'
-      Checked = True
-      OnClick = miShowVstColumnClick
-    end
     object miShowBothScrollBars: TMenuItem
       Caption = 'Show Both Scroll Bars'
+      ShortCut = 16450
       OnClick = miShowBothScrollBarsClick
+    end
+    object miColumnSettings: TMenuItem
+      Caption = 'Column Settings'
+      object miShowStationName: TMenuItem
+        Caption = 'Show Station Name'
+        Checked = True
+        ShortCut = 16433
+        OnClick = miShowVstColumnClick
+      end
+      object miShowGenre: TMenuItem
+        Tag = 1
+        Caption = 'Show Genre'
+        Checked = True
+        ShortCut = 16434
+        OnClick = miShowVstColumnClick
+      end
+      object miShowCountry: TMenuItem
+        Tag = 2
+        Caption = 'Show Country'
+        Checked = True
+        ShortCut = 16435
+        OnClick = miShowVstColumnClick
+      end
     end
   end
 end

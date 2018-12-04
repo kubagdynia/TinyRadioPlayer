@@ -29,6 +29,7 @@ type
     EditStationAction: TAction;
     AddStationAction: TAction;
     btnSearch: TBCButton;
+    miColumnSettings: TMenuItem;
     miShowBothScrollBars: TMenuItem;
     miSpaceLine: TMenuItem;
     miDeleteStation: TMenuItem;
@@ -386,11 +387,17 @@ end;
 
 procedure TMainForm.EditStationActionExecute(Sender: TObject);
 begin
+  if VstStationList.GetFirstSelected() = nil then
+    Exit;
+
   StationDetailManagement(TOpenMode.omEdit);
 end;
 
 procedure TMainForm.DeleteStationActionExecute(Sender: TObject);
 begin
+  if VstStationList.GetFirstSelected() = nil then
+    Exit;
+
   StationDetailManagement(TOpenMode.omDelete);
 end;
 
@@ -504,6 +511,8 @@ begin
     GetLanguageItem('MainForm.StationList.PopupMenu.ShowCountry', 'Show Country');
   miShowBothScrollBars.Caption :=
     GetLanguageItem('MainForm.StationList.PopupMenu.ShowBothScrollBars', 'Show Both Scroll Bars');
+  miColumnSettings.Caption :=
+    GetLanguageItem('MainForm.StationList.PopupMenu.ColumnSettings', 'Column Settings');
 
   miAddStation.Caption :=
     GetLanguageItem('MainForm.StationList.PopupMenu.AddStation', 'Add Station');

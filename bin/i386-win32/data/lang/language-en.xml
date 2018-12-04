@@ -33,6 +33,7 @@
 		<Item name="MainForm.StationList.PopupMenu.ShowGenre" type="string">Show Genre</Item>
 		<Item name="MainForm.StationList.PopupMenu.ShowCountry" type="string">Show Country</Item>
 		<Item name="MainForm.StationList.PopupMenu.ShowBothScrollBars" type="string">Show Both Scroll Bars</Item>
+		<Item name="MainForm.StationList.PopupMenu.ColumnSettings" type="string">Column Settings</Item>
 		<Item name="MainForm.StationList.PopupMenu.AddStation" type="string">Add Station</Item>
 		<Item name="MainForm.StationList.PopupMenu.EditStation" type="string">Edit Station</Item>
 		<Item name="MainForm.StationList.PopupMenu.DeleteStation" type="string">Delete Station</Item>

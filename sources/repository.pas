@@ -15,7 +15,7 @@ Description:         Repository wrapper
 interface
 
 uses
-  Classes, SysUtils, ZConnection, RadioPlayerTypes, MainRepository,
+  Classes, SysUtils, StdCtrls, ZConnection, RadioPlayerTypes, MainRepository,
   BaseRepository, VirtualTrees;
 
 type
@@ -48,12 +48,17 @@ type
       const Description: string; out DictionaryId: integer): ErrorId;
     class function AddDictionary(const Name: string; const Code: string;
       out DictionaryId: integer): ErrorId;
-    function AddDictionaryRow(const Text: string; const Code: string;
+    class function AddDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryId: integer; const ParentDictionaryId: integer;
       out DictionaryRowId: integer): ErrorId;
-    function AddDictionaryRow(const Text: string; const Code: string;
+    class function AddDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryId: integer;
       out DictionaryRowId: integer): ErrorId;
+    class function LoadDictionary(DictionaryKind: TDictionaryKind;
+      SkipIfLoaded: boolean = true; SortDirection: TSortDirection = sdAscending): ErrorId;
+    class function ClearDictionary: ErrorId;
+    class function AddDictionaryItemsToComboBox(var ComboBox: TComboBox;
+      DictionaryKind: TDictionaryKind; FirstBlank: boolean): ErrorId;
   end;
 
 implementation
@@ -130,7 +135,7 @@ begin
   Result := FMainRepo.DictionaryRepo.AddDictionary(Name, Code, DictionaryId);
 end;
 
-function TRepository.AddDictionaryRow(const Text: string; const Code: string;
+class function TRepository.AddDictionaryRow(const Text: string; const Code: string;
   const Position: integer; const DictionaryId: integer;
   const ParentDictionaryId: integer; out DictionaryRowId: integer): ErrorId;
 begin
@@ -138,12 +143,30 @@ begin
     ParentDictionaryId, DictionaryRowId);
 end;
 
-function TRepository.AddDictionaryRow(const Text: string; const Code: string;
+class function TRepository.AddDictionaryRow(const Text: string; const Code: string;
   const Position: integer; const DictionaryId: integer; out
   DictionaryRowId: integer): ErrorId;
 begin
   Result := FMainRepo.DictionaryRepo.AddDictionaryRow(Text, Code, Position, DictionaryId,
     DictionaryRowId);
+end;
+
+class function TRepository.LoadDictionary(DictionaryKind: TDictionaryKind;
+  SkipIfLoaded: boolean = true; SortDirection: TSortDirection = sdAscending): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.LoadDictionary(DictionaryKind, SkipIfLoaded, SortDirection);
+end;
+
+class function TRepository.ClearDictionary: ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.ClearDictionary;
+end;
+
+class function TRepository.AddDictionaryItemsToComboBox(
+  var ComboBox: TComboBox; DictionaryKind: TDictionaryKind; FirstBlank: boolean): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.AddDictionaryItemsToComboBox(
+    ComboBox, DictionaryKind, FirstBlank);
 end;
 
 initialization
