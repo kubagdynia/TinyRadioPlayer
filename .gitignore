@@ -79,6 +79,7 @@ compiled/*
 
 sources/backup/*
 sources/*.lps
+sources/*.lrs
 
 #bin/*
 bin/*/TinyRadioPlayer*
@@ -86,3 +87,4 @@ bin/*/settings*
 !bin/**/libbass.so
 !bin/**/bass.dll
 !bin/**/*sqlite3*
+bin/**/database.db
