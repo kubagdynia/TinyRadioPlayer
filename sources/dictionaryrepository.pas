@@ -56,6 +56,9 @@ type
 
     function AddDictionaryItemsToComboBox(var ComboBox: TComboBox;
       DictionaryKind: TDictionaryKind; FirstBlank: boolean): ErrorId;
+    function FindAnItemInTheComboBox(var ComboBox: TComboBox; Code: string): ErrorId;
+    function GetDictionaryCodeFromSelectedItem(var ComboBox: TComboBox;
+      out DictionaryCode: string): ErrorId;
   end;
 
 implementation
@@ -299,7 +302,7 @@ begin
        for i := 0 to FDictionary[dictionaryKind].Count - 1 do
        begin
          dictionaryTable := FDictionary[dictionaryKind].Items[i];
-         ComboBox.Items.Add(dictionaryTable^.Text);
+         ComboBox.Items.AddObject(dictionaryTable^.Text, TObject(dictionaryTable));
        end;
 
        ComboBox.Items.EndUpdate;
@@ -319,6 +322,74 @@ begin
       begin
         LogException(EMPTY_STR, ClassName, 'AddDictionaryItemsToComboBox', E);
         err := ERR_ADD_DICTIONARY_ITEMS_TO_COMBOBOX;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TDictionaryRepository.FindAnItemInTheComboBox(var ComboBox: TComboBox;
+  Code: string): ErrorId;
+var
+  err: ErrorId;
+  i: integer;
+begin
+  err := ERR_OK;
+
+  try
+    for i := 0 to ComboBox.Items.Count - 1 do
+    begin
+      if (ComboBox.Items.Objects[i] <> nil) and (PDictionaryTable(ComboBox.Items.Objects[i])^.Code = Code) then
+      begin
+        ComboBox.ItemIndex := i;
+        Break;
+      end;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'FindAnItemInTheComboBox', E);
+        err := ERR_FIND_ITEM_IN_COMBOBOX;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TDictionaryRepository.GetDictionaryCodeFromSelectedItem(
+  var ComboBox: TComboBox; out DictionaryCode: string): ErrorId;
+var
+  err: ErrorId;
+  selectedItem: integer;
+begin
+  err := ERR_OK;
+
+  try
+    if (ComboBox = nil) or (ComboBox.Items = nil) or (ComboBox.Items.Count = 0) then
+      err := ERR_GET_CODE_FROM_SELECTED_ITEM;
+
+    if err = ERR_OK then
+    begin
+      selectedItem := ComboBox.ItemIndex;
+
+      if selectedItem < 0 then
+        err := ERR_GET_CODE_FROM_SELECTED_ITEM;
+    end;
+
+    if (err = ERR_OK) and (ComboBox.Items.Objects[selectedItem] = nil) then
+      err := ERR_GET_CODE_FROM_SELECTED_ITEM;
+
+    if err = ERR_OK then
+    begin
+      DictionaryCode := PDictionaryTable(ComboBox.Items.Objects[selectedItem])^.Code;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'GetDictionaryCodeFromSelectedItem', E);
+        err := ERR_GET_CODE_FROM_SELECTED_ITEM;
       end;
   end;
 

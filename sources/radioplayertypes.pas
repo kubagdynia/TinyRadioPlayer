@@ -54,7 +54,6 @@ type
     Code        : string;
   end;
 
-
 { - - - - - - - - - - - - - - - TStationNodeData  - - - - - - - - - - - - - - - }
 type
   TStationNodeData = class

@@ -88,3 +88,4 @@ bin/*/settings*
 !bin/**/bass.dll
 !bin/**/*sqlite3*
 bin/**/database.db
+bin/**/*.log

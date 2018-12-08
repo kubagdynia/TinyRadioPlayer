@@ -9,9 +9,6 @@ inherited StationDetailForm: TStationDetailForm
   OnResize = FormResize
   inherited TitlePanel: TBCPanel
     Width = 453
-    inherited lblTitle: TBCLabel
-      Width = 23
-    end
   end
   inherited MainPanel: TBCPanel
     Height = 386
@@ -37,6 +34,7 @@ inherited StationDetailForm: TStationDetailForm
       Top = 192
       Width = 424
       Anchors = [akTop, akLeft, akRight, akBottom]
+      OnChange = ValidateEnteredData
       ScrollBars = ssVertical
       TabOrder = 3
     end
@@ -54,6 +52,7 @@ inherited StationDetailForm: TStationDetailForm
       Top = 136
       Width = 344
       Anchors = [akTop, akLeft, akRight]
+      OnChange = ValidateEnteredData
       TabOrder = 2
     end
     object lblWebpageUrl: TLabel[3]
@@ -223,6 +222,7 @@ inherited StationDetailForm: TStationDetailForm
       DropDownArrowSize = 8
       GlobalOpacity = 255
       InnerMargin = 0
+      OnClick = btnWWWOpenClick
       ParentColor = False
       Rounding.RoundX = 3
       Rounding.RoundY = 3
@@ -239,6 +239,7 @@ inherited StationDetailForm: TStationDetailForm
       Top = 80
       Width = 424
       Anchors = [akTop, akLeft, akRight]
+      OnChange = ValidateEnteredData
       TabOrder = 1
     end
     object lblStreamUrl: TLabel[6]
@@ -255,6 +256,7 @@ inherited StationDetailForm: TStationDetailForm
       Top = 24
       Width = 424
       Anchors = [akTop, akLeft, akRight]
+      OnChange = ValidateEnteredData
       TabOrder = 0
     end
     object lblStationName: TLabel[8]
@@ -281,6 +283,7 @@ inherited StationDetailForm: TStationDetailForm
       Width = 208
       Anchors = [akLeft, akBottom]
       ItemHeight = 15
+      OnChange = ValidateEnteredData
       TabOrder = 4
     end
     object lblCountry: TLabel[11]
@@ -299,6 +302,7 @@ inherited StationDetailForm: TStationDetailForm
       Width = 208
       Anchors = [akLeft, akBottom]
       ItemHeight = 15
+      OnChange = ValidateEnteredData
       TabOrder = 5
     end
   end
@@ -310,6 +314,7 @@ inherited StationDetailForm: TStationDetailForm
     end
     inherited btnOk: TBCButton
       Left = 332
+      OnClick = btnOkClick
     end
   end
 end

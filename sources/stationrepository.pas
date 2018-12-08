@@ -36,8 +36,13 @@ type
       const Description: string; const WebpageUrl: string;
       const GenreCode: string; const CountryCode: string;
       out StationId: integer): ErrorId;
+
+    function UpdateStation(StationInfo: TStationInfo): ErrorId;
+
     function LoadStation(var StationInfo: TStationInfo; const StationId: integer): ErrorId;
     function LoadStations(var VstList: TVirtualStringTree; const Text: string): ErrorId;
+
+    function GetSelectedStationId(var VstList: TVirtualStringTree): integer;
   end;
 
 implementation
@@ -118,8 +123,54 @@ begin
   except
     on E: Exception do
       begin
-        LogException(EMPTY_STR, ClassName, 'AddDatabaseStation', E);
+        LogException(EMPTY_STR, ClassName, 'AddStation', E);
         err := ERR_DB_ADD_STATION;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TStationRepository.UpdateStation(StationInfo: TStationInfo): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+begin
+  err := ERR_OK;
+
+  try
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'UPDATE ' + DB_TABLE_STATIONS + ' SET ' +
+        '  Name = :StationName, StreamUrl = :StreamUrl, Description = :Description, ' +
+        '  WebpageUrl = :WebpageUrl, GenreCode = :GenreCode, CountryCode = :CountryCode, ' +
+        '  Modified = :Modified ' +
+        'WHERE ID = :StationId;');
+
+      query.ParamByName('StationName').AsString := StationInfo.Name;
+      query.ParamByName('StreamUrl').AsString := StationInfo.StreamUrl;
+      query.ParamByName('Description').AsString := StationInfo.Description;
+      query.ParamByName('WebpageUrl').AsString := StationInfo.WebpageUrl;
+      query.ParamByName('GenreCode').AsString := StationInfo.GenreCode;
+      query.ParamByName('CountryCode').AsString := StationInfo.CountryCode;
+      query.ParamByName('Modified').AsInteger := GetUnixTimestamp();
+      query.ParamByName('StationId').AsInteger := StationInfo.Id;
+
+      query.ExecSQL;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'UpdateStation', E);
+        err := ERR_DB_UPDATE_STATION;
       end;
   end;
 
@@ -193,10 +244,21 @@ var
   data: PStationNodeRec;
 
   textList: TStringList;
+
+  selectedId: integer;
 begin
   err := ERR_OK;
 
   try
+
+    node := VstList.GetFirstSelected();
+
+    if (node <> nil) then
+    begin
+      data := VstList.GetNodeData(node);
+      selectedId := data^.snd.ID;
+    end else
+      selectedId := EMPTY_INT;
 
     // Determine hot to sort
     if VstList.Header.SortColumn >= 0 then
@@ -282,6 +344,9 @@ begin
             query.FieldByName('CountryText').AsString
           );
 
+          if (selectedId <> EMPTY_INT) and (query.FieldByName('ID').AsInteger = selectedId) then
+            VstList.Selected[node] := true;
+
           query.Next;
         end;
       finally
@@ -304,6 +369,23 @@ begin
   end;
 
   Result := err;
+end;
+
+function TStationRepository.GetSelectedStationId(var VstList: TVirtualStringTree): integer;
+var
+  node: PVirtualNode;
+  data: PStationNodeRec;
+begin
+  Result := EMPTY_INT;
+
+  node := VstList.GetFirstSelected;
+
+  if Node <> nil then
+    data := VstList.GetNodeData(node)
+  else
+    Exit;
+
+  Result := data^.snd.ID;
 end;
 
 end.

@@ -908,9 +908,13 @@ begin
 
       { EDIT }
       TOpenMode.omEdit: begin
-        StationDetailForm := TStationDetailForm.Create(Self, OpenMode, EMPTY_INT, DropFileName);
+        StationDetailForm := TStationDetailForm.Create(Self, OpenMode,
+          TRepository.GetSelectedStationId(VstStationList), DropFileName);
         try
           mr := StationDetailForm.ShowModal;
+
+          if mr = mrOK then
+            TRepository.LoadStations(VstStationList, edtSearch.Text);
 
         finally
           FreeAndNil(StationDetailForm);
@@ -919,7 +923,8 @@ begin
 
       { DELETE }
       TOpenMode.omDelete: begin
-        StationDetailForm := TStationDetailForm.Create(Self, OpenMode, EMPTY_INT, DropFileName);
+        StationDetailForm := TStationDetailForm.Create(Self, OpenMode,
+          TRepository.GetSelectedStationId(VstStationList), DropFileName);
         try
           mr := StationDetailForm.ShowModal;
 

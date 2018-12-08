@@ -40,8 +40,10 @@ type
       const Description: string; const WebpageUrl: string;
       const GenreCode: string; const CountryCode: string;
       out StationId: integer): ErrorId;
+    class function UpdateStation(StationInfo: TStationInfo): ErrorId;
     class function LoadStations(var VstList: TVirtualStringTree; const Text: string): ErrorId;
     class function LoadStation(var StationInfo: TStationInfo; const StationId: integer): ErrorId;
+    class function GetSelectedStationId(var VstList: TVirtualStringTree): integer;
 
     // Dictionary
     class function AddDictionary(const Name: string; const Code: string;
@@ -59,6 +61,9 @@ type
     class function ClearDictionary: ErrorId;
     class function AddDictionaryItemsToComboBox(var ComboBox: TComboBox;
       DictionaryKind: TDictionaryKind; FirstBlank: boolean): ErrorId;
+    class function FindAnItemInTheComboBox(var ComboBox: TComboBox; Code: string): ErrorId;
+    class function GetDictionaryCodeFromSelectedItem(var ComboBox: TComboBox;
+      out DictionaryCode: string): ErrorId;
   end;
 
 implementation
@@ -111,6 +116,11 @@ begin
     WebpageUrl, GenreCode, CountryCode, StationId);
 end;
 
+class function TRepository.UpdateStation(StationInfo: TStationInfo): ErrorId;
+begin
+  Result := FMainRepo.StationRepo.UpdateStation(StationInfo);
+end;
+
 class function TRepository.LoadStations(var VstList: TVirtualStringTree;
   const Text: string): ErrorId;
 begin
@@ -121,6 +131,11 @@ class function TRepository.LoadStation(var StationInfo: TStationInfo;
   const StationId: integer): ErrorId;
 begin
   Result := FMainRepo.StationRepo.LoadStation(StationInfo, StationId);
+end;
+
+class function TRepository.GetSelectedStationId(var VstList: TVirtualStringTree): integer;
+begin
+  Result := FMainRepo.StationRepo.GetSelectedStationId(VstList);
 end;
 
 class function TRepository.AddDictionary(const Name: string;
@@ -167,6 +182,19 @@ class function TRepository.AddDictionaryItemsToComboBox(
 begin
   Result := FMainRepo.DictionaryRepo.AddDictionaryItemsToComboBox(
     ComboBox, DictionaryKind, FirstBlank);
+end;
+
+class function TRepository.FindAnItemInTheComboBox(var ComboBox: TComboBox;
+  Code: string): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.FindAnItemInTheComboBox(ComboBox, Code);
+end;
+
+class function TRepository.GetDictionaryCodeFromSelectedItem(
+  var ComboBox: TComboBox; out DictionaryCode: string): ErrorId;
+begin
+  Result :=
+    FMainRepo.DictionaryRepo.GetDictionaryCodeFromSelectedItem(ComboBox, DictionaryCode);
 end;
 
 initialization

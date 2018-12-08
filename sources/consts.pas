@@ -23,6 +23,8 @@ const
   NEW_LINE          = #13#10;
   INVALID_INT       = -1;
 
+  DATE_TIME_FORMAT  = 'yyyy.mm.dd hh:nn:ss';
+
   {$IFDEF WINDOWS}
   LIB_PATH = 'data\lib\';
   LANGUAGE_PATH = 'data\lang\';

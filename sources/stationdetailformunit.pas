@@ -26,9 +26,18 @@ type
     lblStreamUrl: TLabel;
     lblWebpageUrl: TLabel;
     mmoDescription: TMemo;
+    procedure btnOkClick(Sender: TObject);
+    procedure btnWWWOpenClick(Sender: TObject);
     procedure MainPanelResize(Sender: TObject);
+    procedure ValidateEnteredData(Sender: TObject);
   private
+    FStationId: integer;
 
+    procedure LoadStationData(AStationId: integer);
+
+    function AddStation: ErrorId;
+    function UpdateStation: ErrorId;
+    function DeleteStation: ErrorId;
   protected
     procedure LoadLanguages; override;
     procedure LoadSkins; override;
@@ -45,7 +54,7 @@ var
 implementation
 
 uses
-  Helpers, Repository, TRPErrors;
+  Helpers, Repository, TRPErrors, LCLIntf;
 
 {$R *.lfm}
 
@@ -63,6 +72,8 @@ var
 begin
   inherited Create(AOwner, AOpenMode);
 
+  FStationId := StationId;
+
   err := TRepository.LoadDictionary(TDictionaryKind.dkGenre);
 
   if err = ERR_OK then
@@ -73,6 +84,26 @@ begin
 
   if err = ERR_OK then
     err := TRepository.AddDictionaryItemsToComboBox(cboCountry, TDictionaryKind.dkCountry, true);
+
+  case AOpenMode of
+    omNew:
+    begin
+
+    end;
+
+    omEdit:
+    begin
+      LoadStationData(FStationId);
+      btnOk.Enabled := false;
+    end;
+
+    omDelete:
+    begin
+      LoadStationData(FStationId);
+      btnOk.Enabled := false;
+    end;
+
+  end;
 
 end;
 
@@ -102,6 +133,36 @@ begin
     lblCountry.Left := cboGenre.Left + cboGenre.Width + spaceBetweenItems;
     cboCountry.Left := lblCountry.Left;
     cboCountry.Width := itemWidth;
+  end;
+end;
+
+procedure TStationDetailForm.btnWWWOpenClick(Sender: TObject);
+begin
+  if Trim(edtWebpageUrl.Text) = EMPTY_STR then
+    Exit;
+
+  OpenUrl(edtWebpageUrl.Text);
+end;
+
+procedure TStationDetailForm.btnOkClick(Sender: TObject);
+var
+  err: ErrorId;
+begin
+  err := ERR_OK;
+
+  Case FOpenMode of
+    omNew: err := AddStation;
+    omEdit: err := UpdateStation;
+    omDelete: err := DeleteStation;
+  end;
+
+  // error handling
+  case err of
+    ERR_OK: inherited;
+    // if error exists show error message
+    ERR_DB_ADD_STATION,
+    ERR_DB_UPDATE_STATION,
+    ERR_DB_DELETE_STATION: ShowErrorMessage(err, ClassName, 'btnOkClick');
   end;
 end;
 
@@ -135,6 +196,118 @@ end;
 procedure TStationDetailForm.LoadSkins;
 begin
   inherited LoadSkins;
+end;
+
+procedure TStationDetailForm.LoadStationData(AStationId: integer);
+var
+  stationInfo: TStationInfo;
+  err: ErrorId;
+begin
+  err := TRepository.LoadStation(stationInfo, AStationId);
+
+  if err = ERR_OK then
+  begin
+    edtStationName.Text := stationInfo.Name;
+    edtStreamUrl.Text := stationInfo.StreamUrl;
+    edtWebpageUrl.Text := stationInfo.WebpageUrl;
+    mmoDescription.Text := stationInfo.Description;
+
+    TRepository.FindAnItemInTheComboBox(cboGenre, stationInfo.GenreCode);
+    TRepository.FindAnItemInTheComboBox(cboCountry, stationInfo.CountryCode);
+  end;
+
+end;
+
+function TStationDetailForm.AddStation: ErrorId;
+var
+  err: ErrorId;
+begin
+  err := ERR_OK;
+
+  try
+
+    // TODO
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'AddStation', E);
+        err := ERR_DB_ADD_STATION;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TStationDetailForm.UpdateStation: ErrorId;
+var
+  err: ErrorId;
+  stationInfo: TStationInfo;
+  gCode: string;
+  cCode: string;
+begin
+  err := ERR_OK;
+
+  try
+
+    err := TRepository.GetDictionaryCodeFromSelectedItem(cboGenre, gCode);
+    err := TRepository.GetDictionaryCodeFromSelectedItem(cboCountry, cCode);
+
+    if err = ERR_OK then
+    begin
+
+      with stationInfo do
+      begin
+        Id := FStationId;
+        Name := edtStationName.Text;
+        StreamUrl := edtStreamUrl.Text;
+        Description := mmoDescription.Text;
+        WebpageUrl := edtWebpageUrl.Text;
+        GenreCode := gCode;
+        CountryCode := cCode;
+      end;
+
+      err := TRepository.UpdateStation(stationInfo);
+
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'UpdateStation', E);
+        err := ERR_DB_UPDATE_STATION;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TStationDetailForm.DeleteStation: ErrorId;
+var
+  err: ErrorId;
+begin
+  err := ERR_OK;
+
+  try
+
+    // TODO
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'DeleteStation', E);
+        err := ERR_DB_DELETE_STATION;
+      end;
+  end;
+
+  Result := err;
+end;
+
+procedure TStationDetailForm.ValidateEnteredData(Sender: TObject);
+begin
+  btnOk.Enabled := (Trim(edtStationName.Text) <> EMPTY_STR) and (Trim(edtStreamUrl.Text) <> EMPTY_STR);
+
+  btnWWWOpen.Enabled := Trim(edtWebpageUrl.Text) <> EMPTY_STR;
 end;
 
 end.
