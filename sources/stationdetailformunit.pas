@@ -38,6 +38,8 @@ type
     function AddStation: ErrorId;
     function UpdateStation: ErrorId;
     function DeleteStation: ErrorId;
+
+    function ConfirmBeforeDeletingTheStation: boolean;
   protected
     procedure LoadLanguages; override;
     procedure LoadSkins; override;
@@ -88,7 +90,7 @@ begin
   case AOpenMode of
     omNew:
     begin
-
+      btnOk.Enabled := false;
     end;
 
     omEdit:
@@ -100,7 +102,14 @@ begin
     omDelete:
     begin
       LoadStationData(FStationId);
-      btnOk.Enabled := false;
+      btnOk.Enabled := true;
+      edtStationName.Enabled := false;
+      edtStreamUrl.Enabled := false;
+      edtWebpageUrl.Enabled := false;
+      mmoDescription.Enabled := false;
+      cboGenre.Enabled := false;
+      cboCountry.Enabled := false;
+
     end;
 
   end;
@@ -152,17 +161,26 @@ begin
 
   Case FOpenMode of
     omNew: err := AddStation;
+
     omEdit: err := UpdateStation;
-    omDelete: err := DeleteStation;
+
+    omDelete:
+      if ConfirmBeforeDeletingTheStation then
+        err := DeleteStation;
   end;
 
   // error handling
   case err of
     ERR_OK: inherited;
+
     // if error exists show error message
     ERR_DB_ADD_STATION,
     ERR_DB_UPDATE_STATION,
     ERR_DB_DELETE_STATION: ShowErrorMessage(err, ClassName, 'btnOkClick');
+
+    ERR_DB_STATION_ALREADY_EXISTS: ShowInfoMessage(err);
+
+    else ShowErrorMessage(err, ClassName, 'btnOkClick');
   end;
 end;
 
@@ -221,12 +239,35 @@ end;
 function TStationDetailForm.AddStation: ErrorId;
 var
   err: ErrorId;
+  stationInfo: TStationInfo;
+  gCode: string;
+  cCode: string;
+  stationId: integer;
 begin
   err := ERR_OK;
 
   try
 
-    // TODO
+    err := TRepository.GetDictionaryCodeFromSelectedItem(cboGenre, gCode);
+    err := TRepository.GetDictionaryCodeFromSelectedItem(cboCountry, cCode);
+
+    if err = ERR_OK then
+    begin
+
+      with stationInfo do
+      begin
+        Id := EMPTY_INT;
+        Name := edtStationName.Text;
+        StreamUrl := edtStreamUrl.Text;
+        Description := mmoDescription.Text;
+        WebpageUrl := edtWebpageUrl.Text;
+        GenreCode := gCode;
+        CountryCode := cCode;
+      end;
+
+      err := TRepository.AddStation(stationInfo, stationId);
+
+    end;
 
   except
     on E: Exception do
@@ -286,21 +327,18 @@ function TStationDetailForm.DeleteStation: ErrorId;
 var
   err: ErrorId;
 begin
-  err := ERR_OK;
-
-  try
-
-    // TODO
-
-  except
-    on E: Exception do
-      begin
-        LogException(EMPTY_STR, ClassName, 'DeleteStation', E);
-        err := ERR_DB_DELETE_STATION;
-      end;
-  end;
-
+  err := TRepository.DeleteStation(FStationId);
   Result := err;
+end;
+
+function TStationDetailForm.ConfirmBeforeDeletingTheStation: boolean;
+begin
+  Result := QuestionDlg(
+    GetLanguageItem('Dialog.Question', 'Question'),
+    GetLanguageItem('StationDetail.BeforeDeleteQuestion', 'Are you sure you want to delete this station?'),
+    mtConfirmation,
+    [mrYes, GetLanguageItem('Dialog.Answer.Yes', 'Yes'), mrNo, GetLanguageItem('Dialog.Answer.No', 'No'), 'IsDefault'],
+    0) = mrYes;
 end;
 
 procedure TStationDetailForm.ValidateEnteredData(Sender: TObject);

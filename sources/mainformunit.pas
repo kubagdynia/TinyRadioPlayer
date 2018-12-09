@@ -899,8 +899,8 @@ begin
         try
           mr := StationDetailForm.ShowModal;
 
-          //if mr = mrOK then
-            //SearchStation(UseFavDB);
+          if mr = mrOK then
+            TRepository.LoadStations(VstStationList, edtSearch.Text);
         finally
           FreeAndNil(StationDetailForm);
         end;
@@ -927,6 +927,9 @@ begin
           TRepository.GetSelectedStationId(VstStationList), DropFileName);
         try
           mr := StationDetailForm.ShowModal;
+
+          if mr = mrOK then
+            TRepository.LoadStations(VstStationList, edtSearch.Text);
 
         finally
           FreeAndNil(StationDetailForm);

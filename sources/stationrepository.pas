@@ -36,8 +36,14 @@ type
       const Description: string; const WebpageUrl: string;
       const GenreCode: string; const CountryCode: string;
       out StationId: integer): ErrorId;
+    function AddStation(StationInfo: TStationInfo; out StationId: integer): ErrorId;
 
     function UpdateStation(StationInfo: TStationInfo): ErrorId;
+
+    function DeleteStation(StationId: integer): ErrorId;
+
+    function IsStationExists(StationName: string; ExcludeStationId: integer;
+      out IsExists: boolean): ErrorId;
 
     function LoadStation(var StationInfo: TStationInfo; const StationId: integer): ErrorId;
     function LoadStations(var VstList: TVirtualStringTree; const Text: string): ErrorId;
@@ -76,50 +82,83 @@ function TStationRepository.AddStation(const StationName: string;
   const StreamUrl: string; const Description: string; const WebpageUrl: string;
   const GenreCode: string; const CountryCode: string; out StationId: integer): ErrorId;
 var
+  err: ErrorId;
+  stationInfo: TStationInfo;
+begin
+  err := ERR_OK;
+
+  with stationInfo do
+    begin
+      Id := EMPTY_INT;
+      Name := StationName;
+      StreamUrl := StreamUrl;
+      Description := Description;
+      WebpageUrl := WebpageUrl;
+      GenreCode := GenreCode;
+      CountryCode := CountryCode;
+    end;
+
+  err := AddStation(stationInfo, StationId);
+
+  Result := err;
+end;
+
+function TStationRepository.AddStation(StationInfo: TStationInfo; out StationId: integer): ErrorId;
+var
   query: TZQuery;
   err: ErrorId;
   dateNow: integer;
+  isExists: boolean;
 begin
   err := ERR_OK;
 
   try
-    StationId := TRepository.GetNewDbTableKey(DB_TABLE_STATIONS);
-    dateNow := GetUnixTimestamp();
+    err := IsStationExists(StationInfo.Name, EMPTY_INT, isExists);
 
-    query := TZQuery.Create(nil);
-    try
-      query.Connection := TRepository.GetDbConnection;
+    if (err = ERR_OK) and isExists then
+      err := ERR_DB_STATION_ALREADY_EXISTS;
 
-      query.SQL.Add(
-        'INSERT INTO ' + DB_TABLE_STATIONS +
-        ' (ID, Name, StreamUrl, Description, WebpageUrl, GenreCode, CountryCode, Created, Modified) ' +
-        'VALUES(:ID,:Name,:StreamUrl,:Description,:WebpageUrl,:GenreCode,:CountryCode,:Created,:Modified);'
-      );
+    if err = ERR_OK then
+    begin
+      StationId := TRepository.GetNewDbTableKey(DB_TABLE_STATIONS);
+      dateNow := GetUnixTimestamp();
 
-      query.Params.ParamByName('ID').AsInteger := StationId;
-      query.Params.ParamByName('Name').AsString := StationName;
-      query.Params.ParamByName('StreamUrl').AsString := StreamUrl;
+      query := TZQuery.Create(nil);
+      try
+        query.Connection := TRepository.GetDbConnection;
 
-      if (Description <> EMPTY_STR) then
-        query.Params.ParamByName('Description').AsString := Description;
+        query.SQL.Add(
+          'INSERT INTO ' + DB_TABLE_STATIONS +
+          ' (ID, Name, StreamUrl, Description, WebpageUrl, GenreCode, CountryCode, Created, Modified) ' +
+          'VALUES(:ID,:Name,:StreamUrl,:Description,:WebpageUrl,:GenreCode,:CountryCode,:Created,:Modified);'
+        );
 
-      if (WebpageUrl <> EMPTY_STR) then
-        query.Params.ParamByName('WebpageUrl').AsString := WebpageUrl;
+        query.Params.ParamByName('ID').AsInteger := StationId;
+        query.Params.ParamByName('Name').AsString := Trim(StationInfo.Name);
+        query.Params.ParamByName('StreamUrl').AsString := Trim(StationInfo.StreamUrl);
 
-      if (GenreCode <> EMPTY_STR) then
-        query.Params.ParamByName('GenreCode').AsString := GenreCode;
+        if (Trim(StationInfo.Description) <> EMPTY_STR) then
+          query.Params.ParamByName('Description').AsString := Trim(StationInfo.Description);
 
-      if (CountryCode <> EMPTY_STR) then
-        query.Params.ParamByName('CountryCode').AsString := CountryCode;
+        if (Trim(StationInfo.WebpageUrl) <> EMPTY_STR) then
+          query.Params.ParamByName('WebpageUrl').AsString := Trim(StationInfo.WebpageUrl);
 
-      query.Params.ParamByName('Created').AsInteger := dateNow;
-      query.Params.ParamByName('Modified').AsInteger := dateNow;
+        if (Trim(StationInfo.GenreCode) <> EMPTY_STR) then
+          query.Params.ParamByName('GenreCode').AsString := Trim(StationInfo.GenreCode);
 
-      query.ExecSQL;
+        if (Trim(StationInfo.CountryCode) <> EMPTY_STR) then
+          query.Params.ParamByName('CountryCode').AsString := Trim(StationInfo.CountryCode);
 
-    finally
-      query.Free;
+        query.Params.ParamByName('Created').AsInteger := dateNow;
+        query.Params.ParamByName('Modified').AsInteger := dateNow;
+
+        query.ExecSQL;
+
+      finally
+        query.Free;
+      end;
     end;
+
   except
     on E: Exception do
       begin
@@ -135,6 +174,94 @@ function TStationRepository.UpdateStation(StationInfo: TStationInfo): ErrorId;
 var
   query: TZQuery;
   err: ErrorId;
+  isExists: boolean;
+begin
+  err := ERR_OK;
+
+  try
+
+    err := IsStationExists(StationInfo.Name, StationInfo.Id, isExists);
+
+    if (err = ERR_OK) and isExists then
+      err := ERR_DB_STATION_ALREADY_EXISTS;
+
+    if err = ERR_OK then
+    begin
+      query := TZQuery.Create(nil);
+      try
+        query.Connection := TRepository.GetDbConnection;
+
+        query.SQL.Add(
+          'UPDATE ' + DB_TABLE_STATIONS + ' SET ' +
+          '  Name = :StationName, StreamUrl = :StreamUrl, Description = :Description, ' +
+          '  WebpageUrl = :WebpageUrl, GenreCode = :GenreCode, CountryCode = :CountryCode, ' +
+          '  Modified = :Modified ' +
+          'WHERE ID = :StationId;');
+
+        query.ParamByName('StationName').AsString := StationInfo.Name;
+        query.ParamByName('StreamUrl').AsString := StationInfo.StreamUrl;
+        query.ParamByName('Description').AsString := StationInfo.Description;
+        query.ParamByName('WebpageUrl').AsString := StationInfo.WebpageUrl;
+        query.ParamByName('GenreCode').AsString := StationInfo.GenreCode;
+        query.ParamByName('CountryCode').AsString := StationInfo.CountryCode;
+        query.ParamByName('Modified').AsInteger := GetUnixTimestamp();
+        query.ParamByName('StationId').AsInteger := StationInfo.Id;
+
+        query.ExecSQL;
+
+      finally
+        query.Free;
+      end;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'UpdateStation', E);
+        err := ERR_DB_UPDATE_STATION;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TStationRepository.DeleteStation(StationId: integer): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+begin
+  err := ERR_OK;
+
+  try
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add('DELETE FROM ' + DB_TABLE_STATIONS + ' WHERE ID = :StationId;');
+
+      query.ParamByName('StationId').AsInteger := StationId;
+
+      query.ExecSQL;
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'DeleteStation', E);
+        err := ERR_DB_DELETE_STATION;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TStationRepository.IsStationExists(StationName: string; ExcludeStationId: integer;
+  out IsExists: boolean): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
 begin
   err := ERR_OK;
 
@@ -144,23 +271,20 @@ begin
     try
       query.Connection := TRepository.GetDbConnection;
 
-      query.SQL.Add(
-        'UPDATE ' + DB_TABLE_STATIONS + ' SET ' +
-        '  Name = :StationName, StreamUrl = :StreamUrl, Description = :Description, ' +
-        '  WebpageUrl = :WebpageUrl, GenreCode = :GenreCode, CountryCode = :CountryCode, ' +
-        '  Modified = :Modified ' +
-        'WHERE ID = :StationId;');
+      if (ExcludeStationId > 0) then
+      begin
+        query.SQL.Add('SELECT EXISTS(SELECT 1 FROM ' + DB_TABLE_STATIONS + ' WHERE ID <> :Id AND UPPER(Name) = UPPER(:Name)) AS IsExist;');
+        query.ParamByName('Id').AsInteger := ExcludeStationId;
+      end
+      else
+        query.SQL.Add('SELECT EXISTS(SELECT 1 FROM ' + DB_TABLE_STATIONS + ' WHERE UPPER(Name) = UPPER(:Name)) AS IsExist;');
 
-      query.ParamByName('StationName').AsString := StationInfo.Name;
-      query.ParamByName('StreamUrl').AsString := StationInfo.StreamUrl;
-      query.ParamByName('Description').AsString := StationInfo.Description;
-      query.ParamByName('WebpageUrl').AsString := StationInfo.WebpageUrl;
-      query.ParamByName('GenreCode').AsString := StationInfo.GenreCode;
-      query.ParamByName('CountryCode').AsString := StationInfo.CountryCode;
-      query.ParamByName('Modified').AsInteger := GetUnixTimestamp();
-      query.ParamByName('StationId').AsInteger := StationInfo.Id;
+      query.ParamByName('Name').AsString := StationName;
 
-      query.ExecSQL;
+      query.Open;
+
+      if query.RecordCount = 1 then
+        IsExists := query.Fields[0].AsBoolean;
 
     finally
       query.Free;
@@ -169,8 +293,8 @@ begin
   except
     on E: Exception do
       begin
-        LogException(EMPTY_STR, ClassName, 'UpdateStation', E);
-        err := ERR_DB_UPDATE_STATION;
+        LogException(EMPTY_STR, ClassName, 'IsStationExists', E);
+        err := ERR_DB_IS_STATION_EXISTS;
       end;
   end;
 

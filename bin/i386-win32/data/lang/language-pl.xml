@@ -4,10 +4,16 @@
 		
 		<!-- Error Messages -->
 		<Item name="ErrorMessage.General" type="string">Błąd!</Item>
+		<Item name="WarningMessage.General" type="string">Ostrzeżenie!</Item>
+		<Item name="InformationMessage.General" type="string">Informacja!</Item>
 		<Item name="ErrorMessage.UnspecifiedError" type="string">Wystąpił nieznany błąd!</Item>
 		<Item name="ErrorMessage.DbConnectionNotEstablished" type="string">Nie nawiązano jeszcze połączenia z bazą danych!</Item>
 		<Item name="ErrorMessage.StationRepositoryNotAssigned" type="string">Repozytorium stacji nie zostało jeszcze przypisane!</Item>
 		<Item name="ErrorMessage.DictionaryRepositoryNotAssigned" type="string">Repozytorium słowników nie zostało jeszcze przypisane!</Item>
+		
+		<Item name="Dialog.Question" type="string">Pytanie</Item>
+		<Item name="Dialog.Answer.Yes" type="string">Tak</Item>
+		<Item name="Dialog.Answer.No" type="string">Nie</Item>
 		
 		<!-- General Buttons -->
 		<Item name="Button.Close" type="string">Zamknij</Item>
@@ -51,6 +57,8 @@
 		<Item name="StationDetail.TitleNew" type="string">Dodaj nową stację</Item>
 		<Item name="StationDetail.TitleEdit" type="string">Edytuj stację</Item>
 		<Item name="StationDetail.TitleDelete" type="string">Usuń stację</Item>
+		<Item name="StationDetail.Error.StationAlreadyExists" type="string">Stacja o takiej nazwie już istnieje!</Item>
+		<Item name="StationDetail.BeforeDeleteQuestion" type="string">Czy chcesz usunąć wybraną stację?</Item>
 
 	</Items>
 </Resource>

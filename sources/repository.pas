@@ -40,7 +40,9 @@ type
       const Description: string; const WebpageUrl: string;
       const GenreCode: string; const CountryCode: string;
       out StationId: integer): ErrorId;
+    class function AddStation(StationInfo: TStationInfo; out StationId: integer): ErrorId;
     class function UpdateStation(StationInfo: TStationInfo): ErrorId;
+    class function DeleteStation(StationId: integer): ErrorId;
     class function LoadStations(var VstList: TVirtualStringTree; const Text: string): ErrorId;
     class function LoadStation(var StationInfo: TStationInfo; const StationId: integer): ErrorId;
     class function GetSelectedStationId(var VstList: TVirtualStringTree): integer;
@@ -116,9 +118,19 @@ begin
     WebpageUrl, GenreCode, CountryCode, StationId);
 end;
 
+class function TRepository.AddStation(StationInfo: TStationInfo; out StationId: integer): ErrorId;
+begin
+  Result := FMainRepo.StationRepo.AddStation(StationInfo, StationId);
+end;
+
 class function TRepository.UpdateStation(StationInfo: TStationInfo): ErrorId;
 begin
   Result := FMainRepo.StationRepo.UpdateStation(StationInfo);
+end;
+
+class function TRepository.DeleteStation(StationId: integer): ErrorId;
+begin
+  Result := FMainRepo.StationRepo.DeleteStation(StationId);
 end;
 
 class function TRepository.LoadStations(var VstList: TVirtualStringTree;

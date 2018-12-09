@@ -37,6 +37,8 @@ const
   ERR_DB_LOAD_STATION                       = $00000033;
   ERR_DB_UPDATE_STATION                     = $00000034;
   ERR_DB_DELETE_STATION                     = $00000035;
+  ERR_DB_IS_STATION_EXISTS                  = $00000036;
+  ERR_DB_STATION_ALREADY_EXISTS             = $00000037;
 
   // Dictionary Repository
   ERR_DB_ADD_GENRE                          = $00000101;
@@ -52,6 +54,10 @@ const
   procedure ShowErrorMessage(const Err: ErrorId;
     const AClassName: string = EMPTY_STR;
     const AMethodName: string = EMPTY_STR);
+
+  procedure ShowWarningMessage(const Err: ErrorId);
+
+  procedure ShowInfoMessage(const Err: ErrorId);
 
   function GetErrorMessage(const Err: ErrorId): String;
 
@@ -75,8 +81,39 @@ begin
         Format('Code[%d] %s', [err, errorMessage]),
         AClassName, AMethodName);
 
-    ShowMessage(errorMessage);
+    MessageDlg(
+      GetLanguageItem('ErrorMessage.General', 'Error!'),
+      errorMessage, TMsgDlgType.mtError, [mbOK], 0);
   end;
+end;
+
+procedure ShowWarningMessage(const Err: ErrorId);
+var
+  errorMessage: string;
+begin
+  if Err <> ERR_OK then
+  begin
+    errorMessage := GetErrorMessage(Err);
+
+    MessageDlg(
+      GetLanguageItem('WarningMessage.General', 'Warning!'),
+      errorMessage, TMsgDlgType.mtWarning, [mbOK], 0);
+  end;
+end;
+
+procedure ShowInfoMessage(const Err: ErrorId);
+var
+  errorMessage: string;
+begin
+  if Err <> ERR_OK then
+  begin
+    errorMessage := GetErrorMessage(Err);
+
+    MessageDlg(
+      GetLanguageItem('InformationMessage.General', 'Information!'),
+      errorMessage, TMsgDlgType.mtInformation, [mbOK], 0);
+  end;
+
 end;
 
 function GetErrorMessage(const Err: ErrorId): String;
@@ -85,6 +122,9 @@ begin
     ERR_UNSPECIFIED_ERROR:
       Result := GetLanguageItem('ErrorMessage.UnspecifiedError',
              'An unspecified error occurred!');
+    ERR_DB_STATION_ALREADY_EXISTS:
+      Result := GetLanguageItem('StationDetail.Error.StationAlreadyExists',
+             'A station with this name already exists!');
     else
       Result := GetLanguageItem('ErrorMessage.UnspecifiedError',
         'An unspecified error occurred!');

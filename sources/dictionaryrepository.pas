@@ -377,12 +377,12 @@ begin
         err := ERR_GET_CODE_FROM_SELECTED_ITEM;
     end;
 
-    if (err = ERR_OK) and (ComboBox.Items.Objects[selectedItem] = nil) then
-      err := ERR_GET_CODE_FROM_SELECTED_ITEM;
-
     if err = ERR_OK then
     begin
-      DictionaryCode := PDictionaryTable(ComboBox.Items.Objects[selectedItem])^.Code;
+      if ComboBox.Items.Objects[selectedItem] = nil then
+        DictionaryCode := EMPTY_STR
+      else
+        DictionaryCode := PDictionaryTable(ComboBox.Items.Objects[selectedItem])^.Code;
     end;
 
   except
