@@ -15,7 +15,7 @@ Description:         Dictionary management
 interface
 
 uses
-  Classes, SysUtils, RadioPlayerTypes;
+  Classes, SysUtils, StdCtrls, VirtualTrees, RadioPlayerTypes, Consts;
 
 type
 
@@ -23,8 +23,14 @@ type
 
   TDictionaryRepository = class (TObject)
   private
+    FDictionary: array [Low(TDictionaryKind)..High(TDictionaryKind)] of TList;
 
+    // Determines whether the first position should be empty
+    FFirstBlank: boolean;
+
+    function ClearDictionary(FreeAndNilDictionary: boolean = false): ErrorId;
   protected
+    function GetDictionaryName(DictionaryKind: TDictionaryKind): string;
 
   public
     constructor Create; overload;
@@ -43,25 +49,43 @@ type
     function AddDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryId: integer;
       out DictionaryRowId: integer): ErrorId;
+
+    function LoadDictionary(DictionaryKind: TDictionaryKind;
+      SkipIfLoaded: boolean = true; SortDirection: TSortDirection = sdAscending): ErrorId;
+    function ClearDictionary: ErrorId;
+
+    function AddDictionaryItemsToComboBox(var ComboBox: TComboBox;
+      DictionaryKind: TDictionaryKind; FirstBlank: boolean): ErrorId;
+    function FindAnItemInTheComboBox(var ComboBox: TComboBox; Code: string): ErrorId;
+    function GetDictionaryCodeFromSelectedItem(var ComboBox: TComboBox;
+      out DictionaryCode: string): ErrorId;
   end;
 
 implementation
 
 uses
-  ZDataset, Consts, Helpers, Repository, TRPErrors;
+  ZDataset, Helpers, Repository, TRPErrors;
 
 { TDictionaryRepository }
 
+function TDictionaryRepository.GetDictionaryName(DictionaryKind: TDictionaryKind): string;
+begin
+  Result := DICTIONARY_NAMES[DictionaryKind];
+end;
+
 constructor TDictionaryRepository.Create;
+var
+  dictionaryKind: TDictionaryKind;
 begin
   inherited Create;
 
-  // Code here
+  for dictionaryKind := Low(FDictionary) to High(FDictionary) do
+    FDictionary[dictionaryKind] := TList.Create;
 end;
 
 destructor TDictionaryRepository.Destroy;
 begin
-  // Code here
+  ClearDictionary(true);
 
   inherited Destroy;
 end;
@@ -108,7 +132,7 @@ begin
   except
     on E: Exception do
       begin
-        LogException(EMPTY_STR, ClassName, 'AddDatabaseDictionary', E);
+        LogException(EMPTY_STR, ClassName, 'AddDictionary', E);
         err := ERR_DB_ADD_DICTIONARY;
       end;
   end;
@@ -162,7 +186,7 @@ begin
   except
     on E: Exception do
       begin
-        LogException(EMPTY_STR, ClassName, 'AddDatabaseDictionaryRow', E);
+        LogException(EMPTY_STR, ClassName, 'AddDictionaryRow', E);
         err := ERR_DB_ADD_DICTIONARY_ROW;
       end;
   end;
@@ -175,6 +199,242 @@ function TDictionaryRepository.AddDictionaryRow(const Text: string;
   DictionaryRowId: integer): ErrorId;
 begin
   Result := AddDictionaryRow(Text, Code, Position, DictionaryId, EMPTY_INT, DictionaryRowId);
+end;
+
+function TDictionaryRepository.LoadDictionary(DictionaryKind: TDictionaryKind;
+  SkipIfLoaded: boolean = true; SortDirection: TSortDirection = sdAscending): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+  sortDir: string;
+  dictionaryTable: PDictionaryTable;
+begin
+  err := ERR_OK;
+
+  try
+
+    if (SkipIfLoaded) and (FDictionary[DictionaryKind] <> nil) and (FDictionary[DictionaryKind].Count > 0) then
+    begin
+      Result := err;
+      Exit;
+    end;
+
+    case SortDirection of
+      sdAscending: sortDir := 'ASC';
+      sdDescending: sortDir := 'DESC';
+    end;
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'SELECT dr.ID, dr.Text, dr.Code FROM ' + DB_TABLE_DICTIONARY + ' d ' +
+        'INNER JOIN ' + DB_TABLE_DICTIONARY_ROW + ' dr ON dr.DictionaryID = d.ID ' +
+        'WHERE d.Code = :DictionaryCode ' +
+        'ORDER BY dr.Position, UPPER(dr.Text) ' + sortDir
+      );
+
+      query.Params.ParamByName('DictionaryCode').AsString := GetDictionaryName(DictionaryKind);
+
+      query.Open;
+
+      while not query.EOF do
+      begin
+        // create a new record
+        New(dictionaryTable);
+
+        dictionaryTable^.Id:= query.FieldByName('ID').AsInteger;
+        dictionaryTable^.Text := query.FieldByName('Text').AsString;
+        dictionaryTable^.Code := query.FieldByName('Code').AsString;
+
+        // adds record to the list
+        FDictionary[DictionaryKind].Add(dictionaryTable);
+
+        query.Next;
+      end;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'LoadDictionary', E);
+        err := ERR_DB_LOAD_DICTIONARY;
+      end;
+  end;
+
+  Result := err;
+
+end;
+
+
+function TDictionaryRepository.AddDictionaryItemsToComboBox(
+  var ComboBox: TComboBox; DictionaryKind: TDictionaryKind; FirstBlank: boolean): ErrorId;
+var
+  err: ErrorId;
+  i: integer;
+  selectedItem: integer;
+  dictionaryTable: PDictionaryTable;
+begin
+   err := ERR_OK;
+
+   try
+
+     if FDictionary[DictionaryKind] <> nil then
+     begin
+
+       // Get index of selected item in a ComboBox to mark the same position
+       // after loading
+       selectedItem := ComboBox.ItemIndex;
+
+       ComboBox.Items.BeginUpdate;
+
+       ComboBox.Clear;
+
+       FFirstBlank := FirstBlank;
+
+       if FirstBlank then
+         ComboBox.Items.Add(EMPTY_STR);
+
+       for i := 0 to FDictionary[dictionaryKind].Count - 1 do
+       begin
+         dictionaryTable := FDictionary[dictionaryKind].Items[i];
+         ComboBox.Items.AddObject(dictionaryTable^.Text, TObject(dictionaryTable));
+       end;
+
+       ComboBox.Items.EndUpdate;
+
+       if selectedItem < 0 then
+         ComboBox.ItemIndex := 0
+       else
+         ComboBox.ItemIndex := selectedItem;
+
+       if ComboBox.ItemIndex = EMPTY_INT then
+         ComboBox.ItemIndex := ComboBox.Items.Count - 1;
+
+     end;
+
+   except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'AddDictionaryItemsToComboBox', E);
+        err := ERR_ADD_DICTIONARY_ITEMS_TO_COMBOBOX;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TDictionaryRepository.FindAnItemInTheComboBox(var ComboBox: TComboBox;
+  Code: string): ErrorId;
+var
+  err: ErrorId;
+  i: integer;
+begin
+  err := ERR_OK;
+
+  try
+    for i := 0 to ComboBox.Items.Count - 1 do
+    begin
+      if (ComboBox.Items.Objects[i] <> nil) and (PDictionaryTable(ComboBox.Items.Objects[i])^.Code = Code) then
+      begin
+        ComboBox.ItemIndex := i;
+        Break;
+      end;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'FindAnItemInTheComboBox', E);
+        err := ERR_FIND_ITEM_IN_COMBOBOX;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TDictionaryRepository.GetDictionaryCodeFromSelectedItem(
+  var ComboBox: TComboBox; out DictionaryCode: string): ErrorId;
+var
+  err: ErrorId;
+  selectedItem: integer;
+begin
+  err := ERR_OK;
+
+  try
+    if (ComboBox = nil) or (ComboBox.Items = nil) or (ComboBox.Items.Count = 0) then
+      err := ERR_GET_CODE_FROM_SELECTED_ITEM;
+
+    if err = ERR_OK then
+    begin
+      selectedItem := ComboBox.ItemIndex;
+
+      if selectedItem < 0 then
+        err := ERR_GET_CODE_FROM_SELECTED_ITEM;
+    end;
+
+    if err = ERR_OK then
+    begin
+      if ComboBox.Items.Objects[selectedItem] = nil then
+        DictionaryCode := EMPTY_STR
+      else
+        DictionaryCode := PDictionaryTable(ComboBox.Items.Objects[selectedItem])^.Code;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'GetDictionaryCodeFromSelectedItem', E);
+        err := ERR_GET_CODE_FROM_SELECTED_ITEM;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TDictionaryRepository.ClearDictionary: ErrorId;
+begin
+  Result := ClearDictionary(false);
+end;
+
+// Free the dictionary and its all items
+function TDictionaryRepository.ClearDictionary(FreeAndNilDictionary: boolean = false): ErrorId;
+var
+  err: ErrorId;
+  i: integer;
+  dictionaryKind: TDictionaryKind;
+begin
+  err := ERR_OK;
+
+  try
+
+    for dictionaryKind := Low(FDictionary) to High(FDictionary) do
+    begin
+      if FDictionary[dictionaryKind] <> nil then
+      begin
+        for i := FDictionary[dictionaryKind].Count - 1 downto 0 do
+          Dispose(PDictionaryTable(FDictionary[dictionaryKind].Items[i]));
+
+        FDictionary[dictionaryKind].Clear;
+
+        if FreeAndNilDictionary then
+          FreeAndNil(FDictionary[dictionaryKind]);
+      end;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'ClearDictionary', E);
+        err := ERR_DB_CLEAR_DICTIONARY;
+      end;
+  end;
+
+  Result := err;
 end;
 
 end.

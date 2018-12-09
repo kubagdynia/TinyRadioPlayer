@@ -4,10 +4,16 @@
 		
 		<!-- Error Messages -->
 		<Item name="ErrorMessage.General" type="string">Błąd!</Item>
+		<Item name="WarningMessage.General" type="string">Ostrzeżenie!</Item>
+		<Item name="InformationMessage.General" type="string">Informacja!</Item>
 		<Item name="ErrorMessage.UnspecifiedError" type="string">Wystąpił nieznany błąd!</Item>
 		<Item name="ErrorMessage.DbConnectionNotEstablished" type="string">Nie nawiązano jeszcze połączenia z bazą danych!</Item>
 		<Item name="ErrorMessage.StationRepositoryNotAssigned" type="string">Repozytorium stacji nie zostało jeszcze przypisane!</Item>
 		<Item name="ErrorMessage.DictionaryRepositoryNotAssigned" type="string">Repozytorium słowników nie zostało jeszcze przypisane!</Item>
+		
+		<Item name="Dialog.Question" type="string">Pytanie</Item>
+		<Item name="Dialog.Answer.Yes" type="string">Tak</Item>
+		<Item name="Dialog.Answer.No" type="string">Nie</Item>
 		
 		<!-- General Buttons -->
 		<Item name="Button.Close" type="string">Zamknij</Item>
@@ -33,6 +39,7 @@
 		<Item name="MainForm.StationList.PopupMenu.ShowGenre" type="string">Pokaż Gatunek</Item>
 		<Item name="MainForm.StationList.PopupMenu.ShowCountry" type="string">Pokaż Kraj</Item>
 		<Item name="MainForm.StationList.PopupMenu.ShowBothScrollBars" type="string">Pokaż oba paski przewijania</Item>
+		<Item name="MainForm.StationList.PopupMenu.ColumnSettings" type="string">Ustawienia Kolumn</Item>
 		<Item name="MainForm.StationList.PopupMenu.AddStation" type="string">Dodaj Stację</Item>
 		<Item name="MainForm.StationList.PopupMenu.EditStation" type="string">Edytuj Stację</Item>
 		<Item name="MainForm.StationList.PopupMenu.DeleteStation" type="string">Usuń Stację</Item>
@@ -44,6 +51,14 @@
 		<!-- Open URL -->
 		<Item name="OpenURL.Name" type="string">Otwórz adres URL</Item>
 		<Item name="OpenURL.Title" type="string">Wprowadź adres URL do otwarcia:</Item>
+		
+		<!-- Station Detail -->
+		<Item name="StationDetail.WindowName" type="string">Szczegóły stacji</Item>
+		<Item name="StationDetail.TitleNew" type="string">Dodaj nową stację</Item>
+		<Item name="StationDetail.TitleEdit" type="string">Edytuj stację</Item>
+		<Item name="StationDetail.TitleDelete" type="string">Usuń stację</Item>
+		<Item name="StationDetail.Error.StationAlreadyExists" type="string">Stacja o takiej nazwie już istnieje!</Item>
+		<Item name="StationDetail.BeforeDeleteQuestion" type="string">Czy chcesz usunąć wybraną stację?</Item>
 
 	</Items>
 </Resource>

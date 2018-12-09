@@ -4,10 +4,16 @@
 		
 		<!-- Error Messages -->
 		<Item name="ErrorMessage.General" type="string">Error!</Item>
+		<Item name="WarningMessage.General" type="string">Warning!</Item>
+		<Item name="InformationMessage.General" type="string">Information!</Item>
 		<Item name="ErrorMessage.UnspecifiedError" type="string">An unspecified error occurred!</Item>
 		<Item name="ErrorMessage.DbConnectionNotEstablished" type="string">The connection to the database has not been established yet!</Item>
 		<Item name="ErrorMessage.StationRepositoryNotAssigned" type="string">The station repository has not been assigned yet!</Item>
 		<Item name="ErrorMessage.DictionaryRepositoryNotAssigned" type="string">The dictionary repository has not been assigned yet!</Item>
+		
+		<Item name="Dialog.Question" type="string">Question</Item>
+		<Item name="Dialog.Answer.Yes" type="string">Yes</Item>
+		<Item name="Dialog.Answer.No" type="string">No</Item>
 		
 		<!-- General Buttons -->
 		<Item name="Button.Close" type="string">Close</Item>
@@ -28,6 +34,16 @@
 		<Item name="MainForm.StationList.Genre" type="string">Genre</Item>
 		<Item name="MainForm.StationList.Country" type="string">Country</Item>
 		
+		<!-- Main Form - Station List - PopupMenu -->
+		<Item name="MainForm.StationList.PopupMenu.ShowStationName" type="string">Show Station Name</Item>
+		<Item name="MainForm.StationList.PopupMenu.ShowGenre" type="string">Show Genre</Item>
+		<Item name="MainForm.StationList.PopupMenu.ShowCountry" type="string">Show Country</Item>
+		<Item name="MainForm.StationList.PopupMenu.ShowBothScrollBars" type="string">Show Both Scroll Bars</Item>
+		<Item name="MainForm.StationList.PopupMenu.ColumnSettings" type="string">Column Settings</Item>
+		<Item name="MainForm.StationList.PopupMenu.AddStation" type="string">Add Station</Item>
+		<Item name="MainForm.StationList.PopupMenu.EditStation" type="string">Edit Station</Item>
+		<Item name="MainForm.StationList.PopupMenu.DeleteStation" type="string">Delete Station</Item>
+		
 		<!-- Test -->
 		<Item name="Test.Button.Play" type="string">Play</Item>
 		<Item name="Test.Button.Stop" type="string">Stop</Item>
@@ -35,6 +51,14 @@
 		<!-- Open URL -->
 		<Item name="OpenURL.Name" type="string">Open URL</Item>
 		<Item name="OpenURL.Title" type="string">Enter the URL to open:</Item>
+		
+		<!-- Station Detail -->
+		<Item name="StationDetail.WindowName" type="string">Station Details</Item>
+		<Item name="StationDetail.TitleNew" type="string">Add new station</Item>
+		<Item name="StationDetail.TitleEdit" type="string">Edit station</Item>
+		<Item name="StationDetail.TitleDelete" type="string">Delete station</Item>
+		<Item name="StationDetail.Error.StationAlreadyExists" type="string">A station with this name already exists!</Item>
+		<Item name="StationDetail.BeforeDeleteQuestion" type="string">Are you sure you want to delete this station?</Item>
 
 	</Items>
 </Resource>

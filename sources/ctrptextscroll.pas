@@ -469,6 +469,7 @@ begin
 
   FBmp.FontHeight := FFontSize;
   FBmp.FontAntialias := false;
+  FBmp.FontQuality := fqSystemClearType;
   FBmp.FontName := 'Verdana';//'Arial';//'Verdana';
 
   // Left

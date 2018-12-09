@@ -19,14 +19,20 @@ uses
 
 type
 
+  { TLog }
+
   TLog = class sealed (TObject)
   private
     class procedure SaveToFile(const Message: string);
   public
     class procedure LogException(const Message: string;
-      const NameOfTheClass: string = EMPTY_STR;
-      const NameOfTheMethod: string = EMPTY_STR;
-      const E: Exception = nil); // A static method
+      const AClassName: string = EMPTY_STR;
+      const AMethodName: string = EMPTY_STR;
+      const E: Exception = nil);
+
+    class procedure LogError(const Message: string;
+      const AClassName: string = EMPTY_STR;
+      const AMethodName: string = EMPTY_STR);
   end;
 
 implementation
@@ -34,8 +40,8 @@ implementation
 uses
   Helpers;
 
-class procedure TLog.LogException(const Message: string; const NameOfTheClass: string;
-  const NameOfTheMethod: string; const E: Exception);
+class procedure TLog.LogException(const Message: string; const AClassName: string;
+  const AMethodName: string; const E: Exception);
 var
   exceptionMessage: string;
 begin
@@ -47,11 +53,17 @@ begin
 
   // Save a message
   SaveToFile(
-    Format('%s %s.%s:%s error raised, with message: %s',
-      [DateTimeToStr(Now), NameOfTheClass, NameOfTheMethod, NameOfTheClass,
+    Format('%s %s.%s: %s error raised, with message: %s',
+      [FormatDateTime(DATE_TIME_FORMAT, Now), AClassName, AMethodName, AClassName,
        Message + IIF(exceptionMessage <> EMPTY_STR, #13#10 + exceptionMessage, EMPTY_STR)]
     )
   );
+end;
+
+class procedure TLog.LogError(const Message: string; const AClassName: string;
+  const AMethodName: string);
+begin
+  LogException(Message, AClassName, AMethodName, nil);
 end;
 
 // Saves the message to the disk

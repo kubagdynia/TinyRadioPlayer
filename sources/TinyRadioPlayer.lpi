@@ -79,7 +79,7 @@
         <PackageName Value="LCL"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="23">
+    <Units Count="24">
       <Unit0>
         <Filename Value="TinyRadioPlayer.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -203,6 +203,14 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Skins"/>
       </Unit22>
+      <Unit23>
+        <Filename Value="stationdetailformunit.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="StationDetailForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="StationDetailFormUnit"/>
+      </Unit23>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

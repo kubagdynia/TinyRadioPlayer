@@ -15,13 +15,15 @@ Description:         Constants used in the application
 interface
 
 uses
-  Classes, SysUtils, Graphics;
+  Classes, SysUtils, Graphics, RadioPlayerTypes;
 
 const
   EMPTY_INT         = -1;
   EMPTY_STR         = '';
   NEW_LINE          = #13#10;
   INVALID_INT       = -1;
+
+  DATE_TIME_FORMAT  = 'yyyy.mm.dd hh:nn:ss';
 
   {$IFDEF WINDOWS}
   LIB_PATH = 'data\lib\';
@@ -63,6 +65,8 @@ const
   DICTIONARY_GENRE_CODE     = 'Genre';
   DICTIONARY_REGION_CODE    = 'Region';
   DICTIONARY_COUNTRY_CODE   = 'Country';
+  //DICTIONARY_NAMES: ARRAY[0..2] of string = (DICTIONARY_GENRE_CODE, DICTIONARY_REGION_CODE, DICTIONARY_COUNTRY_CODE);
+  DICTIONARY_NAMES: ARRAY[Low(TDictionaryKind)..High(TDictionaryKind)] of string = (DICTIONARY_GENRE_CODE, DICTIONARY_REGION_CODE, DICTIONARY_COUNTRY_CODE);
 
 { - - - - - - - - - - - - - - - - - Grid Colors - - - - - - - - - - - - - - - - }
 GridLineColor: TColor = (250 or (250 shl 8) or (250 shl 16)); // RGB(250, 250, 250);

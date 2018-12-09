@@ -18,14 +18,18 @@ uses
   Classes, SysUtils, FileUtil, BCButton, BGRAFlashProgressBar, BCLabel, BCPanel,
   Forms, Controls, Graphics, Dialogs, LCLType, StdCtrls, ExtCtrls, Menus,
   Helpers, RadioPlayer, RadioPlayerTypes, VirtualTrees, ImgList, ActnList,
-  CTRPTextScroll, CTRPTrackBar, zipper, OpenStationUrlFormUnit, Skins;
+  CTRPTextScroll, CTRPTrackBar, zipper, OpenStationUrlFormUnit, Skins, Consts;
 
 type
 
   { TMainForm }
 
   TMainForm = class(TForm)
+    DeleteStationAction: TAction;
+    EditStationAction: TAction;
+    AddStationAction: TAction;
     btnSearch: TBCButton;
+    miColumnSettings: TMenuItem;
     miShowBothScrollBars: TMenuItem;
     miSpaceLine: TMenuItem;
     miDeleteStation: TMenuItem;
@@ -61,10 +65,13 @@ type
     pbRightLevelMeter: TBGRAFlashProgressBar;
     Timer1: TTimer;
     SearchTimer: TTimer;
+    procedure AddStationActionExecute(Sender: TObject);
     procedure BottomFunctionPanelResize(Sender: TObject);
     procedure btnOpenClick(Sender: TObject);
     procedure btnPlayClick(Sender: TObject);
     procedure btnStopClick(Sender: TObject);
+    procedure DeleteStationActionExecute(Sender: TObject);
+    procedure EditStationActionExecute(Sender: TObject);
     procedure edtSearchChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -74,6 +81,7 @@ type
     procedure miExitClick(Sender: TObject);
     procedure OpenUrlActionExecute(Sender: TObject);
     procedure PeakmeterPanelResize(Sender: TObject);
+    procedure PopupMenuStationListPopup(Sender: TObject);
     procedure RadioPlayerRadioPlay(Sender: TObject);
     procedure RadioPlayerRadioPlayerTags(AMessage: string; APlayerMessageType: TPlayerMessageType);
     procedure SearchTimerTimer(Sender: TObject);
@@ -120,13 +128,15 @@ type
     procedure VstStationListKeyPress(Sender: TObject; var Key: char);
     procedure VstStationListFocusChanged(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Column: TColumnIndex);
+
+    procedure StationDetailManagement(OpenMode: TOpenMode; DropFileName: string = EMPTY_STR);
   public
     RadioPlayer: TRadioPlayer;
 
     VstStationList: TVirtualStringTree;
 
     TextScroll: TCTRPTextScroll;
-    VolumeTrackBar: TCTRPTrackBar
+    VolumeTrackBar: TCTRPTrackBar;
   end;
 
 var
@@ -135,7 +145,7 @@ var
 implementation
 
 uses
-  Language, TRPSettings, Repository, Consts;
+  Language, TRPSettings, Repository, StationDetailFormUnit;
 
 {$R *.lfm}
 
@@ -307,6 +317,16 @@ begin
 
 end;
 
+procedure TMainForm.PopupMenuStationListPopup(Sender: TObject);
+var
+  stationSelected: boolean;
+begin
+  stationSelected := VstStationList.GetFirstSelected() <> nil;
+
+  miEditStation.Enabled := stationSelected;
+  miDeleteStation.Enabled := stationSelected;
+end;
+
 procedure TMainForm.edtSearchChange(Sender: TObject);
 begin
   SearchTimer.Enabled := False;
@@ -360,6 +380,27 @@ begin
 
 end;
 
+procedure TMainForm.AddStationActionExecute(Sender: TObject);
+begin
+  StationDetailManagement(TOpenMode.omNew);
+end;
+
+procedure TMainForm.EditStationActionExecute(Sender: TObject);
+begin
+  if VstStationList.GetFirstSelected() = nil then
+    Exit;
+
+  StationDetailManagement(TOpenMode.omEdit);
+end;
+
+procedure TMainForm.DeleteStationActionExecute(Sender: TObject);
+begin
+  if VstStationList.GetFirstSelected() = nil then
+    Exit;
+
+  StationDetailManagement(TOpenMode.omDelete);
+end;
+
 procedure TMainForm.btnOpenClick(Sender: TObject);
 begin
   OpenUrlActionExecute(Self);
@@ -382,6 +423,8 @@ end;
 
 procedure TMainForm.RadioPlayerRadioPlayerTags(AMessage: string;
   APlayerMessageType: TPlayerMessageType);
+var
+  buffPercent: byte;
 begin
   case APlayerMessageType of
     Connecting: begin
@@ -392,6 +435,17 @@ begin
     end;
     Progress: begin
       // Buffering progress
+      buffPercent := StrToInt(AMessage);
+      if buffPercent < 95 then
+      begin
+
+        TextScroll.ProgressBarValue := buffPercent;
+        if not TextScroll.ProgressBarVisible then
+          TextScroll.ProgressBarVisible := false;
+
+      end else
+        TextScroll.ProgressBarVisible := false;
+
     end;
     StreamName: begin
       TextScroll.Lines.TextScrollLine2.ScrollText := AMessage;
@@ -457,6 +511,8 @@ begin
     GetLanguageItem('MainForm.StationList.PopupMenu.ShowCountry', 'Show Country');
   miShowBothScrollBars.Caption :=
     GetLanguageItem('MainForm.StationList.PopupMenu.ShowBothScrollBars', 'Show Both Scroll Bars');
+  miColumnSettings.Caption :=
+    GetLanguageItem('MainForm.StationList.PopupMenu.ColumnSettings', 'Column Settings');
 
   miAddStation.Caption :=
     GetLanguageItem('MainForm.StationList.PopupMenu.AddStation', 'Add Station');
@@ -828,6 +884,60 @@ begin
     if NewNode <> nil then
       NodeHeight[NewNode] := round(DefaultNodeHeight * 1.1);
   end;}
+end;
+
+procedure TMainForm.StationDetailManagement(OpenMode: TOpenMode; DropFileName: string = EMPTY_STR);
+var
+  mr: TModalResult;
+begin
+  if not Assigned(StationDetailForm) then
+  begin
+    case OpenMode of
+      { NEW }
+      TOpenMode.omNew: begin
+        StationDetailForm := TStationDetailForm.Create(Self, OpenMode, EMPTY_INT, DropFileName);
+        try
+          mr := StationDetailForm.ShowModal;
+
+          if mr = mrOK then
+            TRepository.LoadStations(VstStationList, edtSearch.Text);
+        finally
+          FreeAndNil(StationDetailForm);
+        end;
+      end;
+
+      { EDIT }
+      TOpenMode.omEdit: begin
+        StationDetailForm := TStationDetailForm.Create(Self, OpenMode,
+          TRepository.GetSelectedStationId(VstStationList), DropFileName);
+        try
+          mr := StationDetailForm.ShowModal;
+
+          if mr = mrOK then
+            TRepository.LoadStations(VstStationList, edtSearch.Text);
+
+        finally
+          FreeAndNil(StationDetailForm);
+        end;
+      end;
+
+      { DELETE }
+      TOpenMode.omDelete: begin
+        StationDetailForm := TStationDetailForm.Create(Self, OpenMode,
+          TRepository.GetSelectedStationId(VstStationList), DropFileName);
+        try
+          mr := StationDetailForm.ShowModal;
+
+          if mr = mrOK then
+            TRepository.LoadStations(VstStationList, edtSearch.Text);
+
+        finally
+          FreeAndNil(StationDetailForm);
+        end;
+      end;
+
+    end;
+  end;
 end;
 
 // Set columns width
