@@ -1,4 +1,14 @@
 unit StationDetailFormUnit;
+{===============================================================================
+File:                StationDetailFormUnit.pas
+
+Application Name:    Tiny Radio Player
+
+Created:             2018 Jakub Kurlowicz (jakubkurlowicz.pl)
+
+Description:         Station details management (add, edit and delete)
+
+================================================================================}
 
 {$mode objfpc}{$H+}
 

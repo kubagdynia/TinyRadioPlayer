@@ -1737,8 +1737,8 @@ object MainForm: TMainForm
     top = 248
   end
   object MainMenu1: TMainMenu
-    left = 392
-    top = 240
+    left = 352
+    top = 248
     object miFile: TMenuItem
       Caption = 'File'
       object miExit: TMenuItem
@@ -1749,6 +1749,9 @@ object MainForm: TMainForm
     end
     object miSettings: TMenuItem
       Caption = 'Settings'
+      object miDictionaryTables: TMenuItem
+        Action = OpenDictionaryTablesAction
+      end
       object miLanguage: TMenuItem
         Caption = 'Language'
       end
@@ -1786,6 +1789,10 @@ object MainForm: TMainForm
       Caption = 'DeleteStationAction'
       OnExecute = DeleteStationActionExecute
       ShortCut = 16452
+    end
+    object OpenDictionaryTablesAction: TAction
+      Caption = 'OpenOpenDictionaryTablesAction'
+      OnExecute = OpenDictionaryTablesActionExecute
     end
   end
   object PopupMenuStationList: TPopupMenu

@@ -25,10 +25,12 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    OpenDictionaryTablesAction: TAction;
     DeleteStationAction: TAction;
     EditStationAction: TAction;
     AddStationAction: TAction;
     btnSearch: TBCButton;
+    miDictionaryTables: TMenuItem;
     miColumnSettings: TMenuItem;
     miShowBothScrollBars: TMenuItem;
     miSpaceLine: TMenuItem;
@@ -71,6 +73,7 @@ type
     procedure btnPlayClick(Sender: TObject);
     procedure btnStopClick(Sender: TObject);
     procedure DeleteStationActionExecute(Sender: TObject);
+    procedure OpenDictionaryTablesActionExecute(Sender: TObject);
     procedure EditStationActionExecute(Sender: TObject);
     procedure edtSearchChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -145,7 +148,7 @@ var
 implementation
 
 uses
-  Language, TRPSettings, Repository, StationDetailFormUnit;
+  Language, TRPSettings, Repository, StationDetailFormUnit, DictionaryTablesManagementFormUnit;
 
 {$R *.lfm}
 
@@ -401,6 +404,24 @@ begin
   StationDetailManagement(TOpenMode.omDelete);
 end;
 
+procedure TMainForm.OpenDictionaryTablesActionExecute(Sender: TObject);
+var
+  mr: TModalResult;
+begin
+  if not Assigned(DictionaryTablesManagementForm) then
+  begin
+    DictionaryTablesManagementForm := TDictionaryTablesManagementForm.Create(Self);
+    try
+      mr := DictionaryTablesManagementForm.ShowModal;
+
+
+    finally
+      FreeAndNil(DictionaryTablesManagementForm);
+    end;
+
+  end;
+end;
+
 procedure TMainForm.btnOpenClick(Sender: TObject);
 begin
   OpenUrlActionExecute(Self);
@@ -495,6 +516,7 @@ begin
   miSettings.Caption := GetLanguageItem('MainMenu.Settings', 'Settings');
   miLanguage.Caption := GetLanguageItem('MainMenu.Settings.Language', 'Language');
   miSkins.Caption := GetLanguageItem('MainMenu.Settings.Skins', 'Skins');
+  miDictionaryTables.Caption := GetLanguageItem('MainMenu.DictionaryTables', 'Dictionary Tables');;
 
   VstStationList.Header.Columns[0].Text :=
     GetLanguageItem('MainForm.StationList.StationName', 'Station Name');

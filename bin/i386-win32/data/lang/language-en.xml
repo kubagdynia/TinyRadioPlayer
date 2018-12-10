@@ -28,6 +28,7 @@
 		<Item name="MainMenu.Settings" type="string">Settings</Item>
 		<Item name="MainMenu.Settings.Language" type="string">Language</Item>
 		<Item name="MainMenu.Settings.Skins" type="string">Skins</Item>
+		<Item name="MainMenu.DictionaryTables" type="string">Dictionary Tables</Item>
 		
 		<!-- Main Form - Station List -->
 		<Item name="MainForm.StationList.StationName" type="string">Station Name</Item>
