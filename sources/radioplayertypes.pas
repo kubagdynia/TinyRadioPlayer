@@ -78,16 +78,49 @@ type
      snd : TStationNodeData;
   end;
 
+{ - - - - - - - - - - - - - TDictionaryTableNodeData - - - - - - - - - - - - - }
+type
+
+  { TDictionaryTableNodeData }
+
+  TDictionaryTableNodeData = class
+  protected
+    FName      : string;
+    FTableName : string;
+  public
+    constructor Create(const Name, TableName: string); overload;
+
+    property Name       : string read FName      write FName;
+    property TableName  : string read FTableName write FTableName;
+  end;
+
+  PDictionaryTableNodeRec = ^TDictionaryTableNodeRec;
+  TDictionaryTableNodeRec =
+  record
+     dtnd : TDictionaryTableNodeData;
+  end;
+
+
+
 implementation
 
 constructor TStationNodeData.Create(const Id: integer; const Name, Genre,
   Country: string);
 begin
   inherited Create;
-    FID       := Id;
-    FName     := Name;
-    FGenre    := Genre;
-    FCountry  := Country;
+
+  FID       := Id;
+  FName     := Name;
+  FGenre    := Genre;
+  FCountry  := Country;
+end;
+
+constructor TDictionaryTableNodeData.Create(const Name, TableName: string);
+begin
+  inherited Create;
+
+  FName := Name;
+  FTableName := TableName;
 end;
 
 end.
