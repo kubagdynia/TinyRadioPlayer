@@ -1,5 +1,10 @@
 inherited DictionaryTablesManagementForm: TDictionaryTablesManagementForm
   Caption = 'Dictionary Tables'
+  inherited TitlePanel: TBCPanel
+    inherited lblTitle: TBCLabel
+      Width = 23
+    end
+  end
   inherited MainPanel: TBCPanel
     object LeftPanel: TBCPanel[0]
       Left = 10

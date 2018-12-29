@@ -33,7 +33,7 @@
 		<!-- Main Form - Station List -->
 		<Item name="MainForm.StationList.StationName" type="string">Station Name</Item>
 		<Item name="MainForm.StationList.Genre" type="string">Genre</Item>
-		<Item name="MainForm.StationList.Country" type="string">Country</Item>
+		<Item name="MainForm.StationList.Country" type="string">Country</Item>		
 		
 		<!-- Main Form - Station List - PopupMenu -->
 		<Item name="MainForm.StationList.PopupMenu.ShowStationName" type="string">Show Station Name</Item>
@@ -60,6 +60,14 @@
 		<Item name="StationDetail.TitleDelete" type="string">Delete station</Item>
 		<Item name="StationDetail.Error.StationAlreadyExists" type="string">A station with this name already exists!</Item>
 		<Item name="StationDetail.BeforeDeleteQuestion" type="string">Are you sure you want to delete this station?</Item>
+		
+		<!-- Dictionary Tables Management -->
+		<Item name="DictionaryTablesManagement.Column.DictionaryName" type="string">Dictionary Name</Item>
+		
+		<!-- Dictionary Tables -->
+		<Item name="DictionaryTables.Genre" type="string">Genre</Item>
+		<Item name="DictionaryTables.Region" type="string">Region</Item>
+		<Item name="DictionaryTables.Country" type="string">Country</Item>
 
 	</Items>
 </Resource>

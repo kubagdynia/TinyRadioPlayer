@@ -60,6 +60,14 @@
 		<Item name="StationDetail.TitleDelete" type="string">Usuń stację</Item>
 		<Item name="StationDetail.Error.StationAlreadyExists" type="string">Stacja o takiej nazwie już istnieje!</Item>
 		<Item name="StationDetail.BeforeDeleteQuestion" type="string">Czy chcesz usunąć wybraną stację?</Item>
+				
+		<!-- Dictionary Tables Management -->
+		<Item name="DictionaryTablesManagement.Column.DictionaryName" type="string">Nazwa Słownika</Item>
+		
+		<!-- Dictionary Tables -->
+		<Item name="DictionaryTables.Genre" type="string">Gatunek</Item>
+		<Item name="DictionaryTables.Region" type="string">Region</Item>
+		<Item name="DictionaryTables.Country" type="string">Kraj</Item>
 
 	</Items>
 </Resource>

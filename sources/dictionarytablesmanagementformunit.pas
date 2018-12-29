@@ -28,6 +28,8 @@ type
     LeftPanel: TBCPanel;
   private
     procedure InitVstDictionaryTablesList;
+    procedure LoadDictionaryTables;
+
     procedure VSTDictionaryTablesListBeforeItemErase(Sender: TBaseVirtualTree;
       TargetCanvas: TCanvas; Node: PVirtualNode; const ItemRect: TRect;
       var ItemColor: TColor; var EraseAction: TItemEraseAction);
@@ -60,7 +62,7 @@ var
 implementation
 
 uses
-  Language, Helpers, Consts;
+  Language, Helpers, Consts, Repository;
 
 {$R *.lfm}
 
@@ -71,6 +73,8 @@ begin
   inherited Create(AOwner, omNormal);
 
   InitVstDictionaryTablesList;
+
+  LoadDictionaryTables;
 end;
 
 procedure TDictionaryTablesManagementForm.InitVstDictionaryTablesList;
@@ -82,7 +86,7 @@ begin
   VSTDictionaryTablesList.Parent := LeftPanel;
   VSTDictionaryTablesList.Align := alClient;
   VSTDictionaryTablesList.DefaultNodeHeight := 20;
-  VSTDictionaryTablesList.SelectionCurveRadius := 5;
+  VSTDictionaryTablesList.SelectionCurveRadius := 0;
   VSTDictionaryTablesList.TabOrder := 0;
   VSTDictionaryTablesList.Width := 146;
 
@@ -96,7 +100,7 @@ begin
 
   // Add colums
   VSTDictionaryTablesList.Header.Columns.Add.Text :=
-    GetLanguageItem('DictionaryTable.Column.Table', 'Table');
+    GetLanguageItem('DictionaryTablesManagement.Column.DictionaryName', 'Dictionary Name');
   VSTDictionaryTablesList.Header.Columns[0].Width := VSTDictionaryTablesList.Width - 20;
 
   /// Visibility of header columns
@@ -160,6 +164,12 @@ begin
   VSTDictionaryTablesList.Header.SortColumn := 0;
 
   VSTDictionaryTablesList.Show;
+end;
+
+// Load dictionary tables and adds them to the VST
+procedure TDictionaryTablesManagementForm.LoadDictionaryTables;
+begin
+  TRepository.LoadDictionaryNames(VSTDictionaryTablesList);
 end;
 
 // Called when the background of a node is about to be erased

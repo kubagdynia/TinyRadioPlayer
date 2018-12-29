@@ -65,7 +65,6 @@ const
   DICTIONARY_GENRE_CODE     = 'Genre';
   DICTIONARY_REGION_CODE    = 'Region';
   DICTIONARY_COUNTRY_CODE   = 'Country';
-  //DICTIONARY_NAMES: ARRAY[0..2] of string = (DICTIONARY_GENRE_CODE, DICTIONARY_REGION_CODE, DICTIONARY_COUNTRY_CODE);
   DICTIONARY_NAMES: ARRAY[Low(TDictionaryKind)..High(TDictionaryKind)] of string = (DICTIONARY_GENRE_CODE, DICTIONARY_REGION_CODE, DICTIONARY_COUNTRY_CODE);
 
 { - - - - - - - - - - - - - - - - - Grid Colors - - - - - - - - - - - - - - - - }

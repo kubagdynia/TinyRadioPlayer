@@ -50,15 +50,21 @@ type
       const Position: integer; const DictionaryId: integer;
       out DictionaryRowId: integer): ErrorId;
 
+    // Load Dictionary
     function LoadDictionary(DictionaryKind: TDictionaryKind;
       SkipIfLoaded: boolean = true; SortDirection: TSortDirection = sdAscending): ErrorId;
     function ClearDictionary: ErrorId;
 
+    function LoadDictionaryNames(var VstList: TVirtualStringTree): ErrorId;
+
+    // ComboBox
     function AddDictionaryItemsToComboBox(var ComboBox: TComboBox;
       DictionaryKind: TDictionaryKind; FirstBlank: boolean): ErrorId;
     function FindAnItemInTheComboBox(var ComboBox: TComboBox; Code: string): ErrorId;
     function GetDictionaryCodeFromSelectedItem(var ComboBox: TComboBox;
       out DictionaryCode: string): ErrorId;
+
+
   end;
 
 implementation
@@ -399,6 +405,62 @@ end;
 function TDictionaryRepository.ClearDictionary: ErrorId;
 begin
   Result := ClearDictionary(false);
+end;
+
+function TDictionaryRepository.LoadDictionaryNames(
+  var VstList: TVirtualStringTree): ErrorId;
+var
+  err: ErrorId;
+  dictionaryKind: TDictionaryKind;
+
+  node: PVirtualNode;
+  data: PDictionaryTableNodeRec;
+
+  dictionaryName: string;
+  dictionaryLocalizedName: string;
+begin
+  err := ERR_OK;
+
+  try
+
+    // Reinit Virtual String Tree
+    VstList.Clear;
+    VstList.RootNodeCount := Length(FDictionary);
+    VstList.ReinitNode(VstList.RootNode, True);
+
+    VstList.BeginUpdate;
+
+    node := nil;
+
+    for dictionaryKind := Low(FDictionary) to High(FDictionary) do
+    begin
+      if node = nil then
+        node := VstList.GetFirst
+      else
+        node := VstList.GetNext(node);
+
+      data := VstList.GetNodeData(node);
+
+      dictionaryName := GetDictionaryName(dictionaryKind);
+      dictionaryLocalizedName := GetLanguageItem('DictionaryTables.' + dictionaryName);
+
+      data^.dtnd := TDictionaryTableNodeData.Create(dictionaryLocalizedName, dictionaryName);
+    end;
+
+    // Sort items
+    VstList.SortTree(0, VstList.Header.SortDirection, false);
+
+    VstList.EndUpdate;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'LoadAllDictionaryNames', E);
+        err := ERR_LOAD_ALL_DICTIONARY_NAMES;
+      end;
+  end;
+
+  Result := err;
 end;
 
 // Free the dictionary and its all items
