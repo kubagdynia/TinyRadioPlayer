@@ -80,18 +80,17 @@ type
 
 { - - - - - - - - - - - - - TDictionaryTableNodeData - - - - - - - - - - - - - }
 type
-
-  { TDictionaryTableNodeData }
-
   TDictionaryTableNodeData = class
   protected
-    FName      : string;
-    FTableName : string;
+    FName           : string;
+    FTableName      : string;
+    FDictionaryKind : TDictionaryKind;
   public
-    constructor Create(const Name, TableName: string); overload;
+    constructor Create(const Name, TableName: string; DictionaryKind: TDictionaryKind); overload;
 
-    property Name       : string read FName      write FName;
-    property TableName  : string read FTableName write FTableName;
+    property Name           : string read FName      write FName;
+    property TableName      : string read FTableName write FTableName;
+    property DictionaryKind : TDictionaryKind read FDictionaryKind;
   end;
 
   PDictionaryTableNodeRec = ^TDictionaryTableNodeRec;
@@ -100,6 +99,26 @@ type
      dtnd : TDictionaryTableNodeData;
   end;
 
+{ - - - - - - - - - - - - - TDictionaryDetailTableNodeData - - - - - - - - - - }
+type
+  TDictionaryDetailTableNodeData = class
+  protected
+    FID        : integer;
+    FText      : string;
+    FCode      : string;
+  public
+    constructor Create(const Id: integer; const Text: string; const Code: string); overload;
+
+    property ID    : integer  read FID    write FID;
+    property Text  : string read FText write FText;
+    property Code  : string read FCode write FCode;
+  end;
+
+  PDictionaryDetailTableNodeRec = ^TDictionaryDetailTableNodeRec;
+  TDictionaryDetailTableNodeRec =
+  record
+     ddtnd : TDictionaryDetailTableNodeData;
+  end;
 
 
 implementation
@@ -115,12 +134,24 @@ begin
   FCountry  := Country;
 end;
 
-constructor TDictionaryTableNodeData.Create(const Name, TableName: string);
+constructor TDictionaryTableNodeData.Create(const Name, TableName: string;
+  DictionaryKind: TDictionaryKind);
 begin
   inherited Create;
 
   FName := Name;
   FTableName := TableName;
+  FDictionaryKind := DictionaryKind;
+end;
+
+constructor TDictionaryDetailTableNodeData.Create(const Id: integer;
+  const Text: string; const Code: string);
+begin
+  inherited Create;
+
+  FID := Id;
+  FText := Text;
+  FCode := Code;
 end;
 
 end.

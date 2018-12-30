@@ -62,7 +62,10 @@
 		<Item name="StationDetail.BeforeDeleteQuestion" type="string">Czy chcesz usunąć wybraną stację?</Item>
 				
 		<!-- Dictionary Tables Management -->
-		<Item name="DictionaryTablesManagement.Column.DictionaryName" type="string">Nazwa Słownika</Item>
+		<Item name="DictionaryTablesManagement.WindowName" type="string">Tablice słownikowe</Item>
+		<Item name="DictionaryTablesManagement.Title" type="string">Dodaj, usuń lub modyfikuj tablice słownikowe</Item>
+		<Item name="DictionaryTablesManagement.Column.DictionaryName" type="string">Tablica</Item>
+		<Item name="DictionaryTablesManagement.Column.DictionaryDetailName" type="string">Nazwa</Item>
 		
 		<!-- Dictionary Tables -->
 		<Item name="DictionaryTables.Genre" type="string">Gatunek</Item>

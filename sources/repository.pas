@@ -66,7 +66,10 @@ type
     class function FindAnItemInTheComboBox(var ComboBox: TComboBox; Code: string): ErrorId;
     class function GetDictionaryCodeFromSelectedItem(var ComboBox: TComboBox;
       out DictionaryCode: string): ErrorId;
-    class function LoadDictionaryNames(var VstList: TVirtualStringTree): ErrorId;
+    class function LoadDictionaryNames(var VstList: TVirtualStringTree;
+      SelectFirst: boolean = false): ErrorId;
+    class function LoadDictionaryDetails(var VstList: TVirtualStringTree;
+      DictionaryKind: TDictionaryKind): ErrorId;
   end;
 
 implementation
@@ -211,9 +214,15 @@ begin
 end;
 
 class function TRepository.LoadDictionaryNames(
-  var VstList: TVirtualStringTree): ErrorId;
+  var VstList: TVirtualStringTree; SelectFirst: boolean = false): ErrorId;
 begin
-  Result := FMainRepo.DictionaryRepo.LoadDictionaryNames(VstList);
+  Result := FMainRepo.DictionaryRepo.LoadDictionaryNames(VstList, SelectFirst);
+end;
+
+class function TRepository.LoadDictionaryDetails(
+  var VstList: TVirtualStringTree; DictionaryKind: TDictionaryKind): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.LoadDictionaryDetails(VstList, DictionaryKind);
 end;
 
 initialization

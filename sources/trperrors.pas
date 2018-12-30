@@ -50,7 +50,8 @@ const
   ERR_ADD_DICTIONARY_ITEMS_TO_COMBOBOX      = $00000107;
   ERR_FIND_ITEM_IN_COMBOBOX                 = $00000108;
   ERR_GET_CODE_FROM_SELECTED_ITEM           = $00000109;
-  ERR_LOAD_ALL_DICTIONARY_NAMES             = $0000010A;
+  ERR_LOAD_DICTIONARY_NAMES                 = $0000010A;
+  ERR_LOAD_DICTIONARY_DETAILS               = $0000010B;
 
   procedure ShowErrorMessage(const Err: ErrorId;
     const AClassName: string = EMPTY_STR;

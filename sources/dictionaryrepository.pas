@@ -55,7 +55,8 @@ type
       SkipIfLoaded: boolean = true; SortDirection: TSortDirection = sdAscending): ErrorId;
     function ClearDictionary: ErrorId;
 
-    function LoadDictionaryNames(var VstList: TVirtualStringTree): ErrorId;
+    function LoadDictionaryNames(var VstList: TVirtualStringTree; SelectFirst: boolean = false): ErrorId;
+    function LoadDictionaryDetails(var VstList: TVirtualStringTree; DictionaryKind: TDictionaryKind): ErrorId;
 
     // ComboBox
     function AddDictionaryItemsToComboBox(var ComboBox: TComboBox;
@@ -408,7 +409,7 @@ begin
 end;
 
 function TDictionaryRepository.LoadDictionaryNames(
-  var VstList: TVirtualStringTree): ErrorId;
+  var VstList: TVirtualStringTree; SelectFirst: boolean = false): ErrorId;
 var
   err: ErrorId;
   dictionaryKind: TDictionaryKind;
@@ -444,7 +445,7 @@ begin
       dictionaryName := GetDictionaryName(dictionaryKind);
       dictionaryLocalizedName := GetLanguageItem('DictionaryTables.' + dictionaryName);
 
-      data^.dtnd := TDictionaryTableNodeData.Create(dictionaryLocalizedName, dictionaryName);
+      data^.dtnd := TDictionaryTableNodeData.Create(dictionaryLocalizedName, dictionaryName, dictionaryKind);
     end;
 
     // Sort items
@@ -452,11 +453,78 @@ begin
 
     VstList.EndUpdate;
 
+    // Select first node
+    if SelectFirst then
+      VstList.Selected[VstList.GetFirst] := True;
+
   except
     on E: Exception do
       begin
         LogException(EMPTY_STR, ClassName, 'LoadAllDictionaryNames', E);
-        err := ERR_LOAD_ALL_DICTIONARY_NAMES;
+        err := ERR_LOAD_DICTIONARY_NAMES;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TDictionaryRepository.LoadDictionaryDetails(
+  var VstList: TVirtualStringTree; DictionaryKind: TDictionaryKind): ErrorId;
+var
+  i: integer;
+  err: ErrorId;
+  dictionaryTable: PDictionaryTable;
+
+  node: PVirtualNode;
+  data: PDictionaryDetailTableNodeRec;
+begin
+  err := ERR_OK;
+
+  try
+
+    if FDictionary[DictionaryKind] <> nil then
+    begin
+
+      // Load dictionary details if it needed
+      LoadDictionary(DictionaryKind);
+
+      // Reinit Virtual String Tree
+      VstList.Clear;
+      VstList.RootNodeCount := FDictionary[dictionaryKind].Count;
+      VstList.ReinitNode(VstList.RootNode, True);
+
+      VstList.BeginUpdate;
+
+      node := nil;
+
+      i := FDictionary[dictionaryKind].Count;
+
+      for i := 0 to FDictionary[dictionaryKind].Count - 1 do
+      begin
+        dictionaryTable := FDictionary[dictionaryKind].Items[i];
+
+        if node = nil then
+          node := VstList.GetFirst
+        else
+          node := VstList.GetNext(node);
+
+        data := VstList.GetNodeData(node);
+
+        data^.ddtnd := TDictionaryDetailTableNodeData.Create(dictionaryTable^.Id, dictionaryTable^.Text, dictionaryTable^.Code);
+      end;
+
+      // Sort items
+      VstList.SortTree(0, VstList.Header.SortDirection, false);
+
+      VstList.EndUpdate;
+
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'LoadDictionaryDetails', E);
+        err := ERR_LOAD_DICTIONARY_DETAILS;
       end;
   end;
 
