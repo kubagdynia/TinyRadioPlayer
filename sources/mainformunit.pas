@@ -16,9 +16,10 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, BCButton, BGRAFlashProgressBar, BCLabel, BCPanel,
-  Forms, Controls, Graphics, Dialogs, LCLType, StdCtrls, ExtCtrls, Menus,
-  Helpers, RadioPlayer, RadioPlayerTypes, VirtualTrees, ImgList, ActnList,
-  CTRPTextScroll, CTRPTrackBar, zipper, OpenStationUrlFormUnit, Skins, Consts;
+  Forms, Controls, Graphics, Dialogs, LCLType, StdCtrls,
+  ExtCtrls, Menus, Helpers, RadioPlayer, RadioPlayerTypes, VirtualTrees,
+  ImgList, ActnList, CTRPTextScroll, CTRPTrackBar, zipper,
+  OpenStationUrlFormUnit, Skins, Consts;
 
 type
 
@@ -975,37 +976,8 @@ end;
 
 procedure TMainForm.SkinDoneStream(Sender: TObject; var AStream: TStream;
   AItem: TFullZipFileEntry);
-var
-  picture: TPicture;
 begin
-  // Using TPicture to avoid black background instead of transparent
-  picture := TPicture.Create;
-  try
-    picture.LoadFromStream(AStream);
-
-    case StringToCaseSelect(AItem.DiskFileName,
-          ['icoStations.png','icoFavorites.png','icoRecords.png',
-          'icoScheduled.png', 'icoEqualizer.png', 'icoOptions.png',
-          'icoHistory.png', 'icoSearch.png', 'icoPlayStation.png', 'btnAdd.png',
-          'btnEdit.png', 'btnDelete.png', 'btnPlay.png', 'btnPause.png',
-          'btnPrev.png', 'btnStop.png', 'btnNext.png', 'btnRec.png',
-          'btnOpen.png']) of
-       7: btnSearch.Glyph.Assign(picture.Bitmap);
-       9: miAddStation.Bitmap.Assign(picture.Bitmap);
-       10: miEditStation.Bitmap.Assign(picture.Bitmap);
-       11: miDeleteStation.Bitmap.Assign(picture.Bitmap);
-       12: btnPlay.Glyph.Assign(picture.Bitmap);
-       13: btnPause.Glyph.Assign(picture.Bitmap);
-       14: btnPrev.Glyph.Assign(picture.Bitmap);
-       15: btnStop.Glyph.Assign(picture.Bitmap);
-       16: btnNext.Glyph.Assign(picture.Bitmap);
-       17: btnRec.Glyph.Assign(picture.Bitmap);
-       18: btnOpen.Glyph.Assign(picture.Bitmap);
-    end;
-
-  finally
-    picture.Free;
-  end;
+  // moved to SkinLoaded
 end;
 
 procedure TMainForm.SkinLoaded(Sender: TObject; var ASkinData: TSkinData);
@@ -1015,6 +987,18 @@ begin
 
   VolumeTrackBar.Thumb.ThumbFontColor :=
     ASkinData.GetColorItem('VolumeTrackBar.Thumb.ThumbFontColor');
+
+  btnSearch.Glyph.Assign(ASkinData.GetBitmapItem('icoSearch'));
+  miAddStation.Bitmap.Assign(ASkinData.GetBitmapItem('btnAdd'));
+  miEditStation.Bitmap.Assign(ASkinData.GetBitmapItem('btnEdit'));
+  miDeleteStation.Bitmap.Assign(ASkinData.GetBitmapItem('btnDelete'));
+  btnPlay.Glyph.Assign(ASkinData.GetBitmapItem('btnPlay'));
+  btnPause.Glyph.Assign(ASkinData.GetBitmapItem('btnPause'));
+  btnPrev.Glyph.Assign(ASkinData.GetBitmapItem('btnPrev'));
+  btnStop.Glyph.Assign(ASkinData.GetBitmapItem('btnStop'));
+  btnNext.Glyph.Assign(ASkinData.GetBitmapItem('btnNext'));
+  btnRec.Glyph.Assign(ASkinData.GetBitmapItem('btnRec'));
+  btnOpen.Glyph.Assign(ASkinData.GetBitmapItem('btnOpen'));
 end;
 
 // Triggered when access to a node's data happens the first time but the actual

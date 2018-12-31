@@ -299,7 +299,6 @@ inherited DictionaryTablesManagementForm: TDictionaryTablesManagementForm
         StateNormal.FontEx.Style = []
         StateNormal.FontEx.TextAlignment = bcaCenter
         StateNormal.FontEx.WordBreak = False
-        Caption = 'Add'
         Color = clNone
         DropDownWidth = 16
         DropDownArrowSize = 8
@@ -467,7 +466,6 @@ inherited DictionaryTablesManagementForm: TDictionaryTablesManagementForm
         StateNormal.FontEx.Style = []
         StateNormal.FontEx.TextAlignment = bcaCenter
         StateNormal.FontEx.WordBreak = False
-        Caption = 'Edt'
         Color = clNone
         DropDownWidth = 16
         DropDownArrowSize = 8
@@ -635,7 +633,6 @@ inherited DictionaryTablesManagementForm: TDictionaryTablesManagementForm
         StateNormal.FontEx.Style = []
         StateNormal.FontEx.TextAlignment = bcaCenter
         StateNormal.FontEx.WordBreak = False
-        Caption = 'Del'
         Color = clNone
         DropDownWidth = 16
         DropDownArrowSize = 8

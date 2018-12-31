@@ -14,24 +14,36 @@ Description:         Skins management
 interface
 
 uses
-  Classes, SysUtils, Graphics, Consts, LazMethodList, zipper;
+  Classes, SysUtils,Graphics, Controls, Consts, LazMethodList, zipper;
 
 type
+
+  { TBitmapItem }
+  PBitmapItem = ^TBitmapItem;
+  TBitmapItem = record
+    Bitmap: TBitmap;
+    Name: string;
+  end;
 
   { TSkinData }
 
   TSkinData = class
   private
     FSkinItemsHashmap: TStringList;
-  protected
-
+    FBitmapList: TStrings;
+    procedure ClearBitmapList;
   public
     constructor Create(); overload;
     destructor Destroy; override;
 
     function AddItem(Name: string; Value: string): integer;
+    function AddBitmap(Name: string; Bitmap: TBitmap): integer;
+    function AddBitmap(Name: string; var AStream: TStream): integer;
+
     function GetStringItem(Name: string): string;
     function GetColorItem(Name: string): TColor;
+    function GetBitmapItem(Name: string): TBitmap;
+
     procedure ClearItems;
   end;
 
@@ -71,8 +83,8 @@ type
 
     // static methods
     class procedure ChangeSkin(const SkinName: string);
-
     class procedure LoadSkin();
+    class function GetBitmapItem(Name: string): TBitmap;
 
     // events
     class procedure RegisterSkinChangeEvent(const ANotification: TNotifyEvent);
@@ -86,17 +98,21 @@ type
 implementation
 
 uses
-  laz2_DOM, laz2_XMLRead, Helpers, FileUtil, TRPSettings;
+  laz2_DOM, laz2_XMLRead, Helpers, FileUtil, TRPSettings, TRPErrors;
 
 { TSkinData }
 
 constructor TSkinData.Create();
 begin
   FSkinItemsHashmap := TStringList.Create;
+  FBitmapList := TStringList.Create;
 end;
 
 destructor TSkinData.Destroy;
 begin
+  ClearBitmapList;
+  FreeAndNil(FBitmapList);
+
   if Assigned(FSkinItemsHashmap) then
     FSkinItemsHashmap.Free;
 
@@ -106,6 +122,66 @@ end;
 function TSkinData.AddItem(Name: string; Value: string): integer;
 begin
   Result := FSkinItemsHashmap.Add(Name + '=' + Value);
+end;
+
+function TSkinData.AddBitmap(Name: string; Bitmap: TBitmap): integer;
+var
+  bitmapItem: PBitmapItem;
+  stream: TMemoryStream;
+  bitmapToSave: TBitmap;
+begin
+  stream := TMemoryStream.Create;
+  try
+    Bitmap.SaveToStream(stream);
+
+    stream.Position := 0;
+
+    bitmapToSave := TBitmap.Create;
+    bitmapToSave.LoadFromStream(stream);
+  finally
+    stream.Free;
+  end;
+
+  New(bitmapItem);
+
+  bitmapItem^.Name := Name;
+  bitmapItem^.Bitmap := bitmapToSave;
+
+  Result := FBitmapList.AddObject(Name, TObject(bitmapItem));
+end;
+
+function TSkinData.AddBitmap(Name: string; var AStream: TStream): integer;
+var
+  picture: TPicture;
+begin
+  AStream.Position := 0;
+
+  picture := TPicture.Create;
+  try
+    picture.LoadFromStream(AStream);
+    Result := AddBitmap(Name, picture.Bitmap);
+  finally
+    picture.Free;
+  end;
+
+  AStream.Position := 0;
+end;
+
+function TSkinData.GetBitmapItem(Name: string): TBitmap;
+var
+  index: integer;
+  bitmapItem: PBitmapItem;
+  bitmap: TBitmap;
+begin
+  index := FBitmapList.IndexOf(Name);
+
+  if index = EMPTY_INT then
+    RaiseErrorMessage(ERR_CANT_LOAD_SKIN_ITEMS, ClassName, 'GetBitmapItem');
+
+  bitmapItem := PBitmapItem(FBitmapList.Objects[index]);
+  bitmap := bitmapItem^.Bitmap;
+
+  Result := bitmap;
 end;
 
 function TSkinData.GetStringItem(Name: string): string;
@@ -126,7 +202,25 @@ end;
 procedure TSkinData.ClearItems;
 begin
   FSkinItemsHashmap.Clear;
+  ClearBitmapList;
 end;
+
+procedure TSkinData.ClearBitmapList;
+var
+  i: integer;
+begin
+  if Assigned(FBitmapList) then
+  begin
+    for i := FBitmapList.Count - 1 downto 0 do
+    begin
+      FreeAndNil(PBitmapItem(FBitmapList.Objects[i])^.Bitmap);
+      Dispose(PBitmapItem(FBitmapList.Objects[i]));
+    end;
+    FBitmapList.Clear;
+  end;
+end;
+
+{ TSkins }
 
 // Fired up when skins unit is initialization
 class procedure TSkins.Initialize();
@@ -245,7 +339,7 @@ begin
 
   try
     for i := 0 to Pred(files.Count) do
-      SkinFiles.Add(ChangeFileExt(ExtractFileName(files[i]), EMPTY_STR));
+      SkinFiles.Add(RemoveFileExtension(ExtractFileName(files[i])));
   finally
     files.Free;
   end;
@@ -311,7 +405,8 @@ begin
   end
   else
   begin
-    AStream.Position := 0;
+    // Load bitmaps
+    FSkinData.AddBitmap(RemoveFileExtension(AItem.DiskFileName), AStream);
 
     if Assigned(OnSkinDoneStream) then
       OnSkinDoneStream(Sender, AStream, AItem);
@@ -335,6 +430,7 @@ end;
 // Change the skin and if the change is successful, call the skin change event
 class procedure TSkins.ChangeSkin(const SkinName: string);
 begin
+
   if (GetSkinResources(SkinName)) then
   begin
     TTRPSettings.SetValue('SelectedSkin', SkinName);
@@ -345,6 +441,11 @@ end;
 class procedure TSkins.LoadSkin();
 begin
   GetSkinResources(GetSkinFileName());
+end;
+
+class function TSkins.GetBitmapItem(Name: string): TBitmap;
+begin
+  Result := FSkinData.GetBitmapItem(Name);
 end;
 
 // Add a skin change event to the event list. Will be fired up when the skin changes.

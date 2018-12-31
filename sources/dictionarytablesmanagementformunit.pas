@@ -72,7 +72,7 @@ type
     procedure LoadDictionaryDetailsList(VSTNode: PVirtualNode);
   protected
     procedure LoadLanguages; override;
-
+    procedure LoadSkins; override;
   public
     VSTDictionaryTablesList: TVirtualStringTree;
     VSTDictionaryDetailsList: TVirtualStringTree;
@@ -88,7 +88,7 @@ var
 implementation
 
 uses
-  StdCtrls, Language, Helpers, Consts, Repository;
+  StdCtrls, Language, Helpers, Consts, Repository, Skins;
 
 {$R *.lfm}
 
@@ -535,6 +535,15 @@ begin
 
   Self.Caption := GetLanguageItem('DictionaryTablesManagement.WindowName', 'Dictionary Tables');
   lblTitle.Caption := GetLanguageItem('DictionaryTablesManagement.Title', 'Add, edit or delete dictionary tables');
+end;
+
+procedure TDictionaryTablesManagementForm.LoadSkins;
+begin
+  inherited LoadSkins;
+
+  btnAdd.Glyph.Assign(TSkins.GetBitmapItem('btnAdd'));
+  btnEdit.Glyph.Assign(TSkins.GetBitmapItem('btnEdit'));
+  btnDelete.Glyph.Assign(TSkins.GetBitmapItem('btnDelete'));
 end;
 
 end.

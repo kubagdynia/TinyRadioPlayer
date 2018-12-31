@@ -51,6 +51,8 @@ var
 
   function StrToColor(const rgbColor: string): TColor;
 
+  function RemoveFileExtension(FileName: string): string;
+
 implementation
 
 uses
@@ -178,6 +180,11 @@ begin
       rgbList.Free;
     end;
   end;
+end;
+
+function RemoveFileExtension(FileName: string): string;
+begin
+  Result := ChangeFileExt(FileName, EMPTY_STR);
 end;
 
 end.

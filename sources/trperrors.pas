@@ -53,7 +53,14 @@ const
   ERR_LOAD_DICTIONARY_NAMES                 = $0000010A;
   ERR_LOAD_DICTIONARY_DETAILS               = $0000010B;
 
+  // Skins
+  ERR_CANT_LOAD_SKIN_ITEMS                  = $00000201;
+
   procedure ShowErrorMessage(const Err: ErrorId;
+    const AClassName: string = EMPTY_STR;
+    const AMethodName: string = EMPTY_STR);
+
+  procedure RaiseErrorMessage(const Err: ErrorId;
     const AClassName: string = EMPTY_STR;
     const AMethodName: string = EMPTY_STR);
 
@@ -86,6 +93,24 @@ begin
     MessageDlg(
       GetLanguageItem('ErrorMessage.General', 'Error!'),
       errorMessage, TMsgDlgType.mtError, [mbOK], 0);
+  end;
+end;
+
+procedure RaiseErrorMessage(const Err: ErrorId; const AClassName: string;
+  const AMethodName: string);
+var
+  errorMessage: string;
+begin
+  if Err <> ERR_OK then
+  begin
+    errorMessage := GetErrorMessage(Err);
+
+    if (Trim(AClassName) <> EMPTY_STR) or (Trim(AMethodName) <> EMPTY_STR) then
+      TLog.LogError(
+        Format('Code[%d] %s', [err, errorMessage]),
+        AClassName, AMethodName);
+
+    raise Exception.Create(errorMessage);
   end;
 end;
 
@@ -124,9 +149,14 @@ begin
     ERR_UNSPECIFIED_ERROR:
       Result := GetLanguageItem('ErrorMessage.UnspecifiedError',
              'An unspecified error occurred!');
+
     ERR_DB_STATION_ALREADY_EXISTS:
       Result := GetLanguageItem('StationDetail.Error.StationAlreadyExists',
              'A station with this name already exists!');
+
+    ERR_CANT_LOAD_SKIN_ITEMS:
+      Result := GetLanguageItem('ErrorMessage.CantLoadSkinItems',
+             'Skin elements can not be loaded!');
     else
       Result := GetLanguageItem('ErrorMessage.UnspecifiedError',
         'An unspecified error occurred!');
