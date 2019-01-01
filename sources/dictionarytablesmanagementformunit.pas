@@ -16,7 +16,8 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, BCPanel, BCLabel, BCButton, Forms, Controls,
-  Graphics, Dialogs, ActnList, BaseFormUnit, VirtualTrees, RadioPlayerTypes;
+  Graphics, Dialogs, ActnList, StdCtrls, BaseFormUnit, VirtualTrees,
+  RadioPlayerTypes;
 
 type
 
@@ -27,8 +28,12 @@ type
     btnEdit: TBCButton;
     btnDelete: TBCButton;
     CenterPanel: TBCPanel;
+    CenterTopPanel: TBCPanel;
+    CenterMainPanel: TBCPanel;
+    cboParentTablesList: TComboBox;
     RightPanel: TBCPanel;
     LeftPanel: TBCPanel;
+    procedure cboParentTablesListChange(Sender: TObject);
   private
     procedure InitVstDictionaryTablesList;
     procedure InitVstDictionaryDetailsList;
@@ -88,7 +93,7 @@ var
 implementation
 
 uses
-  StdCtrls, Language, Helpers, Consts, Repository, Skins;
+  Language, Helpers, Consts, Repository, Skins;
 
 {$R *.lfm}
 
@@ -102,6 +107,13 @@ begin
   InitVstDictionaryDetailsList;
 
   LoadDictionaryTables;
+end;
+
+procedure TDictionaryTablesManagementForm.cboParentTablesListChange(
+  Sender: TObject);
+begin
+  // Load details based on tables list
+  LoadDictionaryDetailsList(VSTDictionaryTablesList.GetFirstSelected);
 end;
 
 procedure TDictionaryTablesManagementForm.InitVstDictionaryTablesList;
@@ -200,7 +212,7 @@ begin
   VSTDictionaryDetailsList := TVirtualStringTree.Create(LeftPanel);
 
   VSTDictionaryDetailsList.Name := 'DictionaryDetailsList';
-  VSTDictionaryDetailsList.Parent := CenterPanel;
+  VSTDictionaryDetailsList.Parent := CenterMainPanel;
   VSTDictionaryDetailsList.Align := alClient;
   VSTDictionaryDetailsList.DefaultNodeHeight := 20;
   VSTDictionaryDetailsList.SelectionCurveRadius := 0;
@@ -518,6 +530,8 @@ procedure TDictionaryTablesManagementForm.LoadDictionaryDetailsList(
 var
   data: PDictionaryTableNodeRec;
   dictionaryKind: TDictionaryKind;
+  parentDictionaryKind: TDictionaryKind;
+  parentDictionaryRowCode: string;
 begin
   if VSTNode <> nil then
     data := VSTDictionaryTablesList.GetNodeData(VSTNode)
@@ -526,7 +540,17 @@ begin
 
   dictionaryKind := data^.dtnd.DictionaryKind;
 
-  TRepository.LoadDictionaryDetails(VSTDictionaryDetailsList, dictionaryKind);
+  TRepository.GetParentDictionaryKind(dictionaryKind, parentDictionaryKind);
+
+  CenterTopPanel.Visible := parentDictionaryKind <> TDictionaryKind.dkNone;
+
+  if (CenterTopPanel.Visible) and (cboParentTablesList.Items.Count = 0) then
+    TRepository.AddDictionaryItemsToComboBox(cboParentTablesList, parentDictionaryKind, false);
+
+  TRepository.GetDictionaryCodeFromSelectedItem(cboParentTablesList, parentDictionaryRowCode);
+
+  TRepository.LoadDictionaryDetails(VSTDictionaryDetailsList, dictionaryKind,
+    parentDictionaryKind, parentDictionaryRowCode);
 end;
 
 procedure TDictionaryTablesManagementForm.LoadLanguages;

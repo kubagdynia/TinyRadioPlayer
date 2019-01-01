@@ -11,6 +11,7 @@
 		<Item name="ErrorMessage.StationRepositoryNotAssigned" type="string">Repozytorium stacji nie zostało jeszcze przypisane!</Item>
 		<Item name="ErrorMessage.DictionaryRepositoryNotAssigned" type="string">Repozytorium słowników nie zostało jeszcze przypisane!</Item>
 		<Item name="ErrorMessage.CantLoadSkinItems" type="string">Nie można załadować elementów skórki!</Item>
+		<Item name="ErrorMessage.DictionaryTypeCanNotBeSpecified" type="string">Nie można określić typu słownika!</Item>
 		
 		<Item name="Dialog.Question" type="string">Pytanie</Item>
 		<Item name="Dialog.Answer.Yes" type="string">Tak</Item>

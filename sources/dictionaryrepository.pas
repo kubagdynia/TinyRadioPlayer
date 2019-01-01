@@ -31,6 +31,7 @@ type
     function ClearDictionary(FreeAndNilDictionary: boolean = false): ErrorId;
   protected
     function GetDictionaryName(DictionaryKind: TDictionaryKind): string;
+    function GetDictionaryKind(DictionaryCode: string): TDictionaryKind;
 
   public
     constructor Create; overload;
@@ -38,9 +39,10 @@ type
 
     // Add Dictionary
     function AddDictionary(const Name: string; const Code: string;
-      const Description: string; out DictionaryId: integer): ErrorId;
+      const Description: string; out DictionaryId: integer;
+      const ParentCode: string = EMPTY_STR): ErrorId;
     function AddDictionary(const Name: string; const Code: string;
-      out DictionaryId: integer): ErrorId;
+      out DictionaryId: integer; const ParentCode: string = EMPTY_STR): ErrorId;
 
     // Add Dictionary Row
     function AddDictionaryRow(const Text: string; const Code: string;
@@ -56,7 +58,10 @@ type
     function ClearDictionary: ErrorId;
 
     function LoadDictionaryNames(var VstList: TVirtualStringTree; SelectFirst: boolean = false): ErrorId;
-    function LoadDictionaryDetails(var VstList: TVirtualStringTree; DictionaryKind: TDictionaryKind): ErrorId;
+    function LoadDictionaryDetails(var VstList: TVirtualStringTree;
+      DictionaryKind: TDictionaryKind;
+      ParentDictionaryKind: TDictionaryKind = TDictionaryKind.dkNone;
+      ParentDictionaryRowCode: string = ''): ErrorId;
 
     // ComboBox
     function AddDictionaryItemsToComboBox(var ComboBox: TComboBox;
@@ -64,6 +69,9 @@ type
     function FindAnItemInTheComboBox(var ComboBox: TComboBox; Code: string): ErrorId;
     function GetDictionaryCodeFromSelectedItem(var ComboBox: TComboBox;
       out DictionaryCode: string): ErrorId;
+
+    function GetParentDictionaryKind(DictionaryKind: TDictionaryKind;
+      out ParentDictionaryKind: TDictionaryKind): ErrorId;
 
 
   end;
@@ -80,6 +88,27 @@ begin
   Result := DICTIONARY_NAMES[DictionaryKind];
 end;
 
+function TDictionaryRepository.GetDictionaryKind(DictionaryCode: string): TDictionaryKind;
+var
+  dictionaryKind: TDictionaryKind;
+begin
+
+  if (Trim(DictionaryCode) = EMPTY_STR) then
+  begin
+    Result := TDictionaryKind.dkNone;
+    exit;
+  end;
+
+  for dictionaryKind := Low(FDictionary) to High(FDictionary) do
+    if GetDictionaryName(dictionaryKind) = DictionaryCode then
+    begin
+      Result := dictionaryKind;
+      exit;
+    end;
+
+  RaiseErrorMessage(ERR_IN_DETERMINING_TYPE_OF_DICTIONARY, ClassName, 'GetDictionaryKind');
+end;
+
 constructor TDictionaryRepository.Create;
 var
   dictionaryKind: TDictionaryKind;
@@ -87,7 +116,12 @@ begin
   inherited Create;
 
   for dictionaryKind := Low(FDictionary) to High(FDictionary) do
+  begin
+    if dictionaryKind = TDictionaryKind.dkNone then
+      continue;
+
     FDictionary[dictionaryKind] := TList.Create;
+  end;
 end;
 
 destructor TDictionaryRepository.Destroy;
@@ -98,7 +132,8 @@ begin
 end;
 
 function TDictionaryRepository.AddDictionary(const Name: string;
-  const Code: string; const Description: string; out DictionaryId: integer): ErrorId;
+  const Code: string; const Description: string; out DictionaryId: integer;
+  const ParentCode: string = EMPTY_STR): ErrorId;
 var
   query: TZQuery;
   err: ErrorId;
@@ -116,13 +151,18 @@ begin
 
       query.SQL.Add(
         'INSERT INTO ' + DB_TABLE_DICTIONARY +
-        ' (ID, Name, Code, Description, Created, Modified) ' +
-        'VALUES(:ID,:Name,:Code,:Description,:Created,:Modified);'
+        ' (ID, Name, Code, ParentCode, Description, Created, Modified) ' +
+        'VALUES(:ID,:Name,:Code,:ParentCode,:Description,:Created,:Modified);'
       );
 
       query.Params.ParamByName('ID').AsInteger := DictionaryId;
       query.Params.ParamByName('Name').AsString := Name;
       query.Params.ParamByName('Code').AsString := Code;
+
+      if ParentCode <> EMPTY_STR then
+        query.Params.ParamByName('ParentCode').AsString := ParentCode
+      else
+        query.Params.ParamByName('ParentCode').Clear;
 
       if Description <> EMPTY_STR then
         query.Params.ParamByName('Description').AsString := Description;
@@ -148,9 +188,10 @@ begin
 end;
 
 function TDictionaryRepository.AddDictionary(const Name: string;
-  const Code: string; out DictionaryId: integer): ErrorId;
+  const Code: string; out DictionaryId: integer;
+  const ParentCode: string = EMPTY_STR): ErrorId;
 begin
-  Result := AddDictionary(Name, Code, EMPTY_STR, DictionaryId);
+  Result := AddDictionary(Name, Code, EMPTY_STR, DictionaryId, ParentCode);
 end;
 
 function TDictionaryRepository.AddDictionaryRow(const Text: string;
@@ -236,8 +277,10 @@ begin
       query.Connection := TRepository.GetDbConnection;
 
       query.SQL.Add(
-        'SELECT dr.ID, dr.Text, dr.Code FROM ' + DB_TABLE_DICTIONARY + ' d ' +
+        'SELECT dr.ID, dr.Text, dr.Code, d.ParentCode AS ParentDictionaryCode, ' +
+        '  drParent.Code AS ParentDictionaryRowCode FROM ' + DB_TABLE_DICTIONARY + ' d ' +
         'INNER JOIN ' + DB_TABLE_DICTIONARY_ROW + ' dr ON dr.DictionaryID = d.ID ' +
+        'LEFT JOIN ' + DB_TABLE_DICTIONARY_ROW + ' drParent ON drParent.ID = dr.ParentDictionaryRowId ' +
         'WHERE d.Code = :DictionaryCode ' +
         'ORDER BY dr.Position, UPPER(dr.Text) ' + sortDir
       );
@@ -254,6 +297,8 @@ begin
         dictionaryTable^.Id:= query.FieldByName('ID').AsInteger;
         dictionaryTable^.Text := query.FieldByName('Text').AsString;
         dictionaryTable^.Code := query.FieldByName('Code').AsString;
+        dictionaryTable^.ParentDictionaryCode := query.FieldByName('ParentDictionaryCode').AsString;
+        dictionaryTable^.ParentDictionaryRowCode := query.FieldByName('ParentDictionaryRowCode').AsString;
 
         // adds record to the list
         FDictionary[DictionaryKind].Add(dictionaryTable);
@@ -292,6 +337,9 @@ begin
 
      if FDictionary[DictionaryKind] <> nil then
      begin
+
+       // Load dictionary details if it needed
+       LoadDictionary(DictionaryKind);
 
        // Get index of selected item in a ComboBox to mark the same position
        // after loading
@@ -403,6 +451,48 @@ begin
   Result := err;
 end;
 
+function TDictionaryRepository.GetParentDictionaryKind(DictionaryKind: TDictionaryKind;
+  out ParentDictionaryKind: TDictionaryKind): ErrorId;
+var
+  err: ErrorId;
+  query: TZQuery;
+begin
+  err := ERR_OK;
+
+  try
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'SELECT ParentCode FROM ' + DB_TABLE_DICTIONARY + ' WHERE Code = :DictionaryCode;'
+      );
+
+      query.Params.ParamByName('DictionaryCode').AsString := GetDictionaryName(DictionaryKind);
+
+      query.Open;
+
+      if query.RecordCount = 1 then
+        ParentDictionaryKind := GetDictionaryKind(query.FieldByName('ParentCode').AsString)
+      else
+        err := ERR_GET_PARENT_DICTIONARY_KIND;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'GetParentDictionary', E);
+        err := ERR_GET_PARENT_DICTIONARY_KIND;
+      end;
+  end;
+
+  Result := err;
+end;
+
 function TDictionaryRepository.ClearDictionary: ErrorId;
 begin
   Result := ClearDictionary(false);
@@ -435,6 +525,9 @@ begin
 
     for dictionaryKind := Low(FDictionary) to High(FDictionary) do
     begin
+      if dictionaryKind = TDictionaryKind.dkNone then
+        continue;
+
       if node = nil then
         node := VstList.GetFirst
       else
@@ -469,7 +562,9 @@ begin
 end;
 
 function TDictionaryRepository.LoadDictionaryDetails(
-  var VstList: TVirtualStringTree; DictionaryKind: TDictionaryKind): ErrorId;
+  var VstList: TVirtualStringTree; DictionaryKind: TDictionaryKind;
+  ParentDictionaryKind: TDictionaryKind = TDictionaryKind.dkNone;
+  ParentDictionaryRowCode: string = ''): ErrorId;
 var
   i: integer;
   err: ErrorId;
@@ -477,6 +572,9 @@ var
 
   node: PVirtualNode;
   data: PDictionaryDetailTableNodeRec;
+  parentCode: string;
+
+  rootNodeCount: integer;
 begin
   err := ERR_OK;
 
@@ -485,12 +583,28 @@ begin
     if FDictionary[DictionaryKind] <> nil then
     begin
 
+      parentCode := GetDictionaryName(ParentDictionaryKind);
+
       // Load dictionary details if it needed
       LoadDictionary(DictionaryKind);
 
       // Reinit Virtual String Tree
       VstList.Clear;
-      VstList.RootNodeCount := FDictionary[dictionaryKind].Count;
+
+      //TODO: need to be refactoring
+      rootNodeCount := 0;
+      for i := 0 to FDictionary[dictionaryKind].Count - 1 do
+      begin
+        dictionaryTable := FDictionary[dictionaryKind].Items[i];
+
+        if (parentCode <> EMPTY_STR) and (dictionaryTable^.ParentDictionaryCode = parentCode) and
+           (ParentDictionaryRowCode <> dictionaryTable^.ParentDictionaryRowCode) then
+          Continue;
+
+        Inc(rootNodeCount)
+      end;
+
+      VstList.RootNodeCount := rootNodeCount;
       VstList.ReinitNode(VstList.RootNode, True);
 
       VstList.BeginUpdate;
@@ -502,6 +616,10 @@ begin
       for i := 0 to FDictionary[dictionaryKind].Count - 1 do
       begin
         dictionaryTable := FDictionary[dictionaryKind].Items[i];
+
+        if (parentCode <> EMPTY_STR) and (dictionaryTable^.ParentDictionaryCode = parentCode) and
+           (ParentDictionaryRowCode <> dictionaryTable^.ParentDictionaryRowCode) then
+          Continue;
 
         if node = nil then
           node := VstList.GetFirst

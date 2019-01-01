@@ -69,7 +69,11 @@ type
     class function LoadDictionaryNames(var VstList: TVirtualStringTree;
       SelectFirst: boolean = false): ErrorId;
     class function LoadDictionaryDetails(var VstList: TVirtualStringTree;
-      DictionaryKind: TDictionaryKind): ErrorId;
+      DictionaryKind: TDictionaryKind;
+      ParentDictionaryKind: TDictionaryKind = TDictionaryKind.dkNone;
+      ParentDictionaryRowCode: string = ''): ErrorId;
+    class function GetParentDictionaryKind(DictionaryKind: TDictionaryKind;
+      out ParentDictionaryKind: TDictionaryKind): ErrorId;
   end;
 
 implementation
@@ -220,9 +224,18 @@ begin
 end;
 
 class function TRepository.LoadDictionaryDetails(
-  var VstList: TVirtualStringTree; DictionaryKind: TDictionaryKind): ErrorId;
+  var VstList: TVirtualStringTree; DictionaryKind: TDictionaryKind;
+  ParentDictionaryKind: TDictionaryKind = TDictionaryKind.dkNone;
+  ParentDictionaryRowCode: string = ''): ErrorId;
 begin
-  Result := FMainRepo.DictionaryRepo.LoadDictionaryDetails(VstList, DictionaryKind);
+  Result := FMainRepo.DictionaryRepo.LoadDictionaryDetails(VstList,
+    DictionaryKind, ParentDictionaryKind, ParentDictionaryRowCode);
+end;
+
+class function TRepository.GetParentDictionaryKind(
+  DictionaryKind: TDictionaryKind; out ParentDictionaryKind: TDictionaryKind): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.GetParentDictionaryKind(DictionaryKind,ParentDictionaryKind);
 end;
 
 initialization

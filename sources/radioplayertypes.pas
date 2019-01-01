@@ -31,7 +31,7 @@ type
 
 { - - - - - - - - - - - - - - - - - Dictionary - - - - - - - - - - - - - - - - }
 type
-  TDictionaryKind = (dkGenre, dkRegion, dkCountry);
+  TDictionaryKind = (dkNone, dkGenre, dkRegion, dkCountry);
 
 { - - - - - - - - - - - - - - - - StationInfo - - - - - - - - - - - - - - - - - }
 type
@@ -49,9 +49,11 @@ type
 type
   PDictionaryTable = ^TDictionaryTable;
   TDictionaryTable = record
-    Id          : integer;
-    Text        : string;
-    Code        : string;
+    Id                      : integer;
+    Text                    : string;
+    Code                    : string;
+    ParentDictionaryCode    : string;
+    ParentDictionaryRowCode : string;
   end;
 
 { - - - - - - - - - - - - - - - TStationNodeData  - - - - - - - - - - - - - - - }

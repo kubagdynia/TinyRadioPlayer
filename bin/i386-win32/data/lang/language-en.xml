@@ -11,6 +11,7 @@
 		<Item name="ErrorMessage.StationRepositoryNotAssigned" type="string">The station repository has not been assigned yet!</Item>
 		<Item name="ErrorMessage.DictionaryRepositoryNotAssigned" type="string">The dictionary repository has not been assigned yet!</Item>
 		<Item name="ErrorMessage.CantLoadSkinItems" type="string">Skin elements can not be loaded!</Item>
+		<Item name="ErrorMessage.DictionaryTypeCanNotBeSpecified" type="string">The dictionary type can not be specified!</Item>
 		
 		<Item name="Dialog.Question" type="string">Question</Item>
 		<Item name="Dialog.Answer.Yes" type="string">Yes</Item>

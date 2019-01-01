@@ -30,13 +30,13 @@ type
     constructor Create; overload;
     destructor Destroy; override;
 
-    function AddStation(const StationName: string; const StreamUrl: string;
-      out StationId: integer): ErrorId;
-    function AddStation(const StationName: string; const StreamUrl: string;
-      const Description: string; const WebpageUrl: string;
-      const GenreCode: string; const CountryCode: string;
-      out StationId: integer): ErrorId;
-    function AddStation(StationInfo: TStationInfo; out StationId: integer): ErrorId;
+    function AddStation(const AStationName: string; const AStreamUrl: string;
+      out AStationId: integer): ErrorId;
+    function AddStation(const AStationName: string; const AStreamUrl: string;
+      const ADescription: string; const AWebpageUrl: string;
+      const AGenreCode: string; const ACountryCode: string;
+      out AStationId: integer): ErrorId;
+    function AddStation(AStationInfo: TStationInfo; out AStationId: integer): ErrorId;
 
     function UpdateStation(StationInfo: TStationInfo): ErrorId;
 
@@ -72,15 +72,15 @@ begin
   inherited Destroy;
 end;
 
-function TStationRepository.AddStation(const StationName: string;
-  const StreamUrl: string; out StationId: integer): ErrorId;
+function TStationRepository.AddStation(const AStationName: string;
+  const AStreamUrl: string; out AStationId: integer): ErrorId;
 begin
-  Result := AddStation(StationName, StreamUrl, EMPTY_STR, EMPTY_STR, EMPTY_STR, EMPTY_STR, StationId);
+  Result := AddStation(AStationName, AStreamUrl, EMPTY_STR, EMPTY_STR, EMPTY_STR, EMPTY_STR, AStationId);
 end;
 
-function TStationRepository.AddStation(const StationName: string;
-  const StreamUrl: string; const Description: string; const WebpageUrl: string;
-  const GenreCode: string; const CountryCode: string; out StationId: integer): ErrorId;
+function TStationRepository.AddStation(const AStationName: string;
+  const AStreamUrl: string; const ADescription: string; const AWebpageUrl: string;
+  const AGenreCode: string; const ACountryCode: string; out AStationId: integer): ErrorId;
 var
   err: ErrorId;
   stationInfo: TStationInfo;
@@ -90,20 +90,20 @@ begin
   with stationInfo do
     begin
       Id := EMPTY_INT;
-      Name := StationName;
-      StreamUrl := StreamUrl;
-      Description := Description;
-      WebpageUrl := WebpageUrl;
-      GenreCode := GenreCode;
-      CountryCode := CountryCode;
+      Name := AStationName;
+      StreamUrl := AStreamUrl;
+      Description := ADescription;
+      WebpageUrl := AWebpageUrl;
+      GenreCode := AGenreCode;
+      CountryCode := ACountryCode;
     end;
 
-  err := AddStation(stationInfo, StationId);
+  err := AddStation(stationInfo, AStationId);
 
   Result := err;
 end;
 
-function TStationRepository.AddStation(StationInfo: TStationInfo; out StationId: integer): ErrorId;
+function TStationRepository.AddStation(AStationInfo: TStationInfo; out AStationId: integer): ErrorId;
 var
   query: TZQuery;
   err: ErrorId;
@@ -113,14 +113,14 @@ begin
   err := ERR_OK;
 
   try
-    err := IsStationExists(StationInfo.Name, EMPTY_INT, isExists);
+    err := IsStationExists(AStationInfo.Name, EMPTY_INT, isExists);
 
     if (err = ERR_OK) and isExists then
       err := ERR_DB_STATION_ALREADY_EXISTS;
 
     if err = ERR_OK then
     begin
-      StationId := TRepository.GetNewDbTableKey(DB_TABLE_STATIONS);
+      AStationId := TRepository.GetNewDbTableKey(DB_TABLE_STATIONS);
       dateNow := GetUnixTimestamp();
 
       query := TZQuery.Create(nil);
@@ -133,21 +133,21 @@ begin
           'VALUES(:ID,:Name,:StreamUrl,:Description,:WebpageUrl,:GenreCode,:CountryCode,:Created,:Modified);'
         );
 
-        query.Params.ParamByName('ID').AsInteger := StationId;
-        query.Params.ParamByName('Name').AsString := Trim(StationInfo.Name);
-        query.Params.ParamByName('StreamUrl').AsString := Trim(StationInfo.StreamUrl);
+        query.Params.ParamByName('ID').AsInteger := AStationId;
+        query.Params.ParamByName('Name').AsString := Trim(AStationInfo.Name);
+        query.Params.ParamByName('StreamUrl').AsString := Trim(AStationInfo.StreamUrl);
 
-        if (Trim(StationInfo.Description) <> EMPTY_STR) then
-          query.Params.ParamByName('Description').AsString := Trim(StationInfo.Description);
+        if (Trim(AStationInfo.Description) <> EMPTY_STR) then
+          query.Params.ParamByName('Description').AsString := Trim(AStationInfo.Description);
 
-        if (Trim(StationInfo.WebpageUrl) <> EMPTY_STR) then
-          query.Params.ParamByName('WebpageUrl').AsString := Trim(StationInfo.WebpageUrl);
+        if (Trim(AStationInfo.WebpageUrl) <> EMPTY_STR) then
+          query.Params.ParamByName('WebpageUrl').AsString := Trim(AStationInfo.WebpageUrl);
 
-        if (Trim(StationInfo.GenreCode) <> EMPTY_STR) then
-          query.Params.ParamByName('GenreCode').AsString := Trim(StationInfo.GenreCode);
+        if (Trim(AStationInfo.GenreCode) <> EMPTY_STR) then
+          query.Params.ParamByName('GenreCode').AsString := Trim(AStationInfo.GenreCode);
 
-        if (Trim(StationInfo.CountryCode) <> EMPTY_STR) then
-          query.Params.ParamByName('CountryCode').AsString := Trim(StationInfo.CountryCode);
+        if (Trim(AStationInfo.CountryCode) <> EMPTY_STR) then
+          query.Params.ParamByName('CountryCode').AsString := Trim(AStationInfo.CountryCode);
 
         query.Params.ParamByName('Created').AsInteger := dateNow;
         query.Params.ParamByName('Modified').AsInteger := dateNow;

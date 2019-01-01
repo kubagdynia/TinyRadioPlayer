@@ -52,6 +52,8 @@ const
   ERR_GET_CODE_FROM_SELECTED_ITEM           = $00000109;
   ERR_LOAD_DICTIONARY_NAMES                 = $0000010A;
   ERR_LOAD_DICTIONARY_DETAILS               = $0000010B;
+  ERR_GET_PARENT_DICTIONARY_KIND            = $0000010C;
+  ERR_IN_DETERMINING_TYPE_OF_DICTIONARY     = $0000010D;
 
   // Skins
   ERR_CANT_LOAD_SKIN_ITEMS                  = $00000201;
@@ -157,6 +159,10 @@ begin
     ERR_CANT_LOAD_SKIN_ITEMS:
       Result := GetLanguageItem('ErrorMessage.CantLoadSkinItems',
              'Skin elements can not be loaded!');
+
+    ERR_IN_DETERMINING_TYPE_OF_DICTIONARY:
+      Result := GetLanguageItem('ErrorMessage.DictionaryTypeCanNotBeSpecified',
+             'The dictionary type can not be specified!');
     else
       Result := GetLanguageItem('ErrorMessage.UnspecifiedError',
         'An unspecified error occurred!');
