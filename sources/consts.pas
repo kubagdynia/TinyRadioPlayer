@@ -65,7 +65,7 @@ const
   DICTIONARY_GENRE_CODE     = 'Genre';
   DICTIONARY_REGION_CODE    = 'Region';
   DICTIONARY_COUNTRY_CODE   = 'Country';
-  DICTIONARY_NAMES: ARRAY[Low(TDictionaryKind)..High(TDictionaryKind)] of string = (EMPTY_STR, DICTIONARY_GENRE_CODE, DICTIONARY_REGION_CODE, DICTIONARY_COUNTRY_CODE);
+  DICTIONARY_NAMES: ARRAY[Low(TDictionaryType)..High(TDictionaryType)] of string = (EMPTY_STR, DICTIONARY_GENRE_CODE, DICTIONARY_REGION_CODE, DICTIONARY_COUNTRY_CODE);
 
 { - - - - - - - - - - - - - - - - - Grid Colors - - - - - - - - - - - - - - - - }
 GridLineColor: TColor = (250 or (250 shl 8) or (250 shl 16)); // RGB(250, 250, 250);

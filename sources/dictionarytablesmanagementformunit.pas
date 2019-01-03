@@ -529,8 +529,8 @@ procedure TDictionaryTablesManagementForm.LoadDictionaryDetailsList(
   VSTNode: PVirtualNode);
 var
   data: PDictionaryTableNodeRec;
-  dictionaryKind: TDictionaryKind;
-  parentDictionaryKind: TDictionaryKind;
+  dictionaryType: TDictionaryType;
+  parentDictionaryType: TDictionaryType;
   parentDictionaryRowCode: string;
 begin
   if VSTNode <> nil then
@@ -538,19 +538,19 @@ begin
   else
     Exit;
 
-  dictionaryKind := data^.dtnd.DictionaryKind;
+  dictionaryType := data^.dtnd.DictionaryType;
 
-  TRepository.GetParentDictionaryKind(dictionaryKind, parentDictionaryKind);
+  TRepository.GetParentDictionaryType(dictionaryType, parentDictionaryType);
 
-  CenterTopPanel.Visible := parentDictionaryKind <> TDictionaryKind.dkNone;
+  CenterTopPanel.Visible := parentDictionaryType <> TDictionaryType.dkNone;
 
   if (CenterTopPanel.Visible) and (cboParentTablesList.Items.Count = 0) then
-    TRepository.AddDictionaryItemsToComboBox(cboParentTablesList, parentDictionaryKind, false);
+    TRepository.AddDictionaryItemsToComboBox(cboParentTablesList, parentDictionaryType, false);
 
   TRepository.GetDictionaryCodeFromSelectedItem(cboParentTablesList, parentDictionaryRowCode);
 
-  TRepository.LoadDictionaryDetails(VSTDictionaryDetailsList, dictionaryKind,
-    parentDictionaryKind, parentDictionaryRowCode);
+  TRepository.LoadDictionaryDetails(VSTDictionaryDetailsList, dictionaryType,
+    parentDictionaryType, parentDictionaryRowCode);
 end;
 
 procedure TDictionaryTablesManagementForm.LoadLanguages;

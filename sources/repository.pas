@@ -58,22 +58,22 @@ type
     class function AddDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryId: integer;
       out DictionaryRowId: integer): ErrorId;
-    class function LoadDictionary(DictionaryKind: TDictionaryKind;
+    class function LoadDictionary(DictionaryType: TDictionaryType;
       SkipIfLoaded: boolean = true; SortDirection: TSortDirection = sdAscending): ErrorId;
     class function ClearDictionary: ErrorId;
     class function AddDictionaryItemsToComboBox(var ComboBox: TComboBox;
-      DictionaryKind: TDictionaryKind; FirstBlank: boolean): ErrorId;
+      DictionaryType: TDictionaryType; FirstBlank: boolean): ErrorId;
     class function FindAnItemInTheComboBox(var ComboBox: TComboBox; Code: string): ErrorId;
     class function GetDictionaryCodeFromSelectedItem(var ComboBox: TComboBox;
       out DictionaryCode: string): ErrorId;
     class function LoadDictionaryNames(var VstList: TVirtualStringTree;
       SelectFirst: boolean = false): ErrorId;
     class function LoadDictionaryDetails(var VstList: TVirtualStringTree;
-      DictionaryKind: TDictionaryKind;
-      ParentDictionaryKind: TDictionaryKind = TDictionaryKind.dkNone;
+      DictionaryType: TDictionaryType;
+      ParentDictionaryType: TDictionaryType = TDictionaryType.dkNone;
       ParentDictionaryRowCode: string = ''): ErrorId;
-    class function GetParentDictionaryKind(DictionaryKind: TDictionaryKind;
-      out ParentDictionaryKind: TDictionaryKind): ErrorId;
+    class function GetParentDictionaryType(DictionaryType: TDictionaryType;
+      out ParentDictionaryType: TDictionaryType): ErrorId;
   end;
 
 implementation
@@ -186,10 +186,10 @@ begin
     DictionaryRowId);
 end;
 
-class function TRepository.LoadDictionary(DictionaryKind: TDictionaryKind;
+class function TRepository.LoadDictionary(DictionaryType: TDictionaryType;
   SkipIfLoaded: boolean = true; SortDirection: TSortDirection = sdAscending): ErrorId;
 begin
-  Result := FMainRepo.DictionaryRepo.LoadDictionary(DictionaryKind, SkipIfLoaded, SortDirection);
+  Result := FMainRepo.DictionaryRepo.LoadDictionary(DictionaryType, SkipIfLoaded, SortDirection);
 end;
 
 class function TRepository.ClearDictionary: ErrorId;
@@ -198,10 +198,10 @@ begin
 end;
 
 class function TRepository.AddDictionaryItemsToComboBox(
-  var ComboBox: TComboBox; DictionaryKind: TDictionaryKind; FirstBlank: boolean): ErrorId;
+  var ComboBox: TComboBox; DictionaryType: TDictionaryType; FirstBlank: boolean): ErrorId;
 begin
   Result := FMainRepo.DictionaryRepo.AddDictionaryItemsToComboBox(
-    ComboBox, DictionaryKind, FirstBlank);
+    ComboBox, DictionaryType, FirstBlank);
 end;
 
 class function TRepository.FindAnItemInTheComboBox(var ComboBox: TComboBox;
@@ -224,18 +224,18 @@ begin
 end;
 
 class function TRepository.LoadDictionaryDetails(
-  var VstList: TVirtualStringTree; DictionaryKind: TDictionaryKind;
-  ParentDictionaryKind: TDictionaryKind = TDictionaryKind.dkNone;
+  var VstList: TVirtualStringTree; DictionaryType: TDictionaryType;
+  ParentDictionaryType: TDictionaryType = TDictionaryType.dkNone;
   ParentDictionaryRowCode: string = ''): ErrorId;
 begin
   Result := FMainRepo.DictionaryRepo.LoadDictionaryDetails(VstList,
-    DictionaryKind, ParentDictionaryKind, ParentDictionaryRowCode);
+    DictionaryType, ParentDictionaryType, ParentDictionaryRowCode);
 end;
 
-class function TRepository.GetParentDictionaryKind(
-  DictionaryKind: TDictionaryKind; out ParentDictionaryKind: TDictionaryKind): ErrorId;
+class function TRepository.GetParentDictionaryType(
+  DictionaryType: TDictionaryType; out ParentDictionaryType: TDictionaryType): ErrorId;
 begin
-  Result := FMainRepo.DictionaryRepo.GetParentDictionaryKind(DictionaryKind,ParentDictionaryKind);
+  Result := FMainRepo.DictionaryRepo.GetParentDictionaryType(DictionaryType, ParentDictionaryType);
 end;
 
 initialization

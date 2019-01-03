@@ -31,7 +31,7 @@ type
 
 { - - - - - - - - - - - - - - - - - Dictionary - - - - - - - - - - - - - - - - }
 type
-  TDictionaryKind = (dkNone, dkGenre, dkRegion, dkCountry);
+  TDictionaryType = (dkNone, dkGenre, dkRegion, dkCountry);
 
 { - - - - - - - - - - - - - - - - StationInfo - - - - - - - - - - - - - - - - - }
 type
@@ -86,13 +86,13 @@ type
   protected
     FName           : string;
     FTableName      : string;
-    FDictionaryKind : TDictionaryKind;
+    FDictionaryType : TDictionaryType;
   public
-    constructor Create(const Name, TableName: string; DictionaryKind: TDictionaryKind); overload;
+    constructor Create(const Name, TableName: string; DictionaryType: TDictionaryType); overload;
 
     property Name           : string read FName      write FName;
     property TableName      : string read FTableName write FTableName;
-    property DictionaryKind : TDictionaryKind read FDictionaryKind;
+    property DictionaryType : TDictionaryType read FDictionaryType;
   end;
 
   PDictionaryTableNodeRec = ^TDictionaryTableNodeRec;
@@ -137,13 +137,13 @@ begin
 end;
 
 constructor TDictionaryTableNodeData.Create(const Name, TableName: string;
-  DictionaryKind: TDictionaryKind);
+  DictionaryType: TDictionaryType);
 begin
   inherited Create;
 
   FName := Name;
   FTableName := TableName;
-  FDictionaryKind := DictionaryKind;
+  FDictionaryType := DictionaryType;
 end;
 
 constructor TDictionaryDetailTableNodeData.Create(const Id: integer;

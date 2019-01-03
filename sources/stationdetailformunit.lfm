@@ -9,6 +9,9 @@ inherited StationDetailForm: TStationDetailForm
   OnResize = FormResize
   inherited TitlePanel: TBCPanel
     Width = 453
+    inherited lblTitle: TBCLabel
+      Width = 23
+    end
   end
   inherited MainPanel: TBCPanel
     Height = 386
