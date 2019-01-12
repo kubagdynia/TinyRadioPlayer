@@ -7,6 +7,7 @@
 		<Item name="WarningMessage.General" type="string">Ostrzeżenie!</Item>
 		<Item name="InformationMessage.General" type="string">Informacja!</Item>
 		<Item name="ErrorMessage.UnspecifiedError" type="string">Wystąpił nieznany błąd!</Item>
+		<Item name="ErrorMessage.IncorrectConstructor" type="string">Niepoprawny konstruktor. Powinieneś użyć konstruktora z parametrami.</Item>
 		<Item name="ErrorMessage.DbConnectionNotEstablished" type="string">Nie nawiązano jeszcze połączenia z bazą danych!</Item>
 		<Item name="ErrorMessage.StationRepositoryNotAssigned" type="string">Repozytorium stacji nie zostało jeszcze przypisane!</Item>
 		<Item name="ErrorMessage.DictionaryRepositoryNotAssigned" type="string">Repozytorium słowników nie zostało jeszcze przypisane!</Item>
@@ -68,6 +69,9 @@
 		<Item name="DictionaryTablesManagement.Title" type="string">Dodaj, usuń lub modyfikuj tablice słownikowe</Item>
 		<Item name="DictionaryTablesManagement.Column.DictionaryName" type="string">Tablica</Item>
 		<Item name="DictionaryTablesManagement.Column.DictionaryDetailName" type="string">Nazwa</Item>
+		<Item name="DictionaryTablesManagement.Detail.AddNewDictionaryItem" type="string">Dodaj nową pozycję słownikową</Item>
+		<Item name="DictionaryTablesManagement.Detail.EditDictionaryItem" type="string">Edytuj pozycję słownikową</Item>
+		<Item name="DictionaryTablesManagement.Detail.DeleteDictionaryItem" type="string">Usuń pozycję słownikową</Item>
 		
 		<!-- Dictionary Tables -->
 		<Item name="DictionaryTables.Genre" type="string">Gatunek</Item>

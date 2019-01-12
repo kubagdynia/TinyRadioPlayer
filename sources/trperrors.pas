@@ -21,6 +21,7 @@ uses
 const
   ERR_OK                                    = $00000000;
   ERR_UNSPECIFIED_ERROR                     = $00000001;
+  ERR_INCORRECT_CONSTRUCTOR                 = $00000002;
 
   // Database core
   ERR_DB_NO_DATABASE_NAME                   = $00000011;
@@ -151,6 +152,10 @@ begin
     ERR_UNSPECIFIED_ERROR:
       Result := GetLanguageItem('ErrorMessage.UnspecifiedError',
              'An unspecified error occurred!');
+
+    ERR_INCORRECT_CONSTRUCTOR:
+      Result := GetLanguageItem('ErrorMessage.IncorrectConstructor',
+             'Incorrect constructor. You should use the constructor with parameters.');
 
     ERR_DB_STATION_ALREADY_EXISTS:
       Result := GetLanguageItem('StationDetail.Error.StationAlreadyExists',

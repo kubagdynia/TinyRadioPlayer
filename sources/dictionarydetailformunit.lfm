@@ -1,0 +1,7 @@
+inherited DictionaryDetailForm: TDictionaryDetailForm
+  inherited TitlePanel: TBCPanel
+    inherited lblTitle: TBCLabel
+      Width = 23
+    end
+  end
+end

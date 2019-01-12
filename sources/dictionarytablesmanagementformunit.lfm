@@ -152,6 +152,7 @@ inherited DictionaryTablesManagementForm: TDictionaryTablesManagementForm
         Height = 33
         Top = 0
         Width = 40
+        Action = AddDetailAction
         StateClicked.Background.Color = clBlack
         StateClicked.Background.ColorOpacity = 255
         StateClicked.Background.Gradient1.StartColor = 7726591
@@ -864,6 +865,11 @@ inherited DictionaryTablesManagementForm: TDictionaryTablesManagementForm
     end
     inherited btnOk: TBCButton
       Left = 409
+    end
+  end
+  inherited BaseFormActionList: TActionList
+    object AddDetailAction: TAction[1]
+      OnExecute = AddDetailActionExecute
     end
   end
 end

@@ -24,6 +24,7 @@ type
   { TDictionaryTablesManagementForm }
 
   TDictionaryTablesManagementForm = class(TBaseForm)
+    AddDetailAction: TAction;
     btnAdd: TBCButton;
     btnEdit: TBCButton;
     btnDelete: TBCButton;
@@ -33,6 +34,7 @@ type
     cboParentTablesList: TComboBox;
     RightPanel: TBCPanel;
     LeftPanel: TBCPanel;
+    procedure AddDetailActionExecute(Sender: TObject);
     procedure cboParentTablesListChange(Sender: TObject);
   private
     procedure InitVstDictionaryTablesList;
@@ -93,7 +95,7 @@ var
 implementation
 
 uses
-  Language, Helpers, Consts, Repository, Skins;
+  Language, Helpers, Consts, Repository, Skins, DictionaryDetailFormUnit;
 
 {$R *.lfm}
 
@@ -114,6 +116,21 @@ procedure TDictionaryTablesManagementForm.cboParentTablesListChange(
 begin
   // Load details based on tables list
   LoadDictionaryDetailsList(VSTDictionaryTablesList.GetFirstSelected);
+end;
+
+procedure TDictionaryTablesManagementForm.AddDetailActionExecute(Sender: TObject);
+var
+  mr: TModalResult;
+begin
+  if not Assigned(DictionaryDetailForm) then
+  begin
+    DictionaryDetailForm := TDictionaryDetailForm.Create(Self, TOpenMode.omNew);
+    try
+      mr := DictionaryDetailForm.ShowModal;
+    finally
+      FreeAndNil(DictionaryDetailForm);
+    end;
+  end;
 end;
 
 procedure TDictionaryTablesManagementForm.InitVstDictionaryTablesList;

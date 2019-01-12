@@ -79,7 +79,7 @@
         <PackageName Value="LCL"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="25">
+    <Units Count="26">
       <Unit0>
         <Filename Value="TinyRadioPlayer.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -219,6 +219,14 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="DictionaryTablesManagementFormUnit"/>
       </Unit24>
+      <Unit25>
+        <Filename Value="dictionarydetailformunit.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="DictionaryDetailForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="DictionaryDetailFormUnit"/>
+      </Unit25>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

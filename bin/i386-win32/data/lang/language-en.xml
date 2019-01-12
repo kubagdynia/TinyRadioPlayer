@@ -7,6 +7,7 @@
 		<Item name="WarningMessage.General" type="string">Warning!</Item>
 		<Item name="InformationMessage.General" type="string">Information!</Item>
 		<Item name="ErrorMessage.UnspecifiedError" type="string">An unspecified error occurred!</Item>
+		<Item name="ErrorMessage.IncorrectConstructor" type="string">Incorrect constructor. You should use the constructor with parameters.</Item>
 		<Item name="ErrorMessage.DbConnectionNotEstablished" type="string">The connection to the database has not been established yet!</Item>
 		<Item name="ErrorMessage.StationRepositoryNotAssigned" type="string">The station repository has not been assigned yet!</Item>
 		<Item name="ErrorMessage.DictionaryRepositoryNotAssigned" type="string">The dictionary repository has not been assigned yet!</Item>
@@ -68,6 +69,9 @@
 		<Item name="DictionaryTablesManagement.Title" type="string">Add, edit or delete dictionary tables</Item>
 		<Item name="DictionaryTablesManagement.Column.DictionaryName" type="string">Dictionary</Item>
 		<Item name="DictionaryTablesManagement.Column.DictionaryDetailName" type="string">Name</Item>
+		<Item name="DictionaryTablesManagement.Detail.AddNewDictionaryItem" type="string">Add a new dictionary item</Item>
+		<Item name="DictionaryTablesManagement.Detail.EditDictionaryItem" type="string">Edit dictionary item</Item>
+		<Item name="DictionaryTablesManagement.Detail.DeleteDictionaryItem" type="string">Delete doctionary item</Item>
 		
 		<!-- Dictionary Tables -->
 		<Item name="DictionaryTables.Genre" type="string">Genre</Item>
