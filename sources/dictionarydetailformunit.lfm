@@ -1,7 +1,82 @@
 inherited DictionaryDetailForm: TDictionaryDetailForm
+  Height = 276
+  Width = 384
+  ClientHeight = 276
+  ClientWidth = 384
+  Constraints.MinHeight = 276
+  Constraints.MinWidth = 300
   inherited TitlePanel: TBCPanel
+    Width = 384
     inherited lblTitle: TBCLabel
       Width = 23
     end
+  end
+  inherited MainPanel: TBCPanel
+    Height = 190
+    Width = 384
+    object cboParentDictionaryTable: TComboBox[0]
+      Left = 8
+      Height = 23
+      Top = 26
+      Width = 366
+      Anchors = [akTop, akLeft, akRight]
+      Enabled = False
+      ItemHeight = 15
+      TabOrder = 0
+    end
+    object lblParentDictionaryTable: TLabel[1]
+      Left = 8
+      Height = 15
+      Top = 7
+      Width = 122
+      Caption = 'Parent Dictionary Table'
+      ParentColor = False
+    end
+    object edtDictionaryItemName: TEdit[2]
+      Left = 8
+      Height = 23
+      Top = 81
+      Width = 366
+      Anchors = [akTop, akLeft, akRight]
+      TabOrder = 1
+    end
+    object lblDictionaryItemName: TLabel[3]
+      Left = 8
+      Height = 15
+      Top = 62
+      Width = 116
+      Caption = 'Dictionary Item Name'
+      ParentColor = False
+    end
+    object lblDictionaryItemCode: TLabel[4]
+      Left = 8
+      Height = 15
+      Top = 117
+      Width = 112
+      Caption = 'Dictionary Item Code'
+      ParentColor = False
+    end
+    object edtDictionaryItemCode: TEdit[5]
+      Left = 8
+      Height = 23
+      Top = 136
+      Width = 366
+      Anchors = [akTop, akLeft, akRight]
+      TabOrder = 2
+    end
+  end
+  inherited BottomPanel: TBCPanel
+    Top = 231
+    Width = 384
+    inherited btnCancel: TBCButton
+      Left = 145
+    end
+    inherited btnOk: TBCButton
+      Left = 263
+    end
+  end
+  inherited BaseFormActionList: TActionList
+    left = 304
+    top = 48
   end
 end

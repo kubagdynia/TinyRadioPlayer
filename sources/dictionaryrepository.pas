@@ -30,7 +30,6 @@ type
 
     function ClearDictionary(FreeAndNilDictionary: boolean = false): ErrorId;
   protected
-    function GetDictionaryName(DictionaryType: TDictionaryType): string;
     function GetDictionaryType(DictionaryCode: string): TDictionaryType;
 
   public
@@ -43,6 +42,10 @@ type
       const ParentCode: string = EMPTY_STR): ErrorId;
     function AddDictionary(const Name: string; const Code: string;
       out DictionaryId: integer; const ParentCode: string = EMPTY_STR): ErrorId;
+
+    // Get Dictionary
+    function GetDictionaryName(DictionaryType: TDictionaryType): string;
+    function GetLocalizedDictionaryName(DictionaryType: TDictionaryType): string;
 
     // Add Dictionary Row
     function AddDictionaryRow(const Text: string; const Code: string;
@@ -86,6 +89,12 @@ uses
 function TDictionaryRepository.GetDictionaryName(DictionaryType: TDictionaryType): string;
 begin
   Result := DICTIONARY_NAMES[DictionaryType];
+end;
+
+function TDictionaryRepository.GetLocalizedDictionaryName(
+  DictionaryType: TDictionaryType): string;
+begin
+  Result := GetLanguageItem('DictionaryTables.' + GetDictionaryName(DictionaryType));
 end;
 
 function TDictionaryRepository.GetDictionaryType(DictionaryCode: string): TDictionaryType;
@@ -536,7 +545,7 @@ begin
       data := VstList.GetNodeData(node);
 
       dictionaryName := GetDictionaryName(dictionaryType);
-      dictionaryLocalizedName := GetLanguageItem('DictionaryTables.' + dictionaryName);
+      dictionaryLocalizedName := GetLocalizedDictionaryName(dictionaryType);
 
       data^.dtnd := TDictionaryTableNodeData.Create(dictionaryLocalizedName, dictionaryName, dictionaryType);
     end;

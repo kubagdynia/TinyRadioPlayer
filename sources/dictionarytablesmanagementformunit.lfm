@@ -320,6 +320,7 @@ inherited DictionaryTablesManagementForm: TDictionaryTablesManagementForm
         Height = 33
         Top = 36
         Width = 40
+        Action = EditDetailAction
         StateClicked.Background.Color = clBlack
         StateClicked.Background.ColorOpacity = 255
         StateClicked.Background.Gradient1.StartColor = 7726591
@@ -487,6 +488,7 @@ inherited DictionaryTablesManagementForm: TDictionaryTablesManagementForm
         Height = 33
         Top = 72
         Width = 40
+        Action = DeleteDetailAction
         StateClicked.Background.Color = clBlack
         StateClicked.Background.ColorOpacity = 255
         StateClicked.Background.Gradient1.StartColor = 7726591
@@ -869,7 +871,13 @@ inherited DictionaryTablesManagementForm: TDictionaryTablesManagementForm
   end
   inherited BaseFormActionList: TActionList
     object AddDetailAction: TAction[1]
-      OnExecute = AddDetailActionExecute
+      OnExecute = DetailActionExecute
+    end
+    object EditDetailAction: TAction[2]
+      OnExecute = DetailActionExecute
+    end
+    object DeleteDetailAction: TAction[3]
+      OnExecute = DetailActionExecute
     end
   end
 end

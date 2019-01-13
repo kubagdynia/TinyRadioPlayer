@@ -24,6 +24,8 @@ type
   { TDictionaryTablesManagementForm }
 
   TDictionaryTablesManagementForm = class(TBaseForm)
+    DeleteDetailAction: TAction;
+    EditDetailAction: TAction;
     AddDetailAction: TAction;
     btnAdd: TBCButton;
     btnEdit: TBCButton;
@@ -34,8 +36,8 @@ type
     cboParentTablesList: TComboBox;
     RightPanel: TBCPanel;
     LeftPanel: TBCPanel;
-    procedure AddDetailActionExecute(Sender: TObject);
     procedure cboParentTablesListChange(Sender: TObject);
+    procedure DetailActionExecute(Sender: TObject);
   private
     procedure InitVstDictionaryTablesList;
     procedure InitVstDictionaryDetailsList;
@@ -77,6 +79,7 @@ type
       HitInfo: TVTHeaderHitInfo);
 
     procedure LoadDictionaryDetailsList(VSTNode: PVirtualNode);
+
   protected
     procedure LoadLanguages; override;
     procedure LoadSkins; override;
@@ -116,21 +119,6 @@ procedure TDictionaryTablesManagementForm.cboParentTablesListChange(
 begin
   // Load details based on tables list
   LoadDictionaryDetailsList(VSTDictionaryTablesList.GetFirstSelected);
-end;
-
-procedure TDictionaryTablesManagementForm.AddDetailActionExecute(Sender: TObject);
-var
-  mr: TModalResult;
-begin
-  if not Assigned(DictionaryDetailForm) then
-  begin
-    DictionaryDetailForm := TDictionaryDetailForm.Create(Self, TOpenMode.omNew);
-    try
-      mr := DictionaryDetailForm.ShowModal;
-    finally
-      FreeAndNil(DictionaryDetailForm);
-    end;
-  end;
 end;
 
 procedure TDictionaryTablesManagementForm.InitVstDictionaryTablesList;
@@ -585,6 +573,82 @@ begin
   btnAdd.Glyph.Assign(TSkins.GetBitmapItem('btnAdd'));
   btnEdit.Glyph.Assign(TSkins.GetBitmapItem('btnEdit'));
   btnDelete.Glyph.Assign(TSkins.GetBitmapItem('btnDelete'));
+end;
+
+procedure TDictionaryTablesManagementForm.DetailActionExecute(Sender: TObject);
+var
+  mr: TModalResult;
+  act: TAction;
+  node: PVirtualNode;
+  nodeDetail: PVirtualNode;
+  data: PDictionaryTableNodeRec;
+  dataDetail: PDictionaryDetailTableNodeRec;
+  dictionaryType: TDictionaryType;
+  parentDictionaryType: TDictionaryType;
+  dictionaryDetailTableNodeData: TDictionaryDetailTableNodeData;
+  detailOpenMode: TOpenMode;
+  parentDictionaryRowCode: string;
+begin
+  if (not (Sender is TAction) or (VSTDictionaryTablesList.GetFirstSelected() = nil)) then
+    Exit;
+
+  // Check if any of item is selected in VSTDictionaryTablesList
+  node := VSTDictionaryTablesList.GetFirstSelected();
+
+  // If node is nil then exit
+  if not Assigned(node) then
+    Exit;
+
+  if Assigned(DictionaryDetailForm) then
+    Exit;
+
+  act := TAction(Sender);
+
+  // Get node data
+  data := VSTDictionaryTablesList.GetNodeData(node);
+
+  dictionaryType := data^.dtnd.DictionaryType;
+
+  TRepository.GetParentDictionaryType(dictionaryType, parentDictionaryType);
+
+  TRepository.GetDictionaryCodeFromSelectedItem(cboParentTablesList, parentDictionaryRowCode);
+
+  dictionaryDetailTableNodeData := nil;
+
+  nodeDetail := VSTDictionaryDetailsList.GetFirstSelected();
+  if Assigned(nodeDetail) then
+  begin
+    dataDetail := VSTDictionaryDetailsList.GetNodeData(nodeDetail);
+    dictionaryDetailTableNodeData := dataDetail^.ddtnd;
+  end;
+
+  case act.Name of
+    'AddDetailAction': detailOpenMode := TOpenMode.omNew;
+    'EditDetailAction':
+      begin
+        if dictionaryDetailTableNodeData = nil then
+          Exit;
+
+        detailOpenMode := TOpenMode.omEdit;
+
+      end;
+    'DeleteDetailAction':
+      begin
+        if dictionaryDetailTableNodeData = nil then
+          Exit;
+
+        detailOpenMode := TOpenMode.omDelete;
+      end;
+  end;
+
+  DictionaryDetailForm := TDictionaryDetailForm.Create(Self, detailOpenMode,
+    dictionaryType, parentDictionaryType, parentDictionaryRowCode, dictionaryDetailTableNodeData);
+  try
+    mr := DictionaryDetailForm.ShowModal;
+  finally
+    FreeAndNil(DictionaryDetailForm);
+  end;
+
 end;
 
 end.

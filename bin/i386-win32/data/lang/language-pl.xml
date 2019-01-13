@@ -72,6 +72,11 @@
 		<Item name="DictionaryTablesManagement.Detail.AddNewDictionaryItem" type="string">Dodaj nową pozycję słownikową</Item>
 		<Item name="DictionaryTablesManagement.Detail.EditDictionaryItem" type="string">Edytuj pozycję słownikową</Item>
 		<Item name="DictionaryTablesManagement.Detail.DeleteDictionaryItem" type="string">Usuń pozycję słownikową</Item>
+		<Item name="DictionaryTablesManagement.Detail.Save" type="string">Zapisz</Item>
+		<Item name="DictionaryTablesManagement.Detail.Delete" type="string">Usuń</Item>
+		<Item name="DictionaryTablesManagement.Detail.ParentDictionary" type="string">Słownik Nadrzędny</Item>
+		<Item name="DictionaryTablesManagement.Detail.DictionaryItemName" type="string">Nazwa</Item>
+		<Item name="DictionaryTablesManagement.Detail.DictionaryItemCode" type="string">Kod</Item>
 		
 		<!-- Dictionary Tables -->
 		<Item name="DictionaryTables.Genre" type="string">Gatunek</Item>

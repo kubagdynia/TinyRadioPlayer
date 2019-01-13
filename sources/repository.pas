@@ -58,6 +58,8 @@ type
     class function AddDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryId: integer;
       out DictionaryRowId: integer): ErrorId;
+    class function GetDictionaryName(DictionaryType: TDictionaryType): string;
+    class function GetLocalizedDictionaryName(DictionaryType: TDictionaryType): string;
     class function LoadDictionary(DictionaryType: TDictionaryType;
       SkipIfLoaded: boolean = true; SortDirection: TSortDirection = sdAscending): ErrorId;
     class function ClearDictionary: ErrorId;
@@ -184,6 +186,17 @@ class function TRepository.AddDictionaryRow(const Text: string; const Code: stri
 begin
   Result := FMainRepo.DictionaryRepo.AddDictionaryRow(Text, Code, Position, DictionaryId,
     DictionaryRowId);
+end;
+
+class function TRepository.GetDictionaryName(DictionaryType: TDictionaryType): string;
+begin
+  Result := FMainRepo.DictionaryRepo.GetDictionaryName(DictionaryType);
+end;
+
+class function TRepository.GetLocalizedDictionaryName(
+  DictionaryType: TDictionaryType): string;
+begin
+  Result := FMainRepo.DictionaryRepo.GetLocalizedDictionaryName(DictionaryType);
 end;
 
 class function TRepository.LoadDictionary(DictionaryType: TDictionaryType;

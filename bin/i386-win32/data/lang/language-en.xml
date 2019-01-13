@@ -72,6 +72,11 @@
 		<Item name="DictionaryTablesManagement.Detail.AddNewDictionaryItem" type="string">Add a new dictionary item</Item>
 		<Item name="DictionaryTablesManagement.Detail.EditDictionaryItem" type="string">Edit dictionary item</Item>
 		<Item name="DictionaryTablesManagement.Detail.DeleteDictionaryItem" type="string">Delete doctionary item</Item>
+		<Item name="DictionaryTablesManagement.Detail.Save" type="string">Save</Item>
+		<Item name="DictionaryTablesManagement.Detail.Delete" type="string">Delete</Item>
+		<Item name="DictionaryTablesManagement.Detail.ParentDictionary" type="string">Parent Dictionary</Item>
+		<Item name="DictionaryTablesManagement.Detail.DictionaryItemName" type="string">Name</Item>
+		<Item name="DictionaryTablesManagement.Detail.DictionaryItemCode" type="string">Code</Item>
 		
 		<!-- Dictionary Tables -->
 		<Item name="DictionaryTables.Genre" type="string">Genre</Item>
