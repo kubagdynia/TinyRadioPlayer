@@ -55,6 +55,10 @@ const
   ERR_LOAD_DICTIONARY_DETAILS               = $0000010B;
   ERR_GET_PARENT_DICTIONARY_KIND            = $0000010C;
   ERR_IN_DETERMINING_TYPE_OF_DICTIONARY     = $0000010D;
+  ERR_GET_DICTIONARY_ID                     = $0000010E;
+  ERR_GET_DICTIONARY_ROW_ID                 = $0000010F;
+  ERR_CHECKING_IF_DICTIONARY_ROW_EXISTS     = $00000110;
+  ERR_DICTIONARY_ROW_EXISTS                 = $00000111;
 
   // Skins
   ERR_CANT_LOAD_SKIN_ITEMS                  = $00000201;
@@ -168,6 +172,11 @@ begin
     ERR_IN_DETERMINING_TYPE_OF_DICTIONARY:
       Result := GetLanguageItem('ErrorMessage.DictionaryTypeCanNotBeSpecified',
              'The dictionary type can not be specified!');
+
+    ERR_DICTIONARY_ROW_EXISTS:
+      Result := GetLanguageItem('ErrorMessage.DictionaryRowExists',
+             'This element of the dictionary already exists!');
+
     else
       Result := GetLanguageItem('ErrorMessage.UnspecifiedError',
         'An unspecified error occurred!');

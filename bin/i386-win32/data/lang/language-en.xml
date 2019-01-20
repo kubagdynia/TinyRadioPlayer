@@ -13,6 +13,7 @@
 		<Item name="ErrorMessage.DictionaryRepositoryNotAssigned" type="string">The dictionary repository has not been assigned yet!</Item>
 		<Item name="ErrorMessage.CantLoadSkinItems" type="string">Skin elements can not be loaded!</Item>
 		<Item name="ErrorMessage.DictionaryTypeCanNotBeSpecified" type="string">The dictionary type can not be specified!</Item>
+		<Item name="ErrorMessage.DictionaryRowExists" type="string">This element of the dictionary already exists!</Item>
 		
 		<Item name="Dialog.Question" type="string">Question</Item>
 		<Item name="Dialog.Answer.Yes" type="string">Yes</Item>
@@ -77,6 +78,7 @@
 		<Item name="DictionaryTablesManagement.Detail.ParentDictionary" type="string">Parent Dictionary</Item>
 		<Item name="DictionaryTablesManagement.Detail.DictionaryItemName" type="string">Name</Item>
 		<Item name="DictionaryTablesManagement.Detail.DictionaryItemCode" type="string">Code</Item>
+		<Item name="DictionaryTablesManagement.Detail.DictionaryItemPosition" type="string">Position</Item>
 		
 		<!-- Dictionary Tables -->
 		<Item name="DictionaryTables.Genre" type="string">Genre</Item>

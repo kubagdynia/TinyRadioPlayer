@@ -13,6 +13,7 @@
 		<Item name="ErrorMessage.DictionaryRepositoryNotAssigned" type="string">Repozytorium słowników nie zostało jeszcze przypisane!</Item>
 		<Item name="ErrorMessage.CantLoadSkinItems" type="string">Nie można załadować elementów skórki!</Item>
 		<Item name="ErrorMessage.DictionaryTypeCanNotBeSpecified" type="string">Nie można określić typu słownika!</Item>
+		<Item name="ErrorMessage.DictionaryRowExists" type="string">Taki element słownika już istnieje!</Item>
 		
 		<Item name="Dialog.Question" type="string">Pytanie</Item>
 		<Item name="Dialog.Answer.Yes" type="string">Tak</Item>
@@ -77,6 +78,7 @@
 		<Item name="DictionaryTablesManagement.Detail.ParentDictionary" type="string">Słownik Nadrzędny</Item>
 		<Item name="DictionaryTablesManagement.Detail.DictionaryItemName" type="string">Nazwa</Item>
 		<Item name="DictionaryTablesManagement.Detail.DictionaryItemCode" type="string">Kod</Item>
+		<Item name="DictionaryTablesManagement.Detail.DictionaryItemPosition" type="string">Pozycja</Item>
 		
 		<!-- Dictionary Tables -->
 		<Item name="DictionaryTables.Genre" type="string">Gatunek</Item>

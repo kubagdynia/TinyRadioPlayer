@@ -14,11 +14,17 @@ type
 
   TDictionaryDetailForm = class(TBaseForm)
     cboParentDictionaryTable: TComboBox;
+    edtDictionaryItemPosition: TEdit;
     edtDictionaryItemName: TEdit;
     edtDictionaryItemCode: TEdit;
+    lblDictionaryItemPosition: TLabel;
     lblDictionaryItemName: TLabel;
     lblDictionaryItemCode: TLabel;
     lblParentDictionaryTable: TLabel;
+    procedure btnOkClick(Sender: TObject);
+    procedure edtDictionaryItemPositionChange(Sender: TObject);
+    procedure edtDictionaryItemPositionKeyPress(Sender: TObject; var Key: char);
+    procedure ValidateEnteredData(Sender: TObject);
   private
     DictionaryType: TDictionaryType;
     ParentDictionaryType: TDictionaryType;
@@ -43,7 +49,7 @@ var
 implementation
 
 uses
-  TRPErrors, Language, Helpers, Repository;
+  LCLType, TRPErrors, Language, Helpers, Repository;
 
 {$R *.lfm}
 
@@ -69,6 +75,7 @@ begin
   begin
     edtDictionaryItemName.Text := DictionaryDetailTableNodeData.Text;
     edtDictionaryItemCode.Text := DictionaryDetailTableNodeData.Code;
+    edtDictionaryItemPosition.Text := IntToStr(DictionaryDetailTableNodeData.Position);
   end;
 
   if ParentDictionaryType <> TDictionaryType.dkNone then
@@ -91,6 +98,7 @@ begin
   lblParentDictionaryTable.Caption := GetLanguageItem('DictionaryTablesManagement.Detail.ParentDictionary');
   lblDictionaryItemName.Caption := GetLanguageItem('DictionaryTablesManagement.Detail.DictionaryItemName');
   lblDictionaryItemCode.Caption := GetLanguageItem('DictionaryTablesManagement.Detail.DictionaryItemCode');
+  lblDictionaryItemPosition.Caption := GetLanguageItem('DictionaryTablesManagement.Detail.DictionaryItemPosition');
 
   case OpenMode of
     omNew:
@@ -124,13 +132,16 @@ begin
     cboParentDictionaryTable.Visible := false;
     lblParentDictionaryTable.Visible := false;
 
+    lblDictionaryItemPosition.Top := lblDictionaryItemCode.Top;
+    edtDictionaryItemPosition.Top := edtDictionaryItemCode.Top;
+
     lblDictionaryItemCode.Top := lblDictionaryItemName.Top;
     edtDictionaryItemCode.Top := edtDictionaryItemName.Top;
 
     lblDictionaryItemName.Top := lblParentDictionaryTable.Top;
     edtDictionaryItemName.Top := cboParentDictionaryTable.Top;
 
-    Self.Constraints.MinHeight := 210;
+    Self.Constraints.MinHeight := 265;
     Self.Height := Self.Constraints.MinHeight;
   end;
 
@@ -151,8 +162,54 @@ begin
       btnOK.Enabled := True;
       edtDictionaryItemCode.Enabled := false;
       edtDictionaryItemName.Enabled := false;
+      edtDictionaryItemPosition.Enabled := false;
     end;
   end;
+end;
+
+procedure TDictionaryDetailForm.ValidateEnteredData(Sender: TObject);
+var
+  v: integer;
+begin
+  btnOk.Enabled := (Trim(edtDictionaryItemName.Text) <> EmptyStr) and
+    (Trim(edtDictionaryItemCode.Text) <> EmptyStr) and
+    (TryStrToInt(edtDictionaryItemPosition.Text, v)) and (v >= 0);
+end;
+
+procedure TDictionaryDetailForm.btnOkClick(Sender: TObject);
+var
+  dictionaryRowId: integer;
+  err: ErrorId;
+begin
+  err := TRepository.AddDictionaryRow(
+    edtDictionaryItemName.Text,
+    edtDictionaryItemCode.Text,
+    StrToInt(edtDictionaryItemPosition.Text),
+    TRepository.GetDictionaryName(DictionaryType),
+    ParentDictionaryRowCode,
+    dictionaryRowId);
+
+  if err <> ERR_OK then
+    ShowWarningMessage(err)
+  else
+    inherited;
+end;
+
+procedure TDictionaryDetailForm.edtDictionaryItemPositionChange(Sender: TObject);
+var
+  v: integer;
+begin
+  if (not TryStrToInt(edtDictionaryItemPosition.Text, v)) and
+     (edtDictionaryItemPosition.Text <> EmptyStr ) then
+    edtDictionaryItemPosition.Text  := '1'; // default value
+
+  ValidateEnteredData(Sender);
+end;
+
+procedure TDictionaryDetailForm.edtDictionaryItemPositionKeyPress(
+  Sender: TObject; var Key: char);
+begin
+  if not (Key in ['0'..'9', Char(VK_BACK), Char(VK_DELETE)]) then Key := #0;
 end;
 
 end.

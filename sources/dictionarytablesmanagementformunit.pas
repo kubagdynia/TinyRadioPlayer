@@ -645,6 +645,13 @@ begin
     dictionaryType, parentDictionaryType, parentDictionaryRowCode, dictionaryDetailTableNodeData);
   try
     mr := DictionaryDetailForm.ShowModal;
+
+    if mr = mrOk then
+    begin
+      // Refresh dictionary details list
+      LoadDictionaryDetailsList(VSTDictionaryTablesList.GetFirstSelected);
+    end;
+
   finally
     FreeAndNil(DictionaryDetailForm);
   end;

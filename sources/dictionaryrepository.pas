@@ -28,9 +28,13 @@ type
     // Determines whether the first position should be empty
     FFirstBlank: boolean;
 
-    function ClearDictionary(FreeAndNilDictionary: boolean = false): ErrorId;
+    function ClearDictionary(AFreeAndNilDictionary: boolean = false;
+      ADictionaryType: TDictionaryType = TDictionaryType.dkNone): ErrorId;
+
+    // Exists
+    function DictionaryRowExists(DictionaryId: integer; Code: string; Text: string;
+      ParentDictionaryRowId: integer = EMPTY_INT): boolean;
   protected
-    function GetDictionaryType(DictionaryCode: string): TDictionaryType;
 
   public
     constructor Create; overload;
@@ -45,7 +49,12 @@ type
 
     // Get Dictionary
     function GetDictionaryName(DictionaryType: TDictionaryType): string;
+    function GetDictionaryType(DictionaryCode: string): TDictionaryType;
     function GetLocalizedDictionaryName(DictionaryType: TDictionaryType): string;
+    function GetDictionaryId(DictionaryType: TDictionaryType;
+      out DictionaryId: integer; out DictionaryParentId: integer): ErrorId;
+    function GetDictionaryRowId(DictionaryId: integer; Code: string;
+      out DictionaryRowId: integer): ErrorId;
 
     // Add Dictionary Row
     function AddDictionaryRow(const Text: string; const Code: string;
@@ -53,6 +62,10 @@ type
       out DictionaryRowId: integer): ErrorId;
     function AddDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryId: integer;
+      out DictionaryRowId: integer): ErrorId;
+
+    function AddDictionaryRow(const Text: string; const Code: string;
+      const Position: integer; const DictionaryCode: string; const ParentDictionaryCode: string;
       out DictionaryRowId: integer): ErrorId;
 
     // Load Dictionary
@@ -85,38 +98,6 @@ uses
   ZDataset, Helpers, Repository, TRPErrors;
 
 { TDictionaryRepository }
-
-function TDictionaryRepository.GetDictionaryName(DictionaryType: TDictionaryType): string;
-begin
-  Result := DICTIONARY_NAMES[DictionaryType];
-end;
-
-function TDictionaryRepository.GetLocalizedDictionaryName(
-  DictionaryType: TDictionaryType): string;
-begin
-  Result := GetLanguageItem('DictionaryTables.' + GetDictionaryName(DictionaryType));
-end;
-
-function TDictionaryRepository.GetDictionaryType(DictionaryCode: string): TDictionaryType;
-var
-  dictionaryType: TDictionaryType;
-begin
-
-  if (Trim(DictionaryCode) = EMPTY_STR) then
-  begin
-    Result := TDictionaryType.dkNone;
-    exit;
-  end;
-
-  for dictionaryType := Low(FDictionary) to High(FDictionary) do
-    if GetDictionaryName(dictionaryType) = DictionaryCode then
-    begin
-      Result := dictionaryType;
-      exit;
-    end;
-
-  RaiseErrorMessage(ERR_IN_DETERMINING_TYPE_OF_DICTIONARY, ClassName, 'GetDictionaryType');
-end;
 
 constructor TDictionaryRepository.Create;
 var
@@ -258,6 +239,99 @@ begin
   Result := AddDictionaryRow(Text, Code, Position, DictionaryId, EMPTY_INT, DictionaryRowId);
 end;
 
+function TDictionaryRepository.AddDictionaryRow(const Text: string;
+  const Code: string; const Position: integer; const DictionaryCode: string;
+  const ParentDictionaryCode: string; out DictionaryRowId: integer): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+  dictionaryType: TDictionaryType;
+  dictionaryId: integer;
+  dictionaryParentId: integer;
+  dictionaryParentRowId: integer;
+  rowExists: boolean;
+begin
+  err := ERR_OK;
+
+  try
+
+    dictionaryType := GetDictionaryType(DictionaryCode);
+
+    err := TRepository.GetDictionaryId(dictionaryType,
+      dictionaryId, dictionaryParentId);
+
+    if err <> ERR_OK then
+    begin
+      Result := err;
+      Exit;
+    end;
+
+    dictionaryParentRowId := EMPTY_INT;
+
+    if (ParentDictionaryCode <> EMPTY_STR) and (dictionaryParentId <> EMPTY_INT) then
+      err := TRepository.GetDictionaryRowId(dictionaryParentId,
+        ParentDictionaryCode, dictionaryParentRowId);
+
+    if err <> ERR_OK then
+    begin
+      Result := err;
+      Exit;
+    end;
+
+      rowExists := DictionaryRowExists(dictionaryId, Code, Text, dictionaryParentRowId);
+
+    if rowExists then
+      err := ERR_DICTIONARY_ROW_EXISTS;
+
+    if err <> ERR_OK then
+    begin
+      Result := err;
+      Exit;
+    end;
+
+    DictionaryRowId := TRepository.GetNewDbTableKey(DB_TABLE_DICTIONARY_ROW);
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'INSERT INTO ' + DB_TABLE_DICTIONARY_ROW +
+        ' (ID, DictionaryID, Text, Code, Position, ParentDictionaryRowID) ' +
+        'VALUES(:ID,:DictionaryID,:Text,UPPER(:Code),:Position,:ParentDictionaryRowID);'
+      );
+
+      query.Params.ParamByName('ID').AsInteger := DictionaryRowId;
+      query.Params.ParamByName('DictionaryID').AsInteger := dictionaryId;
+      query.Params.ParamByName('Text').AsString := Text;
+      query.Params.ParamByName('Code').AsString := Code;
+      query.Params.ParamByName('Position').AsInteger := Position;
+
+      if dictionaryParentRowId = EMPTY_INT then
+        query.Params.ParamByName('ParentDictionaryRowID').Clear
+      else
+        query.Params.ParamByName('ParentDictionaryRowID').AsInteger := dictionaryParentRowId;
+
+      query.ExecSQL;
+
+      ClearDictionary(false, dictionaryType);
+      LoadDictionary(dictionaryType, false);
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'AddDictionaryRow', E);
+        err := ERR_DB_ADD_DICTIONARY_ROW;
+      end;
+  end;
+
+  Result := err;
+end;
+
 function TDictionaryRepository.LoadDictionary(DictionaryType: TDictionaryType;
   SkipIfLoaded: boolean = true; SortDirection: TSortDirection = sdAscending): ErrorId;
 var
@@ -287,7 +361,7 @@ begin
 
       query.SQL.Add(
         'SELECT dr.ID, dr.Text, dr.Code, d.ParentCode AS ParentDictionaryCode, ' +
-        '  drParent.Code AS ParentDictionaryRowCode FROM ' + DB_TABLE_DICTIONARY + ' d ' +
+        '  drParent.Code AS ParentDictionaryRowCode, dr.Position FROM ' + DB_TABLE_DICTIONARY + ' d ' +
         'INNER JOIN ' + DB_TABLE_DICTIONARY_ROW + ' dr ON dr.DictionaryID = d.ID ' +
         'LEFT JOIN ' + DB_TABLE_DICTIONARY_ROW + ' drParent ON drParent.ID = dr.ParentDictionaryRowId ' +
         'WHERE d.Code = :DictionaryCode ' +
@@ -308,6 +382,7 @@ begin
         dictionaryTable^.Code := query.FieldByName('Code').AsString;
         dictionaryTable^.ParentDictionaryCode := query.FieldByName('ParentDictionaryCode').AsString;
         dictionaryTable^.ParentDictionaryRowCode := query.FieldByName('ParentDictionaryRowCode').AsString;
+        dictionaryTable^.Position := query.FieldByName('Position').AsInteger;
 
         // adds record to the list
         FDictionary[DictionaryType].Add(dictionaryTable);
@@ -458,6 +533,51 @@ begin
   end;
 
   Result := err;
+end;
+
+function TDictionaryRepository.DictionaryRowExists(DictionaryId: integer;
+  Code: string; Text: string; ParentDictionaryRowId: integer = EMPTY_INT): boolean;
+var
+  query: TZQuery;
+begin
+  try
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      if ParentDictionaryRowId = EMPTY_INT then
+        query.SQL.Add(
+          'SELECT COUNT(1) AS Count FROM ' + DB_TABLE_DICTIONARY_ROW +
+          ' WHERE DictionaryID = :DictionaryID AND (UPPER(Code) = UPPER(:Code)' +
+          ' OR UPPER(TEXT) = UPPER(:Text));'
+        )
+      else
+      begin
+        query.SQL.Add(
+          'SELECT COUNT(1) AS Count FROM ' + DB_TABLE_DICTIONARY_ROW +
+          ' WHERE DictionaryID = :DictionaryID AND (UPPER(Code) = UPPER(:Code)' +
+          ' OR UPPER(TEXT) = UPPER(:Text)) AND ParentDictionaryRowID = :ParentDictionaryRowId;'
+        );
+        query.Params.ParamByName('ParentDictionaryRowId').AsInteger := ParentDictionaryRowId;
+      end;
+
+      query.Params.ParamByName('DictionaryID').AsInteger := DictionaryId;
+      query.Params.ParamByName('Code').AsString := Code;
+      query.Params.ParamByName('Text').AsString := Text;
+
+      query.Open;
+
+      Result := query.FieldByName('Count').AsInteger > 0;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      RaiseErrorMessage(ERR_CHECKING_IF_DICTIONARY_ROW_EXISTS, ClassName, 'DictionaryRowExists');
+  end;
 end;
 
 function TDictionaryRepository.GetParentDictionaryType(DictionaryType: TDictionaryType;
@@ -637,7 +757,8 @@ begin
 
         data := VstList.GetNodeData(node);
 
-        data^.ddtnd := TDictionaryDetailTableNodeData.Create(dictionaryTable^.Id, dictionaryTable^.Text, dictionaryTable^.Code);
+        data^.ddtnd := TDictionaryDetailTableNodeData.Create(dictionaryTable^.Id,
+          dictionaryTable^.Text, dictionaryTable^.Code, dictionaryTable^.Position);
       end;
 
       // Sort items
@@ -659,7 +780,8 @@ begin
 end;
 
 // Free the dictionary and its all items
-function TDictionaryRepository.ClearDictionary(FreeAndNilDictionary: boolean = false): ErrorId;
+function TDictionaryRepository.ClearDictionary(AFreeAndNilDictionary: boolean = false;
+  ADictionaryType: TDictionaryType = TDictionaryType.dkNone): ErrorId;
 var
   err: ErrorId;
   i: integer;
@@ -671,14 +793,14 @@ begin
 
     for dictionaryType := Low(FDictionary) to High(FDictionary) do
     begin
-      if FDictionary[dictionaryType] <> nil then
+      if (ADictionaryType in [TDictionaryType.dkNone, dictionaryType]) and (FDictionary[dictionaryType] <> nil) then
       begin
         for i := FDictionary[dictionaryType].Count - 1 downto 0 do
           Dispose(PDictionaryTable(FDictionary[dictionaryType].Items[i]));
 
         FDictionary[dictionaryType].Clear;
 
-        if FreeAndNilDictionary then
+        if AFreeAndNilDictionary then
           FreeAndNil(FDictionary[dictionaryType]);
       end;
     end;
@@ -692,6 +814,134 @@ begin
   end;
 
   Result := err;
+end;
+
+function TDictionaryRepository.GetDictionaryName(DictionaryType: TDictionaryType): string;
+begin
+  Result := DICTIONARY_NAMES[DictionaryType];
+end;
+
+function TDictionaryRepository.GetLocalizedDictionaryName(
+  DictionaryType: TDictionaryType): string;
+begin
+  Result := GetLanguageItem('DictionaryTables.' + GetDictionaryName(DictionaryType));
+end;
+
+function TDictionaryRepository.GetDictionaryId(DictionaryType: TDictionaryType;
+  out DictionaryId: integer; out DictionaryParentId: integer): ErrorId;
+var
+  err: ErrorId;
+  query: TZQuery;
+begin
+  err := ERR_OK;
+
+  try
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'SELECT ID, ' +
+        '  COALESCE((SELECT ID FROM ' + DB_TABLE_DICTIONARY + ' dParent WHERE dParent.Name = d.ParentCode), :EmptyInt) AS ParentID ' +
+        'FROM ' + DB_TABLE_DICTIONARY + ' d ' +
+
+        ' WHERE Code = :DictionaryCode;'
+      );
+
+      query.Params.ParamByName('DictionaryCode').AsString := GetDictionaryName(DictionaryType);
+      query.Params.ParamByName('EmptyInt').AsInteger := EMPTY_INT;
+
+      query.Open;
+
+      if query.RecordCount = 1 then
+      begin
+        DictionaryId := query.FieldByName('ID').AsInteger;
+        DictionaryParentId := query.FieldByName('ParentID').AsInteger;;
+      end
+      else
+        err := ERR_GET_DICTIONARY_ID;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'GetDictionaryId', E);
+        err := ERR_GET_DICTIONARY_ID;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TDictionaryRepository.GetDictionaryRowId(DictionaryId: integer;
+  Code: string; out DictionaryRowId: integer): ErrorId;
+var
+  err: ErrorId;
+  query: TZQuery;
+begin
+  err := ERR_OK;
+
+  try
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'SELECT ID FROM ' + DB_TABLE_DICTIONARY_ROW +
+        ' WHERE DictionaryID = :DictionaryID AND Code = :Code;'
+      );
+
+      query.Params.ParamByName('DictionaryID').AsInteger := DictionaryId;
+      query.Params.ParamByName('Code').AsString := Code;
+
+      query.Open;
+
+      if query.RecordCount = 1 then
+        DictionaryRowId := query.FieldByName('ID').AsInteger
+      else if query.RecordCount = 0 then
+        DictionaryRowId := EMPTY_INT
+      else
+        err := ERR_GET_DICTIONARY_ROW_ID;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'GetDictionaryRowId', E);
+        err := ERR_GET_DICTIONARY_ROW_ID;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TDictionaryRepository.GetDictionaryType(DictionaryCode: string): TDictionaryType;
+var
+  dictionaryType: TDictionaryType;
+begin
+
+  if (Trim(DictionaryCode) = EMPTY_STR) then
+  begin
+    Result := TDictionaryType.dkNone;
+    exit;
+  end;
+
+  for dictionaryType := Low(FDictionary) to High(FDictionary) do
+    if GetDictionaryName(dictionaryType) = DictionaryCode then
+    begin
+      Result := dictionaryType;
+      exit;
+    end;
+
+  RaiseErrorMessage(ERR_IN_DETERMINING_TYPE_OF_DICTIONARY, ClassName, 'GetDictionaryType');
 end;
 
 end.

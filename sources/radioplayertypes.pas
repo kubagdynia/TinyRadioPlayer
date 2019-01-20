@@ -54,6 +54,7 @@ type
     Code                    : string;
     ParentDictionaryCode    : string;
     ParentDictionaryRowCode : string;
+    Position                : integer;
   end;
 
 { - - - - - - - - - - - - - - - TStationNodeData  - - - - - - - - - - - - - - - }
@@ -108,12 +109,15 @@ type
     FID        : integer;
     FText      : string;
     FCode      : string;
+    FPosition  : integer;
   public
-    constructor Create(const Id: integer; const Text: string; const Code: string); overload;
+    constructor Create(const Id: integer; const Text: string; const Code: string;
+      const Position: integer); overload;
 
-    property ID    : integer  read FID    write FID;
-    property Text  : string read FText write FText;
-    property Code  : string read FCode write FCode;
+    property ID       : integer  read FID    write FID;
+    property Text     : string read FText write FText;
+    property Code     : string read FCode write FCode;
+    property Position : integer read FPosition write FPosition;
   end;
 
   PDictionaryDetailTableNodeRec = ^TDictionaryDetailTableNodeRec;
@@ -147,13 +151,14 @@ begin
 end;
 
 constructor TDictionaryDetailTableNodeData.Create(const Id: integer;
-  const Text: string; const Code: string);
+  const Text: string; const Code: string; const Position: integer);
 begin
   inherited Create;
 
   FID := Id;
   FText := Text;
   FCode := Code;
+  FPosition := Position;
 end;
 
 end.

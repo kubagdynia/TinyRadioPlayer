@@ -58,6 +58,9 @@ type
     class function AddDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryId: integer;
       out DictionaryRowId: integer): ErrorId;
+    class function AddDictionaryRow(const Text: string; const Code: string;
+      const Position: integer; const DictionaryCode: string; const ParentDictionaryCode: string;
+      out DictionaryRowId: integer): ErrorId;
     class function GetDictionaryName(DictionaryType: TDictionaryType): string;
     class function GetLocalizedDictionaryName(DictionaryType: TDictionaryType): string;
     class function LoadDictionary(DictionaryType: TDictionaryType;
@@ -76,6 +79,10 @@ type
       ParentDictionaryRowCode: string = ''): ErrorId;
     class function GetParentDictionaryType(DictionaryType: TDictionaryType;
       out ParentDictionaryType: TDictionaryType): ErrorId;
+    class function GetDictionaryId(DictionaryType: TDictionaryType;
+      out DictionaryId: integer; out DictionaryParentId: integer): ErrorId;
+    class function GetDictionaryRowId(DictionaryId: integer; Code: string;
+      out DictionaryRowId: integer): ErrorId;
   end;
 
 implementation
@@ -188,6 +195,14 @@ begin
     DictionaryRowId);
 end;
 
+class function TRepository.AddDictionaryRow(const Text: string;
+  const Code: string; const Position: integer; const DictionaryCode: string;
+  const ParentDictionaryCode: string; out DictionaryRowId: integer): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.AddDictionaryRow(Text, Code, Position,
+    DictionaryCode, parentDictionaryCode, DictionaryRowId);
+end;
+
 class function TRepository.GetDictionaryName(DictionaryType: TDictionaryType): string;
 begin
   Result := FMainRepo.DictionaryRepo.GetDictionaryName(DictionaryType);
@@ -249,6 +264,19 @@ class function TRepository.GetParentDictionaryType(
   DictionaryType: TDictionaryType; out ParentDictionaryType: TDictionaryType): ErrorId;
 begin
   Result := FMainRepo.DictionaryRepo.GetParentDictionaryType(DictionaryType, ParentDictionaryType);
+end;
+
+class function TRepository.GetDictionaryId(DictionaryType: TDictionaryType;
+  out DictionaryId: integer; out DictionaryParentId: integer): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.GetDictionaryId(DictionaryType,
+    DictionaryId, DictionaryParentId);
+end;
+
+class function TRepository.GetDictionaryRowId(DictionaryId: integer;
+  Code: string; out DictionaryRowId: integer): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.GetDictionaryRowId(DictionaryId, Code, DictionaryRowId);
 end;
 
 initialization
