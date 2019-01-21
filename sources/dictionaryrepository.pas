@@ -33,7 +33,8 @@ type
 
     // Exists
     function DictionaryRowExists(DictionaryId: integer; Code: string; Text: string;
-      ParentDictionaryRowId: integer = EMPTY_INT): boolean;
+      ParentDictionaryRowId: integer = EMPTY_INT;
+      ExcludeDictionaryRowId: integer = EMPTY_INT): boolean;
   protected
 
   public
@@ -67,6 +68,9 @@ type
     function AddDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryCode: string; const ParentDictionaryCode: string;
       out DictionaryRowId: integer): ErrorId;
+    function UpdateDictionaryRow(const Text: string; const Code: string;
+      const Position: integer; const DictionaryCode: string; const ParentDictionaryCode: string;
+      DictionaryRowId: integer): ErrorId;
 
     // Load Dictionary
     function LoadDictionary(DictionaryType: TDictionaryType;
@@ -278,7 +282,7 @@ begin
       Exit;
     end;
 
-      rowExists := DictionaryRowExists(dictionaryId, Code, Text, dictionaryParentRowId);
+    rowExists := DictionaryRowExists(dictionaryId, Code, Text, dictionaryParentRowId);
 
     if rowExists then
       err := ERR_DICTIONARY_ROW_EXISTS;
@@ -326,6 +330,98 @@ begin
       begin
         LogException(EMPTY_STR, ClassName, 'AddDictionaryRow', E);
         err := ERR_DB_ADD_DICTIONARY_ROW;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TDictionaryRepository.UpdateDictionaryRow(const Text: string;
+  const Code: string; const Position: integer; const DictionaryCode: string;
+  const ParentDictionaryCode: string; DictionaryRowId: integer): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+  dictionaryType: TDictionaryType;
+  dictionaryId: integer;
+  dictionaryParentId: integer;
+  dictionaryParentRowId: integer;
+  rowExists: boolean;
+begin
+  err := ERR_OK;
+
+  try
+
+    dictionaryType := GetDictionaryType(DictionaryCode);
+
+    err := TRepository.GetDictionaryId(dictionaryType,
+      dictionaryId, dictionaryParentId);
+
+    if err <> ERR_OK then
+    begin
+      Result := err;
+      Exit;
+    end;
+
+    dictionaryParentRowId := EMPTY_INT;
+
+    if (ParentDictionaryCode <> EMPTY_STR) and (dictionaryParentId <> EMPTY_INT) then
+      err := TRepository.GetDictionaryRowId(dictionaryParentId,
+        ParentDictionaryCode, dictionaryParentRowId);
+
+    if err <> ERR_OK then
+    begin
+      Result := err;
+      Exit;
+    end;
+
+    rowExists := DictionaryRowExists(dictionaryId, Code, Text, dictionaryParentRowId, DictionaryRowId);
+
+    if rowExists then
+      err := ERR_DICTIONARY_ROW_EXISTS;
+
+    if err <> ERR_OK then
+    begin
+      Result := err;
+      Exit;
+    end;
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'UPDATE ' + DB_TABLE_DICTIONARY_ROW +
+        ' SET DictionaryID = :DictionaryID, Text = :Text, Code = UPPER(:Code), ' +
+        ' Position = :Position, ParentDictionaryRowID = :ParentDictionaryRowID ' +
+        'WHERE ID = :ID;'
+      );
+
+      query.Params.ParamByName('ID').AsInteger := DictionaryRowId;
+      query.Params.ParamByName('DictionaryID').AsInteger := dictionaryId;
+      query.Params.ParamByName('Text').AsString := Text;
+      query.Params.ParamByName('Code').AsString := Code;
+      query.Params.ParamByName('Position').AsInteger := Position;
+
+      if dictionaryParentRowId = EMPTY_INT then
+        query.Params.ParamByName('ParentDictionaryRowID').Clear
+      else
+        query.Params.ParamByName('ParentDictionaryRowID').AsInteger := dictionaryParentRowId;
+
+      query.ExecSQL;
+
+      ClearDictionary(false, dictionaryType);
+      LoadDictionary(dictionaryType, false);
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'UpdateDictionaryRow', E);
+        err := ERR_DB_UPDATE_DICTIONARY_ROW;
       end;
   end;
 
@@ -536,7 +632,8 @@ begin
 end;
 
 function TDictionaryRepository.DictionaryRowExists(DictionaryId: integer;
-  Code: string; Text: string; ParentDictionaryRowId: integer = EMPTY_INT): boolean;
+  Code: string; Text: string; ParentDictionaryRowId: integer = EMPTY_INT;
+  ExcludeDictionaryRowId: integer = EMPTY_INT): boolean;
 var
   query: TZQuery;
 begin
@@ -549,19 +646,21 @@ begin
       if ParentDictionaryRowId = EMPTY_INT then
         query.SQL.Add(
           'SELECT COUNT(1) AS Count FROM ' + DB_TABLE_DICTIONARY_ROW +
-          ' WHERE DictionaryID = :DictionaryID AND (UPPER(Code) = UPPER(:Code)' +
+          ' WHERE (-1 = :ID OR ID <> :ID) AND DictionaryID = :DictionaryID AND (UPPER(Code) = UPPER(:Code)' +
           ' OR UPPER(TEXT) = UPPER(:Text));'
         )
       else
       begin
         query.SQL.Add(
           'SELECT COUNT(1) AS Count FROM ' + DB_TABLE_DICTIONARY_ROW +
-          ' WHERE DictionaryID = :DictionaryID AND (UPPER(Code) = UPPER(:Code)' +
+          ' WHERE (-1 = :ID OR ID <> :ID) AND DictionaryID = :DictionaryID AND (UPPER(Code) = UPPER(:Code)' +
           ' OR UPPER(TEXT) = UPPER(:Text)) AND ParentDictionaryRowID = :ParentDictionaryRowId;'
         );
         query.Params.ParamByName('ParentDictionaryRowId').AsInteger := ParentDictionaryRowId;
       end;
 
+
+      query.Params.ParamByName('ID').AsInteger := ExcludeDictionaryRowId;
       query.Params.ParamByName('DictionaryID').AsInteger := DictionaryId;
       query.Params.ParamByName('Code').AsString := Code;
       query.Params.ParamByName('Text').AsString := Text;

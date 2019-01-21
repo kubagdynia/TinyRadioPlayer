@@ -181,13 +181,30 @@ var
   dictionaryRowId: integer;
   err: ErrorId;
 begin
-  err := TRepository.AddDictionaryRow(
-    edtDictionaryItemName.Text,
-    edtDictionaryItemCode.Text,
-    StrToInt(edtDictionaryItemPosition.Text),
-    TRepository.GetDictionaryName(DictionaryType),
-    ParentDictionaryRowCode,
-    dictionaryRowId);
+  case FOpenMode of
+    TOpenMode.omNew:
+      err := TRepository.AddDictionaryRow(
+        edtDictionaryItemName.Text,
+        edtDictionaryItemCode.Text,
+        StrToInt(edtDictionaryItemPosition.Text),
+        TRepository.GetDictionaryName(DictionaryType),
+        ParentDictionaryRowCode,
+        dictionaryRowId);
+
+    TOpenMode.omEdit:
+      err := TRepository.UpdateDictionaryRow(
+        edtDictionaryItemName.Text,
+        edtDictionaryItemCode.Text,
+        StrToInt(edtDictionaryItemPosition.Text),
+        TRepository.GetDictionaryName(DictionaryType),
+        ParentDictionaryRowCode,
+        DictionaryDetailTableNodeData.ID);
+
+    TOpenMode.omDelete:
+    begin
+
+    end;
+  end;
 
   if err <> ERR_OK then
     ShowWarningMessage(err)

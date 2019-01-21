@@ -61,6 +61,10 @@ type
     class function AddDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryCode: string; const ParentDictionaryCode: string;
       out DictionaryRowId: integer): ErrorId;
+    class function UpdateDictionaryRow(const Text: string; const Code: string;
+      const Position: integer; const DictionaryCode: string; const ParentDictionaryCode: string;
+      DictionaryRowId: integer): ErrorId;
+
     class function GetDictionaryName(DictionaryType: TDictionaryType): string;
     class function GetLocalizedDictionaryName(DictionaryType: TDictionaryType): string;
     class function LoadDictionary(DictionaryType: TDictionaryType;
@@ -200,6 +204,14 @@ class function TRepository.AddDictionaryRow(const Text: string;
   const ParentDictionaryCode: string; out DictionaryRowId: integer): ErrorId;
 begin
   Result := FMainRepo.DictionaryRepo.AddDictionaryRow(Text, Code, Position,
+    DictionaryCode, parentDictionaryCode, DictionaryRowId);
+end;
+
+class function TRepository.UpdateDictionaryRow(const Text: string;
+  const Code: string; const Position: integer; const DictionaryCode: string;
+  const ParentDictionaryCode: string; DictionaryRowId: integer): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.UpdateDictionaryRow(Text, Code, Position,
     DictionaryCode, parentDictionaryCode, DictionaryRowId);
 end;
 
