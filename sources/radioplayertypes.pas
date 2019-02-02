@@ -31,7 +31,7 @@ type
 
 { - - - - - - - - - - - - - - - - - Dictionary - - - - - - - - - - - - - - - - }
 type
-  TDictionaryKind = (dkGenre, dkRegion, dkCountry);
+  TDictionaryType = (dkNone, dkGenre, dkRegion, dkCountry);
 
 { - - - - - - - - - - - - - - - - StationInfo - - - - - - - - - - - - - - - - - }
 type
@@ -49,9 +49,12 @@ type
 type
   PDictionaryTable = ^TDictionaryTable;
   TDictionaryTable = record
-    Id          : integer;
-    Text        : string;
-    Code        : string;
+    Id                      : integer;
+    Text                    : string;
+    Code                    : string;
+    ParentDictionaryCode    : string;
+    ParentDictionaryRowCode : string;
+    Position                : integer;
   end;
 
 { - - - - - - - - - - - - - - - TStationNodeData  - - - - - - - - - - - - - - - }
@@ -78,16 +81,84 @@ type
      snd : TStationNodeData;
   end;
 
+{ - - - - - - - - - - - - - TDictionaryTableNodeData - - - - - - - - - - - - - }
+type
+  TDictionaryTableNodeData = class
+  protected
+    FName           : string;
+    FTableName      : string;
+    FDictionaryType : TDictionaryType;
+  public
+    constructor Create(const Name, TableName: string; DictionaryType: TDictionaryType); overload;
+
+    property Name           : string read FName      write FName;
+    property TableName      : string read FTableName write FTableName;
+    property DictionaryType : TDictionaryType read FDictionaryType;
+  end;
+
+  PDictionaryTableNodeRec = ^TDictionaryTableNodeRec;
+  TDictionaryTableNodeRec =
+  record
+     dtnd : TDictionaryTableNodeData;
+  end;
+
+{ - - - - - - - - - - - - - TDictionaryDetailTableNodeData - - - - - - - - - - }
+type
+  TDictionaryDetailTableNodeData = class
+  protected
+    FID        : integer;
+    FText      : string;
+    FCode      : string;
+    FPosition  : integer;
+  public
+    constructor Create(const Id: integer; const Text: string; const Code: string;
+      const Position: integer); overload;
+
+    property ID       : integer  read FID    write FID;
+    property Text     : string read FText write FText;
+    property Code     : string read FCode write FCode;
+    property Position : integer read FPosition write FPosition;
+  end;
+
+  PDictionaryDetailTableNodeRec = ^TDictionaryDetailTableNodeRec;
+  TDictionaryDetailTableNodeRec =
+  record
+     ddtnd : TDictionaryDetailTableNodeData;
+  end;
+
+
 implementation
 
 constructor TStationNodeData.Create(const Id: integer; const Name, Genre,
   Country: string);
 begin
   inherited Create;
-    FID       := Id;
-    FName     := Name;
-    FGenre    := Genre;
-    FCountry  := Country;
+
+  FID       := Id;
+  FName     := Name;
+  FGenre    := Genre;
+  FCountry  := Country;
+end;
+
+constructor TDictionaryTableNodeData.Create(const Name, TableName: string;
+  DictionaryType: TDictionaryType);
+begin
+  inherited Create;
+
+  FName := Name;
+  FTableName := TableName;
+  FDictionaryType := DictionaryType;
+end;
+
+constructor TDictionaryDetailTableNodeData.Create(const Id: integer;
+  const Text: string; const Code: string; const Position: integer);
+begin
+  inherited Create;
+
+  FID := Id;
+  FText := Text;
+  FCode := Code;
+  FPosition := Position;
 end;
 
 end.

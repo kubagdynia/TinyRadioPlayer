@@ -46,6 +46,9 @@ type
     class function LoadStations(var VstList: TVirtualStringTree; const Text: string): ErrorId;
     class function LoadStation(var StationInfo: TStationInfo; const StationId: integer): ErrorId;
     class function GetSelectedStationId(var VstList: TVirtualStringTree): integer;
+    class function DoesAnyStationUseTheGivenItemOfTheDictionary(
+      DictionaryType: TDictionaryType; DictionaryRowCode: string;
+      out ItemIsUsed: boolean): ErrorId;
 
     // Dictionary
     class function AddDictionary(const Name: string; const Code: string;
@@ -58,14 +61,39 @@ type
     class function AddDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryId: integer;
       out DictionaryRowId: integer): ErrorId;
-    class function LoadDictionary(DictionaryKind: TDictionaryKind;
+    class function AddDictionaryRow(const Text: string; const Code: string;
+      const Position: integer; const DictionaryCode: string; const ParentDictionaryCode: string;
+      out DictionaryRowId: integer): ErrorId;
+    class function UpdateDictionaryRow(const Text: string; const Code: string;
+      const Position: integer; const DictionaryCode: string; const ParentDictionaryCode: string;
+      DictionaryRowId: integer): ErrorId;
+    class function DeleteDictionaryRow(DictionaryRowId: integer): ErrorId;
+    class function GetDictionaryName(DictionaryType: TDictionaryType): string;
+    class function GetLocalizedDictionaryName(DictionaryType: TDictionaryType): string;
+    class function LoadDictionary(DictionaryType: TDictionaryType;
       SkipIfLoaded: boolean = true; SortDirection: TSortDirection = sdAscending): ErrorId;
     class function ClearDictionary: ErrorId;
     class function AddDictionaryItemsToComboBox(var ComboBox: TComboBox;
-      DictionaryKind: TDictionaryKind; FirstBlank: boolean): ErrorId;
+      DictionaryType: TDictionaryType; FirstBlank: boolean): ErrorId;
     class function FindAnItemInTheComboBox(var ComboBox: TComboBox; Code: string): ErrorId;
     class function GetDictionaryCodeFromSelectedItem(var ComboBox: TComboBox;
       out DictionaryCode: string): ErrorId;
+    class function LoadDictionaryNames(var VstList: TVirtualStringTree;
+      SelectFirst: boolean = false): ErrorId;
+    class function LoadDictionaryDetails(var VstList: TVirtualStringTree;
+      DictionaryType: TDictionaryType;
+      ParentDictionaryType: TDictionaryType = TDictionaryType.dkNone;
+      ParentDictionaryRowCode: string = ''): ErrorId;
+    class function GetDictionaryTypeByDictionaryRowId(DictionaryRowId: integer;
+      out DictionaryType: TDictionaryType): ErrorId;
+    class function GetParentDictionaryType(DictionaryType: TDictionaryType;
+      out ParentDictionaryType: TDictionaryType): ErrorId;
+    class function GetDictionaryId(DictionaryType: TDictionaryType;
+      out DictionaryId: integer; out DictionaryParentId: integer): ErrorId;
+    class function GetDictionaryRowId(DictionaryId: integer; Code: string;
+      out DictionaryRowId: integer): ErrorId;
+    class function GetDictionaryRowCode(DictionaryRowId: integer;
+      out Code: string): ErrorId;
   end;
 
 implementation
@@ -150,6 +178,14 @@ begin
   Result := FMainRepo.StationRepo.GetSelectedStationId(VstList);
 end;
 
+class function TRepository.DoesAnyStationUseTheGivenItemOfTheDictionary(
+  DictionaryType: TDictionaryType; DictionaryRowCode: string; out
+  ItemIsUsed: boolean): ErrorId;
+begin
+  Result := FMainRepo.StationRepo.DoesAnyStationUseTheGivenItemOfTheDictionary(
+    DictionaryType, DictionaryRowCode, ItemIsUsed);
+end;
+
 class function TRepository.AddDictionary(const Name: string;
   const Code: string; const Description: string; out DictionaryId: integer): ErrorId;
 begin
@@ -178,10 +214,42 @@ begin
     DictionaryRowId);
 end;
 
-class function TRepository.LoadDictionary(DictionaryKind: TDictionaryKind;
+class function TRepository.AddDictionaryRow(const Text: string;
+  const Code: string; const Position: integer; const DictionaryCode: string;
+  const ParentDictionaryCode: string; out DictionaryRowId: integer): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.AddDictionaryRow(Text, Code, Position,
+    DictionaryCode, parentDictionaryCode, DictionaryRowId);
+end;
+
+class function TRepository.UpdateDictionaryRow(const Text: string;
+  const Code: string; const Position: integer; const DictionaryCode: string;
+  const ParentDictionaryCode: string; DictionaryRowId: integer): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.UpdateDictionaryRow(Text, Code, Position,
+    DictionaryCode, parentDictionaryCode, DictionaryRowId);
+end;
+
+class function TRepository.DeleteDictionaryRow(DictionaryRowId: integer): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.DeleteDictionaryRow(DictionaryRowId);
+end;
+
+class function TRepository.GetDictionaryName(DictionaryType: TDictionaryType): string;
+begin
+  Result := FMainRepo.DictionaryRepo.GetDictionaryName(DictionaryType);
+end;
+
+class function TRepository.GetLocalizedDictionaryName(
+  DictionaryType: TDictionaryType): string;
+begin
+  Result := FMainRepo.DictionaryRepo.GetLocalizedDictionaryName(DictionaryType);
+end;
+
+class function TRepository.LoadDictionary(DictionaryType: TDictionaryType;
   SkipIfLoaded: boolean = true; SortDirection: TSortDirection = sdAscending): ErrorId;
 begin
-  Result := FMainRepo.DictionaryRepo.LoadDictionary(DictionaryKind, SkipIfLoaded, SortDirection);
+  Result := FMainRepo.DictionaryRepo.LoadDictionary(DictionaryType, SkipIfLoaded, SortDirection);
 end;
 
 class function TRepository.ClearDictionary: ErrorId;
@@ -190,10 +258,10 @@ begin
 end;
 
 class function TRepository.AddDictionaryItemsToComboBox(
-  var ComboBox: TComboBox; DictionaryKind: TDictionaryKind; FirstBlank: boolean): ErrorId;
+  var ComboBox: TComboBox; DictionaryType: TDictionaryType; FirstBlank: boolean): ErrorId;
 begin
   Result := FMainRepo.DictionaryRepo.AddDictionaryItemsToComboBox(
-    ComboBox, DictionaryKind, FirstBlank);
+    ComboBox, DictionaryType, FirstBlank);
 end;
 
 class function TRepository.FindAnItemInTheComboBox(var ComboBox: TComboBox;
@@ -207,6 +275,52 @@ class function TRepository.GetDictionaryCodeFromSelectedItem(
 begin
   Result :=
     FMainRepo.DictionaryRepo.GetDictionaryCodeFromSelectedItem(ComboBox, DictionaryCode);
+end;
+
+class function TRepository.LoadDictionaryNames(
+  var VstList: TVirtualStringTree; SelectFirst: boolean = false): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.LoadDictionaryNames(VstList, SelectFirst);
+end;
+
+class function TRepository.LoadDictionaryDetails(
+  var VstList: TVirtualStringTree; DictionaryType: TDictionaryType;
+  ParentDictionaryType: TDictionaryType = TDictionaryType.dkNone;
+  ParentDictionaryRowCode: string = ''): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.LoadDictionaryDetails(VstList,
+    DictionaryType, ParentDictionaryType, ParentDictionaryRowCode);
+end;
+
+class function TRepository.GetDictionaryTypeByDictionaryRowId(
+  DictionaryRowId: integer; out DictionaryType: TDictionaryType): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.GetDictionaryTypeByDictionaryRowId(DictionaryRowId, DictionaryType);
+end;
+
+class function TRepository.GetParentDictionaryType(
+  DictionaryType: TDictionaryType; out ParentDictionaryType: TDictionaryType): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.GetParentDictionaryType(DictionaryType, ParentDictionaryType);
+end;
+
+class function TRepository.GetDictionaryId(DictionaryType: TDictionaryType;
+  out DictionaryId: integer; out DictionaryParentId: integer): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.GetDictionaryId(DictionaryType,
+    DictionaryId, DictionaryParentId);
+end;
+
+class function TRepository.GetDictionaryRowId(DictionaryId: integer;
+  Code: string; out DictionaryRowId: integer): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.GetDictionaryRowId(DictionaryId, Code, DictionaryRowId);
+end;
+
+class function TRepository.GetDictionaryRowCode(DictionaryRowId: integer; out
+  Code: string): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.GetDictionaryRowCode(DictionaryRowId, Code);
 end;
 
 initialization

@@ -132,7 +132,7 @@ begin
 
   // REGION & COUNTRY
   err := DictionaryRepo.AddDictionary('Region', DICTIONARY_REGION_CODE, dictionaryRegionId);
-  err := DictionaryRepo.AddDictionary('Country', DICTIONARY_COUNTRY_CODE, dictionaryCountryId);
+  err := DictionaryRepo.AddDictionary('Country', DICTIONARY_COUNTRY_CODE, dictionaryCountryId, 'Region');
 
   // header - region AFRICA
   err := DictionaryRepo.AddDictionaryRow('Africa', 'Africa', 1, dictionaryRegionId, parentDictionaryRowId);

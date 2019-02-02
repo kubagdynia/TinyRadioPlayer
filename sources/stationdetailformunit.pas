@@ -1,4 +1,14 @@
 unit StationDetailFormUnit;
+{===============================================================================
+File:                StationDetailFormUnit.pas
+
+Application Name:    Tiny Radio Player
+
+Created:             2018 Jakub Kurlowicz (jakubkurlowicz.pl)
+
+Description:         Station details management (add, edit and delete)
+
+================================================================================}
 
 {$mode objfpc}{$H+}
 
@@ -76,16 +86,16 @@ begin
 
   FStationId := StationId;
 
-  err := TRepository.LoadDictionary(TDictionaryKind.dkGenre);
+  err := TRepository.LoadDictionary(TDictionaryType.dkGenre);
 
   if err = ERR_OK then
-    err := TRepository.LoadDictionary(TDictionaryKind.dkCountry);
+    err := TRepository.LoadDictionary(TDictionaryType.dkCountry);
 
   if err = ERR_OK then
-    err := TRepository.AddDictionaryItemsToComboBox(cboGenre, TDictionaryKind.dkGenre, true);
+    err := TRepository.AddDictionaryItemsToComboBox(cboGenre, TDictionaryType.dkGenre, true);
 
   if err = ERR_OK then
-    err := TRepository.AddDictionaryItemsToComboBox(cboCountry, TDictionaryKind.dkCountry, true);
+    err := TRepository.AddDictionaryItemsToComboBox(cboCountry, TDictionaryType.dkCountry, true);
 
   case AOpenMode of
     omNew:

@@ -1,0 +1,104 @@
+inherited DictionaryDetailForm: TDictionaryDetailForm
+  Height = 320
+  Width = 384
+  ClientHeight = 320
+  ClientWidth = 384
+  Constraints.MinHeight = 320
+  Constraints.MinWidth = 300
+  inherited TitlePanel: TBCPanel
+    Width = 384
+    inherited lblTitle: TBCLabel
+      Width = 23
+    end
+  end
+  inherited MainPanel: TBCPanel
+    Height = 234
+    Width = 384
+    object cboParentDictionaryTable: TComboBox[0]
+      Left = 8
+      Height = 23
+      Top = 26
+      Width = 366
+      Anchors = [akTop, akLeft, akRight]
+      Enabled = False
+      ItemHeight = 15
+      TabOrder = 0
+    end
+    object lblParentDictionaryTable: TLabel[1]
+      Left = 8
+      Height = 15
+      Top = 7
+      Width = 122
+      Caption = 'Parent Dictionary Table'
+      ParentColor = False
+    end
+    object edtDictionaryItemName: TEdit[2]
+      Left = 8
+      Height = 23
+      Top = 81
+      Width = 366
+      Anchors = [akTop, akLeft, akRight]
+      OnChange = ValidateEnteredData
+      TabOrder = 1
+    end
+    object lblDictionaryItemName: TLabel[3]
+      Left = 8
+      Height = 15
+      Top = 62
+      Width = 116
+      Caption = 'Dictionary Item Name'
+      ParentColor = False
+    end
+    object lblDictionaryItemCode: TLabel[4]
+      Left = 8
+      Height = 15
+      Top = 117
+      Width = 112
+      Caption = 'Dictionary Item Code'
+      ParentColor = False
+    end
+    object edtDictionaryItemCode: TEdit[5]
+      Left = 8
+      Height = 23
+      Top = 136
+      Width = 366
+      Anchors = [akTop, akLeft, akRight]
+      OnChange = ValidateEnteredData
+      TabOrder = 2
+    end
+    object edtDictionaryItemPosition: TEdit[6]
+      Left = 8
+      Height = 23
+      Top = 191
+      Width = 64
+      MaxLength = 4
+      OnChange = edtDictionaryItemPositionChange
+      OnKeyPress = edtDictionaryItemPositionKeyPress
+      TabOrder = 3
+      Text = '1'
+    end
+    object lblDictionaryItemPosition: TLabel[7]
+      Left = 8
+      Height = 15
+      Top = 172
+      Width = 127
+      Caption = 'Dictionary Item Position'
+      ParentColor = False
+    end
+  end
+  inherited BottomPanel: TBCPanel
+    Top = 275
+    Width = 384
+    inherited btnCancel: TBCButton
+      Left = 145
+    end
+    inherited btnOk: TBCButton
+      Left = 263
+      OnClick = btnOkClick
+    end
+  end
+  inherited BaseFormActionList: TActionList
+    left = 304
+    top = 48
+  end
+end

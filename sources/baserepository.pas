@@ -438,6 +438,7 @@ begin
         'ID INTEGER PRIMARY KEY NOT NULL, ' +
         'Name VARCHAR NOT NULL, ' +
         'Code VARCHAR NOT NULL, ' +
+        'ParentCode VARCHAR NULL, ' +
         'Description VARCHAR NULL, ' +
         'Created INTEGER NOT NULL, ' +
         'Modified INTEGER NOT NULL);');

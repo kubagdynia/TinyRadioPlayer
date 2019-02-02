@@ -30,13 +30,13 @@ type
     constructor Create; overload;
     destructor Destroy; override;
 
-    function AddStation(const StationName: string; const StreamUrl: string;
-      out StationId: integer): ErrorId;
-    function AddStation(const StationName: string; const StreamUrl: string;
-      const Description: string; const WebpageUrl: string;
-      const GenreCode: string; const CountryCode: string;
-      out StationId: integer): ErrorId;
-    function AddStation(StationInfo: TStationInfo; out StationId: integer): ErrorId;
+    function AddStation(const AStationName: string; const AStreamUrl: string;
+      out AStationId: integer): ErrorId;
+    function AddStation(const AStationName: string; const AStreamUrl: string;
+      const ADescription: string; const AWebpageUrl: string;
+      const AGenreCode: string; const ACountryCode: string;
+      out AStationId: integer): ErrorId;
+    function AddStation(AStationInfo: TStationInfo; out AStationId: integer): ErrorId;
 
     function UpdateStation(StationInfo: TStationInfo): ErrorId;
 
@@ -44,6 +44,10 @@ type
 
     function IsStationExists(StationName: string; ExcludeStationId: integer;
       out IsExists: boolean): ErrorId;
+
+    function DoesAnyStationUseTheGivenItemOfTheDictionary(
+      DictionaryType: TDictionaryType; DictionaryRowCode: string;
+      out ItemIsUsed: boolean): ErrorId;
 
     function LoadStation(var StationInfo: TStationInfo; const StationId: integer): ErrorId;
     function LoadStations(var VstList: TVirtualStringTree; const Text: string): ErrorId;
@@ -72,15 +76,15 @@ begin
   inherited Destroy;
 end;
 
-function TStationRepository.AddStation(const StationName: string;
-  const StreamUrl: string; out StationId: integer): ErrorId;
+function TStationRepository.AddStation(const AStationName: string;
+  const AStreamUrl: string; out AStationId: integer): ErrorId;
 begin
-  Result := AddStation(StationName, StreamUrl, EMPTY_STR, EMPTY_STR, EMPTY_STR, EMPTY_STR, StationId);
+  Result := AddStation(AStationName, AStreamUrl, EMPTY_STR, EMPTY_STR, EMPTY_STR, EMPTY_STR, AStationId);
 end;
 
-function TStationRepository.AddStation(const StationName: string;
-  const StreamUrl: string; const Description: string; const WebpageUrl: string;
-  const GenreCode: string; const CountryCode: string; out StationId: integer): ErrorId;
+function TStationRepository.AddStation(const AStationName: string;
+  const AStreamUrl: string; const ADescription: string; const AWebpageUrl: string;
+  const AGenreCode: string; const ACountryCode: string; out AStationId: integer): ErrorId;
 var
   err: ErrorId;
   stationInfo: TStationInfo;
@@ -90,20 +94,20 @@ begin
   with stationInfo do
     begin
       Id := EMPTY_INT;
-      Name := StationName;
-      StreamUrl := StreamUrl;
-      Description := Description;
-      WebpageUrl := WebpageUrl;
-      GenreCode := GenreCode;
-      CountryCode := CountryCode;
+      Name := AStationName;
+      StreamUrl := AStreamUrl;
+      Description := ADescription;
+      WebpageUrl := AWebpageUrl;
+      GenreCode := AGenreCode;
+      CountryCode := ACountryCode;
     end;
 
-  err := AddStation(stationInfo, StationId);
+  err := AddStation(stationInfo, AStationId);
 
   Result := err;
 end;
 
-function TStationRepository.AddStation(StationInfo: TStationInfo; out StationId: integer): ErrorId;
+function TStationRepository.AddStation(AStationInfo: TStationInfo; out AStationId: integer): ErrorId;
 var
   query: TZQuery;
   err: ErrorId;
@@ -113,14 +117,14 @@ begin
   err := ERR_OK;
 
   try
-    err := IsStationExists(StationInfo.Name, EMPTY_INT, isExists);
+    err := IsStationExists(AStationInfo.Name, EMPTY_INT, isExists);
 
     if (err = ERR_OK) and isExists then
       err := ERR_DB_STATION_ALREADY_EXISTS;
 
     if err = ERR_OK then
     begin
-      StationId := TRepository.GetNewDbTableKey(DB_TABLE_STATIONS);
+      AStationId := TRepository.GetNewDbTableKey(DB_TABLE_STATIONS);
       dateNow := GetUnixTimestamp();
 
       query := TZQuery.Create(nil);
@@ -133,21 +137,21 @@ begin
           'VALUES(:ID,:Name,:StreamUrl,:Description,:WebpageUrl,:GenreCode,:CountryCode,:Created,:Modified);'
         );
 
-        query.Params.ParamByName('ID').AsInteger := StationId;
-        query.Params.ParamByName('Name').AsString := Trim(StationInfo.Name);
-        query.Params.ParamByName('StreamUrl').AsString := Trim(StationInfo.StreamUrl);
+        query.Params.ParamByName('ID').AsInteger := AStationId;
+        query.Params.ParamByName('Name').AsString := Trim(AStationInfo.Name);
+        query.Params.ParamByName('StreamUrl').AsString := Trim(AStationInfo.StreamUrl);
 
-        if (Trim(StationInfo.Description) <> EMPTY_STR) then
-          query.Params.ParamByName('Description').AsString := Trim(StationInfo.Description);
+        if (Trim(AStationInfo.Description) <> EMPTY_STR) then
+          query.Params.ParamByName('Description').AsString := Trim(AStationInfo.Description);
 
-        if (Trim(StationInfo.WebpageUrl) <> EMPTY_STR) then
-          query.Params.ParamByName('WebpageUrl').AsString := Trim(StationInfo.WebpageUrl);
+        if (Trim(AStationInfo.WebpageUrl) <> EMPTY_STR) then
+          query.Params.ParamByName('WebpageUrl').AsString := Trim(AStationInfo.WebpageUrl);
 
-        if (Trim(StationInfo.GenreCode) <> EMPTY_STR) then
-          query.Params.ParamByName('GenreCode').AsString := Trim(StationInfo.GenreCode);
+        if (Trim(AStationInfo.GenreCode) <> EMPTY_STR) then
+          query.Params.ParamByName('GenreCode').AsString := Trim(AStationInfo.GenreCode);
 
-        if (Trim(StationInfo.CountryCode) <> EMPTY_STR) then
-          query.Params.ParamByName('CountryCode').AsString := Trim(StationInfo.CountryCode);
+        if (Trim(AStationInfo.CountryCode) <> EMPTY_STR) then
+          query.Params.ParamByName('CountryCode').AsString := Trim(AStationInfo.CountryCode);
 
         query.Params.ParamByName('Created').AsInteger := dateNow;
         query.Params.ParamByName('Modified').AsInteger := dateNow;
@@ -295,6 +299,66 @@ begin
       begin
         LogException(EMPTY_STR, ClassName, 'IsStationExists', E);
         err := ERR_DB_IS_STATION_EXISTS;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TStationRepository.DoesAnyStationUseTheGivenItemOfTheDictionary(
+  DictionaryType: TDictionaryType; DictionaryRowCode: string; out
+  ItemIsUsed: boolean): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+  columnName: string;
+begin
+  err := ERR_OK;
+
+  try
+
+    if not(DictionaryType in [dkCountry, dkGenre]) then
+    begin
+      Result := err;
+      ItemIsUsed := false;
+      Exit;
+    end;
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      if (DictionaryType = dkCountry) then
+        columnName := 'CountryCode'
+      else if (DictionaryType = dkGenre) then
+        columnName := 'GenreCode'
+      else begin
+        Result := err;
+        ItemIsUsed := false;
+        Exit;
+      end;
+
+      query.SQL.Add('SELECT EXISTS(SELECT 1 FROM ' + DB_TABLE_STATIONS +
+        ' WHERE ' + columnName + ' = UPPER(:Code)) AS IsExist;');
+
+      query.ParamByName('Code').AsString := DictionaryRowCode;
+
+      query.Open;
+
+      if query.RecordCount = 1 then
+        ItemIsUsed := query.Fields[0].AsBoolean
+      else
+        err := ERR_DB_DOES_ANY_STATION_USE_ITEM_OF_DICTIONARY;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'DoesAnyStationUseTheGivenItemOfTheDictionary', E);
+        err := ERR_DB_DOES_ANY_STATION_USE_ITEM_OF_DICTIONARY;
       end;
   end;
 
