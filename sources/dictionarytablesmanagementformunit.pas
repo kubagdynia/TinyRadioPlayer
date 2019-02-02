@@ -47,6 +47,7 @@ type
       var ItemColor: TColor; var EraseAction: TItemEraseAction);
     procedure VSTDictionaryDetailsListCompareNodes(Sender: TBaseVirtualTree;
       Node1, Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
+    procedure VSTDictionaryDetailsListDblClick(Sender: TObject);
     procedure VSTDictionaryDetailsListFocusChanging(Sender: TBaseVirtualTree;
       OldNode, NewNode: PVirtualNode; OldColumn, NewColumn: TColumnIndex;
       var Allowed: Boolean);
@@ -225,12 +226,13 @@ begin
   VSTDictionaryDetailsList.Width := 342;
 
   VSTDictionaryDetailsList.OnBeforeItemErase := @VSTDictionaryDetailsListBeforeItemErase;
-  VSTDictionaryDetailsList.OnCompareNodes:=@VSTDictionaryDetailsListCompareNodes;
-  VSTDictionaryDetailsList.OnFocusChanging:=@VSTDictionaryDetailsListFocusChanging;
-  VSTDictionaryDetailsList.OnFreeNode:=@VSTDictionaryDetailsListFreeNode;
-  VSTDictionaryDetailsList.OnGetText:=@VSTDictionaryDetailsListGetText;
-  VSTDictionaryDetailsList.OnGetNodeDataSize:=@VSTDictionaryDetailsListGetNodeDataSize;
-  VSTDictionaryDetailsList.OnHeaderClick:=@VSTDictionaryDetailsListHeaderClick;
+  VSTDictionaryDetailsList.OnCompareNodes := @VSTDictionaryDetailsListCompareNodes;
+  VSTDictionaryDetailsList.OnFocusChanging := @VSTDictionaryDetailsListFocusChanging;
+  VSTDictionaryDetailsList.OnFreeNode := @VSTDictionaryDetailsListFreeNode;
+  VSTDictionaryDetailsList.OnDblClick := @VSTDictionaryDetailsListDblClick;
+  VSTDictionaryDetailsList.OnGetText := @VSTDictionaryDetailsListGetText;
+  VSTDictionaryDetailsList.OnGetNodeDataSize := @VSTDictionaryDetailsListGetNodeDataSize;
+  VSTDictionaryDetailsList.OnHeaderClick := @VSTDictionaryDetailsListHeaderClick;
 
   // Add colums
   VSTDictionaryDetailsList.Header.Columns.Add.Text :=
@@ -343,6 +345,13 @@ begin
       0: Result := CompareText(data1^.ddtnd.Text, data2^.ddtnd.Text);
     end;
   end;
+end;
+
+// Triggered when double clicked
+procedure TDictionaryTablesManagementForm.VSTDictionaryDetailsListDblClick(
+  Sender: TObject);
+begin
+  EditDetailAction.Execute;
 end;
 
 // Load dictionary table detail list after focus Changing

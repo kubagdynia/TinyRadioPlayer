@@ -78,13 +78,16 @@ type
     function AddDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryId: integer;
       out DictionaryRowId: integer): ErrorId;
-
     function AddDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryCode: string; const ParentDictionaryCode: string;
       out DictionaryRowId: integer): ErrorId;
+
+    // Update Dictionary Row
     function UpdateDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryCode: string; const ParentDictionaryCode: string;
       DictionaryRowId: integer): ErrorId;
+
+    // Delete Dictionary Row
     function DeleteDictionaryRow(DictionaryRowId: integer): ErrorId;
 
     // Load Dictionary
@@ -909,7 +912,7 @@ begin
 
     // Reinit Virtual String Tree
     VstList.Clear;
-    VstList.RootNodeCount := Length(FDictionary);
+    VstList.RootNodeCount := Length(FDictionary) - 1; // take away one because we don't need dkNone dictionary item
     VstList.ReinitNode(VstList.RootNode, True);
 
     VstList.BeginUpdate;
