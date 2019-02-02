@@ -35,6 +35,9 @@ type
     function DictionaryRowExists(DictionaryId: integer; Code: string; Text: string;
       ParentDictionaryRowId: integer = EMPTY_INT;
       ExcludeDictionaryRowId: integer = EMPTY_INT): boolean;
+    function IsDictionaryRowUsedAsAParent(DictionaryRowId: integer): boolean;
+
+    function RefreshDictionary(ADictionaryType: TDictionaryType): ErrorId;
   protected
 
   public
@@ -54,8 +57,19 @@ type
     function GetLocalizedDictionaryName(DictionaryType: TDictionaryType): string;
     function GetDictionaryId(DictionaryType: TDictionaryType;
       out DictionaryId: integer; out DictionaryParentId: integer): ErrorId;
+    function GetDictionaryTypeByDictionaryRowId(DictionaryRowId: integer;
+      out DictionaryType: TDictionaryType): ErrorId;
+    function GetParentDictionaryType(DictionaryType: TDictionaryType;
+      out ParentDictionaryType: TDictionaryType): ErrorId;
+
+    function IsDictionaryItemUsed(DictionaryRowId: integer;
+      DictionaryType: TDictionaryType; out IsUsed: boolean): ErrorId;
+
+    // Get Dictionary Row
     function GetDictionaryRowId(DictionaryId: integer; Code: string;
       out DictionaryRowId: integer): ErrorId;
+    function GetDictionaryRowCode(DictionaryRowId: integer;
+      out Code: string): ErrorId;
 
     // Add Dictionary Row
     function AddDictionaryRow(const Text: string; const Code: string;
@@ -71,6 +85,7 @@ type
     function UpdateDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryCode: string; const ParentDictionaryCode: string;
       DictionaryRowId: integer): ErrorId;
+    function DeleteDictionaryRow(DictionaryRowId: integer): ErrorId;
 
     // Load Dictionary
     function LoadDictionary(DictionaryType: TDictionaryType;
@@ -89,9 +104,6 @@ type
     function FindAnItemInTheComboBox(var ComboBox: TComboBox; Code: string): ErrorId;
     function GetDictionaryCodeFromSelectedItem(var ComboBox: TComboBox;
       out DictionaryCode: string): ErrorId;
-
-    function GetParentDictionaryType(DictionaryType: TDictionaryType;
-      out ParentDictionaryType: TDictionaryType): ErrorId;
 
 
   end;
@@ -318,8 +330,7 @@ begin
 
       query.ExecSQL;
 
-      ClearDictionary(false, dictionaryType);
-      LoadDictionary(dictionaryType, false);
+      err := RefreshDictionary(dictionaryType);
 
     finally
       query.Free;
@@ -410,8 +421,7 @@ begin
 
       query.ExecSQL;
 
-      ClearDictionary(false, dictionaryType);
-      LoadDictionary(dictionaryType, false);
+      err := RefreshDictionary(dictionaryType);
 
     finally
       query.Free;
@@ -422,6 +432,68 @@ begin
       begin
         LogException(EMPTY_STR, ClassName, 'UpdateDictionaryRow', E);
         err := ERR_DB_UPDATE_DICTIONARY_ROW;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TDictionaryRepository.DeleteDictionaryRow(DictionaryRowId: integer): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+  dictionaryType: TDictionaryType;
+  isUsed: boolean;
+begin
+  err := ERR_OK;
+
+  try
+
+    err := GetDictionaryTypeByDictionaryRowId(DictionaryRowId, dictionaryType);
+
+    if err <> ERR_OK then
+    begin
+      Result := err;
+      Exit;
+    end;
+
+    err := IsDictionaryItemUsed(DictionaryRowId, dictionaryType, isUsed);
+
+    if err <> ERR_OK then
+    begin
+      Result := err;
+      Exit;
+    end;
+
+    if isUsed then
+    begin
+      Result := ERR_DICTIONARY_ROW_IS_USED_BY_OTHER_DATA;
+      Exit;
+    end;
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'DELETE FROM ' + DB_TABLE_DICTIONARY_ROW + ' WHERE ID = :ID;'
+      );
+
+      query.Params.ParamByName('ID').AsInteger := DictionaryRowId;
+
+      query.ExecSQL;
+
+      err := RefreshDictionary(dictionaryType);
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'DeleteDictionaryRow', E);
+        err := ERR_DB_DELETE_DICTIONARY_ROW;
       end;
   end;
 
@@ -679,6 +751,45 @@ begin
   end;
 end;
 
+function TDictionaryRepository.IsDictionaryRowUsedAsAParent(
+  DictionaryRowId: integer): boolean;
+var
+  query: TZQuery;
+begin
+  try
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'SELECT COUNT(1) AS Count FROM ' + DB_TABLE_DICTIONARY_ROW +
+        ' WHERE ParentDictionaryRowID = :ParentDictionaryRowId;'
+      );
+
+      query.Params.ParamByName('ParentDictionaryRowId').AsInteger := DictionaryRowId;
+
+      query.Open;
+
+      Result := query.FieldByName('Count').AsInteger > 0;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      RaiseErrorMessage(ERR_IS_DICTIONARY_ROW_USED_AS_A_PARENT, ClassName, 'DictionaryRowExists');
+  end;
+end;
+
+function TDictionaryRepository.RefreshDictionary(
+  ADictionaryType: TDictionaryType): ErrorId;
+begin
+  Result := ClearDictionary(false, ADictionaryType);
+  Result := LoadDictionary(ADictionaryType, false);
+end;
+
 function TDictionaryRepository.GetParentDictionaryType(DictionaryType: TDictionaryType;
   out ParentDictionaryType: TDictionaryType): ErrorId;
 var
@@ -715,6 +826,60 @@ begin
       begin
         LogException(EMPTY_STR, ClassName, 'GetParentDictionary', E);
         err := ERR_GET_PARENT_DICTIONARY_KIND;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TDictionaryRepository.IsDictionaryItemUsed(DictionaryRowId: integer;
+  DictionaryType: TDictionaryType; out IsUsed: boolean): ErrorId;
+var
+  err: ErrorId;
+  query: TZQuery;
+  dictionaryRowCode: string;
+  itemIsUsed: boolean;
+begin
+  err := ERR_OK;
+
+  Result := err;
+  IsUsed := false;
+
+  try
+    err := GetDictionaryRowCode(DictionaryRowId, dictionaryRowCode);
+
+    if err <> ERR_OK then
+    begin
+      Result := err;
+      Exit;
+    end;
+
+    if IsDictionaryRowUsedAsAParent(DictionaryRowId) then
+    begin
+      IsUsed := true;
+      Exit;
+    end;
+
+    err := TRepository.DoesAnyStationUseTheGivenItemOfTheDictionary(
+      DictionaryType, dictionaryRowCode, itemIsUsed);
+
+    if err <> ERR_OK then
+    begin
+      Result := err;
+      Exit;
+    end;
+
+    if itemIsUsed then
+    begin
+      IsUsed := true;
+      Exit;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'IsDictionaryItemUsed', E);
+        err := ERR_IS_DICTIONARY_ITEM_USED;
       end;
   end;
 
@@ -976,6 +1141,50 @@ begin
   Result := err;
 end;
 
+function TDictionaryRepository.GetDictionaryTypeByDictionaryRowId(
+  DictionaryRowId: integer; out DictionaryType: TDictionaryType): ErrorId;
+var
+  err: ErrorId;
+  query: TZQuery;
+begin
+  err := ERR_OK;
+
+  try
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'SELECT d.Code FROM ' + DB_TABLE_DICTIONARY + ' d ' +
+        'INNER JOIN ' + DB_TABLE_DICTIONARY_ROW + ' r ON r.DictionaryID = d.ID ' +
+        'WHERE r.ID = :DictionaryRowId;'
+      );
+
+      query.Params.ParamByName('DictionaryRowId').AsInteger := DictionaryRowId;
+
+      query.Open;
+
+      if query.RecordCount = 1 then
+        DictionaryType := GetDictionaryType(query.FieldByName('Code').AsString)
+      else
+        DictionaryType := TDictionaryType.dkNone;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'GetDictionaryTypeByDictionaryRowId', E);
+        err := ERR_GET_DICTIONARY_ID_BY_ROW_ID;
+      end;
+  end;
+
+  Result := err;
+end;
+
 function TDictionaryRepository.GetDictionaryRowId(DictionaryId: integer;
   Code: string; out DictionaryRowId: integer): ErrorId;
 var
@@ -1016,6 +1225,53 @@ begin
       begin
         LogException(EMPTY_STR, ClassName, 'GetDictionaryRowId', E);
         err := ERR_GET_DICTIONARY_ROW_ID;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TDictionaryRepository.GetDictionaryRowCode(DictionaryRowId: integer;
+  out Code: string): ErrorId;
+var
+  err: ErrorId;
+  query: TZQuery;
+begin
+  err := ERR_OK;
+
+  try
+
+    Code := EMPTY_STR;
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'SELECT Code FROM ' + DB_TABLE_DICTIONARY_ROW +
+        ' WHERE ID = :DictionaryRowId;'
+      );
+
+      query.Params.ParamByName('DictionaryRowId').AsInteger := DictionaryRowId;
+
+      query.Open;
+
+      if query.RecordCount = 1 then
+        Code := query.FieldByName('CODE').AsString
+      else if query.RecordCount = 0 then
+        Code := EMPTY_STR
+      else
+        err := ERR_GET_DICTIONARY_ROW_CODE;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'GetDictionaryRowCode', E);
+        err := ERR_GET_DICTIONARY_ROW_CODE;
       end;
   end;
 

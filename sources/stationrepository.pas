@@ -45,6 +45,10 @@ type
     function IsStationExists(StationName: string; ExcludeStationId: integer;
       out IsExists: boolean): ErrorId;
 
+    function DoesAnyStationUseTheGivenItemOfTheDictionary(
+      DictionaryType: TDictionaryType; DictionaryRowCode: string;
+      out ItemIsUsed: boolean): ErrorId;
+
     function LoadStation(var StationInfo: TStationInfo; const StationId: integer): ErrorId;
     function LoadStations(var VstList: TVirtualStringTree; const Text: string): ErrorId;
 
@@ -295,6 +299,66 @@ begin
       begin
         LogException(EMPTY_STR, ClassName, 'IsStationExists', E);
         err := ERR_DB_IS_STATION_EXISTS;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TStationRepository.DoesAnyStationUseTheGivenItemOfTheDictionary(
+  DictionaryType: TDictionaryType; DictionaryRowCode: string; out
+  ItemIsUsed: boolean): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+  columnName: string;
+begin
+  err := ERR_OK;
+
+  try
+
+    if not(DictionaryType in [dkCountry, dkGenre]) then
+    begin
+      Result := err;
+      ItemIsUsed := false;
+      Exit;
+    end;
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      if (DictionaryType = dkCountry) then
+        columnName := 'CountryCode'
+      else if (DictionaryType = dkGenre) then
+        columnName := 'GenreCode'
+      else begin
+        Result := err;
+        ItemIsUsed := false;
+        Exit;
+      end;
+
+      query.SQL.Add('SELECT EXISTS(SELECT 1 FROM ' + DB_TABLE_STATIONS +
+        ' WHERE ' + columnName + ' = UPPER(:Code)) AS IsExist;');
+
+      query.ParamByName('Code').AsString := DictionaryRowCode;
+
+      query.Open;
+
+      if query.RecordCount = 1 then
+        ItemIsUsed := query.Fields[0].AsBoolean
+      else
+        err := ERR_DB_DOES_ANY_STATION_USE_ITEM_OF_DICTIONARY;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'DoesAnyStationUseTheGivenItemOfTheDictionary', E);
+        err := ERR_DB_DOES_ANY_STATION_USE_ITEM_OF_DICTIONARY;
       end;
   end;
 

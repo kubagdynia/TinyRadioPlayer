@@ -40,6 +40,7 @@ const
   ERR_DB_DELETE_STATION                     = $00000035;
   ERR_DB_IS_STATION_EXISTS                  = $00000036;
   ERR_DB_STATION_ALREADY_EXISTS             = $00000037;
+  ERR_DB_DOES_ANY_STATION_USE_ITEM_OF_DICTIONARY = $00000038;
 
   // Dictionary Repository
   ERR_DB_ADD_GENRE                          = $00000101;
@@ -60,6 +61,12 @@ const
   ERR_CHECKING_IF_DICTIONARY_ROW_EXISTS     = $00000110;
   ERR_DICTIONARY_ROW_EXISTS                 = $00000111;
   ERR_DB_UPDATE_DICTIONARY_ROW              = $00000112;
+  ERR_DB_DELETE_DICTIONARY_ROW              = $00000113;
+  ERR_GET_DICTIONARY_ID_BY_ROW_ID           = $00000114;
+  ERR_IS_DICTIONARY_ITEM_USED               = $00000115;
+  ERR_GET_DICTIONARY_ROW_CODE               = $00000116;
+  ERR_IS_DICTIONARY_ROW_USED_AS_A_PARENT    = $00000117;
+  ERR_DICTIONARY_ROW_IS_USED_BY_OTHER_DATA  = $00000118;
 
   // Skins
   ERR_CANT_LOAD_SKIN_ITEMS                  = $00000201;
@@ -177,6 +184,11 @@ begin
     ERR_DICTIONARY_ROW_EXISTS:
       Result := GetLanguageItem('ErrorMessage.DictionaryRowExists',
              'This element of the dictionary already exists!');
+
+    ERR_DICTIONARY_ROW_IS_USED_BY_OTHER_DATA:
+      Result := GetLanguageItem('ErrorMessage.DictionaryRowCanNotBeDeleted',
+             'This dictionary element is used so it can not be deleted!');
+
 
     else
       Result := GetLanguageItem('ErrorMessage.UnspecifiedError',

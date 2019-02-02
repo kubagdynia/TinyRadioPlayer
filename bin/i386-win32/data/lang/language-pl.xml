@@ -14,6 +14,7 @@
 		<Item name="ErrorMessage.CantLoadSkinItems" type="string">Nie można załadować elementów skórki!</Item>
 		<Item name="ErrorMessage.DictionaryTypeCanNotBeSpecified" type="string">Nie można określić typu słownika!</Item>
 		<Item name="ErrorMessage.DictionaryRowExists" type="string">Taki element słownika już istnieje!</Item>
+		<Item name="ErrorMessage.DictionaryRowCanNotBeDeleted" type="string">Ten element słownika jest używany, więc nie można go usunąć!</Item>
 		
 		<Item name="Dialog.Question" type="string">Pytanie</Item>
 		<Item name="Dialog.Answer.Yes" type="string">Tak</Item>

@@ -83,6 +83,9 @@ begin
     TRepository.AddDictionaryItemsToComboBox(cboParentDictionaryTable, ParentDictionaryType, false);
     TRepository.FindAnItemInTheComboBox(cboParentDictionaryTable, ParentDictionaryRowCode);
   end;
+
+  if AOpenMode = TOpenMode.omEdit then
+    btnOk.Enabled := false;
 end;
 
 destructor TDictionaryDetailForm.Destroy;
@@ -201,9 +204,7 @@ begin
         DictionaryDetailTableNodeData.ID);
 
     TOpenMode.omDelete:
-    begin
-
-    end;
+      err := TRepository.DeleteDictionaryRow(DictionaryDetailTableNodeData.ID);
   end;
 
   if err <> ERR_OK then

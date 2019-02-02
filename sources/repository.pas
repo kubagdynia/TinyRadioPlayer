@@ -46,6 +46,9 @@ type
     class function LoadStations(var VstList: TVirtualStringTree; const Text: string): ErrorId;
     class function LoadStation(var StationInfo: TStationInfo; const StationId: integer): ErrorId;
     class function GetSelectedStationId(var VstList: TVirtualStringTree): integer;
+    class function DoesAnyStationUseTheGivenItemOfTheDictionary(
+      DictionaryType: TDictionaryType; DictionaryRowCode: string;
+      out ItemIsUsed: boolean): ErrorId;
 
     // Dictionary
     class function AddDictionary(const Name: string; const Code: string;
@@ -64,7 +67,7 @@ type
     class function UpdateDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryCode: string; const ParentDictionaryCode: string;
       DictionaryRowId: integer): ErrorId;
-
+    class function DeleteDictionaryRow(DictionaryRowId: integer): ErrorId;
     class function GetDictionaryName(DictionaryType: TDictionaryType): string;
     class function GetLocalizedDictionaryName(DictionaryType: TDictionaryType): string;
     class function LoadDictionary(DictionaryType: TDictionaryType;
@@ -81,12 +84,16 @@ type
       DictionaryType: TDictionaryType;
       ParentDictionaryType: TDictionaryType = TDictionaryType.dkNone;
       ParentDictionaryRowCode: string = ''): ErrorId;
+    class function GetDictionaryTypeByDictionaryRowId(DictionaryRowId: integer;
+      out DictionaryType: TDictionaryType): ErrorId;
     class function GetParentDictionaryType(DictionaryType: TDictionaryType;
       out ParentDictionaryType: TDictionaryType): ErrorId;
     class function GetDictionaryId(DictionaryType: TDictionaryType;
       out DictionaryId: integer; out DictionaryParentId: integer): ErrorId;
     class function GetDictionaryRowId(DictionaryId: integer; Code: string;
       out DictionaryRowId: integer): ErrorId;
+    class function GetDictionaryRowCode(DictionaryRowId: integer;
+      out Code: string): ErrorId;
   end;
 
 implementation
@@ -171,6 +178,14 @@ begin
   Result := FMainRepo.StationRepo.GetSelectedStationId(VstList);
 end;
 
+class function TRepository.DoesAnyStationUseTheGivenItemOfTheDictionary(
+  DictionaryType: TDictionaryType; DictionaryRowCode: string; out
+  ItemIsUsed: boolean): ErrorId;
+begin
+  Result := FMainRepo.StationRepo.DoesAnyStationUseTheGivenItemOfTheDictionary(
+    DictionaryType, DictionaryRowCode, ItemIsUsed);
+end;
+
 class function TRepository.AddDictionary(const Name: string;
   const Code: string; const Description: string; out DictionaryId: integer): ErrorId;
 begin
@@ -213,6 +228,11 @@ class function TRepository.UpdateDictionaryRow(const Text: string;
 begin
   Result := FMainRepo.DictionaryRepo.UpdateDictionaryRow(Text, Code, Position,
     DictionaryCode, parentDictionaryCode, DictionaryRowId);
+end;
+
+class function TRepository.DeleteDictionaryRow(DictionaryRowId: integer): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.DeleteDictionaryRow(DictionaryRowId);
 end;
 
 class function TRepository.GetDictionaryName(DictionaryType: TDictionaryType): string;
@@ -272,6 +292,12 @@ begin
     DictionaryType, ParentDictionaryType, ParentDictionaryRowCode);
 end;
 
+class function TRepository.GetDictionaryTypeByDictionaryRowId(
+  DictionaryRowId: integer; out DictionaryType: TDictionaryType): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.GetDictionaryTypeByDictionaryRowId(DictionaryRowId, DictionaryType);
+end;
+
 class function TRepository.GetParentDictionaryType(
   DictionaryType: TDictionaryType; out ParentDictionaryType: TDictionaryType): ErrorId;
 begin
@@ -289,6 +315,12 @@ class function TRepository.GetDictionaryRowId(DictionaryId: integer;
   Code: string; out DictionaryRowId: integer): ErrorId;
 begin
   Result := FMainRepo.DictionaryRepo.GetDictionaryRowId(DictionaryId, Code, DictionaryRowId);
+end;
+
+class function TRepository.GetDictionaryRowCode(DictionaryRowId: integer; out
+  Code: string): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.GetDictionaryRowCode(DictionaryRowId, Code);
 end;
 
 initialization

@@ -14,6 +14,7 @@
 		<Item name="ErrorMessage.CantLoadSkinItems" type="string">Skin elements can not be loaded!</Item>
 		<Item name="ErrorMessage.DictionaryTypeCanNotBeSpecified" type="string">The dictionary type can not be specified!</Item>
 		<Item name="ErrorMessage.DictionaryRowExists" type="string">This element of the dictionary already exists!</Item>
+		<Item name="ErrorMessage.DictionaryRowCanNotBeDeleted" type="string">This dictionary element is used so it can not be deleted!</Item>
 		
 		<Item name="Dialog.Question" type="string">Question</Item>
 		<Item name="Dialog.Answer.Yes" type="string">Yes</Item>
