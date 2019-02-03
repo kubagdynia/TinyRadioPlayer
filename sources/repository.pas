@@ -49,6 +49,8 @@ type
     class function DoesAnyStationUseTheGivenItemOfTheDictionary(
       DictionaryType: TDictionaryType; DictionaryRowCode: string;
       out ItemIsUsed: boolean): ErrorId;
+    class function UpdateStationDictionaryCode(DictionaryType: TDictionaryType;
+      OldCode: string; NewCode: string): ErrorId;
 
     // Dictionary
     class function AddDictionary(const Name: string; const Code: string;
@@ -184,6 +186,12 @@ class function TRepository.DoesAnyStationUseTheGivenItemOfTheDictionary(
 begin
   Result := FMainRepo.StationRepo.DoesAnyStationUseTheGivenItemOfTheDictionary(
     DictionaryType, DictionaryRowCode, ItemIsUsed);
+end;
+
+class function TRepository.UpdateStationDictionaryCode(
+  DictionaryType: TDictionaryType; OldCode: string; NewCode: string): ErrorId;
+begin
+  Result := FMainRepo.StationRepo.UpdateStationDictionaryCode(DictionaryType, OldCode, NewCode);
 end;
 
 class function TRepository.AddDictionary(const Name: string;

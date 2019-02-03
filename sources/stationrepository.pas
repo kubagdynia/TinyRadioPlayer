@@ -49,6 +49,9 @@ type
       DictionaryType: TDictionaryType; DictionaryRowCode: string;
       out ItemIsUsed: boolean): ErrorId;
 
+    function UpdateStationDictionaryCode(DictionaryType: TDictionaryType;
+      OldCode: string; NewCode: string): ErrorId;
+
     function LoadStation(var StationInfo: TStationInfo; const StationId: integer): ErrorId;
     function LoadStations(var VstList: TVirtualStringTree; const Text: string): ErrorId;
 
@@ -223,6 +226,66 @@ begin
       begin
         LogException(EMPTY_STR, ClassName, 'UpdateStation', E);
         err := ERR_DB_UPDATE_STATION;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TStationRepository.UpdateStationDictionaryCode(
+  DictionaryType: TDictionaryType; OldCode: string; NewCode: string): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+  columnName: string;
+begin
+  err := ERR_OK;
+
+  try
+    if (Trim(OldCode) = EMPTY_STR) or (Trim(NewCode) = EMPTY_STR) then
+    begin
+      Result := err;
+      Exit;
+    end;
+
+    if not(DictionaryType in [dkCountry, dkGenre]) then
+    begin
+      Result := err;
+      Exit;
+    end;
+
+    query := TZQuery.Create(nil);
+    try
+
+      if (DictionaryType = dkCountry) then
+        columnName := 'CountryCode'
+      else if (DictionaryType = dkGenre) then
+        columnName := 'GenreCode'
+      else begin
+        Result := ERR_DB_UPDATE_STATION_DICTIONARY_CODE;
+        Exit;
+      end;
+
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'UPDATE ' + DB_TABLE_STATIONS + ' SET ' + columnName + ' = :NewCode ' +
+        'WHERE ' + columnName + ' = :OldCode;');
+
+      query.ParamByName('NewCode').AsString := NewCode;
+      query.ParamByName('OldCode').AsString := OldCode;
+
+      query.ExecSQL;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'UpdateStationDictionaryCode', E);
+        err := ERR_DB_UPDATE_STATION_DICTIONARY_CODE;
       end;
   end;
 

@@ -361,6 +361,7 @@ var
   dictionaryParentId: integer;
   dictionaryParentRowId: integer;
   rowExists: boolean;
+  oldCode: string;
 begin
   err := ERR_OK;
 
@@ -400,6 +401,14 @@ begin
       Exit;
     end;
 
+    err := GetDictionaryRowCode(DictionaryRowId, oldCode);
+
+    if err <> ERR_OK then
+    begin
+      Result := err;
+      Exit;
+    end;
+
     query := TZQuery.Create(nil);
     try
       query.Connection := TRepository.GetDbConnection;
@@ -423,6 +432,8 @@ begin
         query.Params.ParamByName('ParentDictionaryRowID').AsInteger := dictionaryParentRowId;
 
       query.ExecSQL;
+
+      TRepository.UpdateStationDictionaryCode(dictionaryType, oldCode, Code);
 
       err := RefreshDictionary(dictionaryType);
 
