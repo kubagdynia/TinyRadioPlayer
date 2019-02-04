@@ -78,13 +78,16 @@ type
     function AddDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryId: integer;
       out DictionaryRowId: integer): ErrorId;
-
     function AddDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryCode: string; const ParentDictionaryCode: string;
       out DictionaryRowId: integer): ErrorId;
+
+    // Update Dictionary Row
     function UpdateDictionaryRow(const Text: string; const Code: string;
       const Position: integer; const DictionaryCode: string; const ParentDictionaryCode: string;
       DictionaryRowId: integer): ErrorId;
+
+    // Delete Dictionary Row
     function DeleteDictionaryRow(DictionaryRowId: integer): ErrorId;
 
     // Load Dictionary
@@ -96,7 +99,8 @@ type
     function LoadDictionaryDetails(var VstList: TVirtualStringTree;
       DictionaryType: TDictionaryType;
       ParentDictionaryType: TDictionaryType = TDictionaryType.dkNone;
-      ParentDictionaryRowCode: string = ''): ErrorId;
+      ParentDictionaryRowCode: string = EMPTY_STR;
+      LastUsedDictionaryRowId: integer = EMPTY_INT): ErrorId;
 
     // ComboBox
     function AddDictionaryItemsToComboBox(var ComboBox: TComboBox;
@@ -358,6 +362,7 @@ var
   dictionaryParentId: integer;
   dictionaryParentRowId: integer;
   rowExists: boolean;
+  oldCode: string;
 begin
   err := ERR_OK;
 
@@ -397,6 +402,14 @@ begin
       Exit;
     end;
 
+    err := GetDictionaryRowCode(DictionaryRowId, oldCode);
+
+    if err <> ERR_OK then
+    begin
+      Result := err;
+      Exit;
+    end;
+
     query := TZQuery.Create(nil);
     try
       query.Connection := TRepository.GetDbConnection;
@@ -420,6 +433,8 @@ begin
         query.Params.ParamByName('ParentDictionaryRowID').AsInteger := dictionaryParentRowId;
 
       query.ExecSQL;
+
+      TRepository.UpdateStationDictionaryCode(dictionaryType, oldCode, Code);
 
       err := RefreshDictionary(dictionaryType);
 
@@ -909,7 +924,7 @@ begin
 
     // Reinit Virtual String Tree
     VstList.Clear;
-    VstList.RootNodeCount := Length(FDictionary);
+    VstList.RootNodeCount := Length(FDictionary) - 1; // take away one because we don't need dkNone dictionary item
     VstList.ReinitNode(VstList.RootNode, True);
 
     VstList.BeginUpdate;
@@ -957,7 +972,8 @@ end;
 function TDictionaryRepository.LoadDictionaryDetails(
   var VstList: TVirtualStringTree; DictionaryType: TDictionaryType;
   ParentDictionaryType: TDictionaryType = TDictionaryType.dkNone;
-  ParentDictionaryRowCode: string = ''): ErrorId;
+  ParentDictionaryRowCode: string = EMPTY_STR;
+  LastUsedDictionaryRowId: integer = EMPTY_INT): ErrorId;
 var
   i: integer;
   err: ErrorId;
@@ -1023,6 +1039,10 @@ begin
 
         data^.ddtnd := TDictionaryDetailTableNodeData.Create(dictionaryTable^.Id,
           dictionaryTable^.Text, dictionaryTable^.Code, dictionaryTable^.Position);
+
+        if (dictionaryTable^.Id = LastUsedDictionaryRowId) then
+          VstList.Selected[node] := true;
+
       end;
 
       // Sort items

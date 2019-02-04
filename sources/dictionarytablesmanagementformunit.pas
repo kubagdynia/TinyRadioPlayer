@@ -17,7 +17,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, BCPanel, BCLabel, BCButton, Forms, Controls,
   Graphics, Dialogs, ActnList, StdCtrls, BaseFormUnit, VirtualTrees,
-  RadioPlayerTypes;
+  RadioPlayerTypes, Consts;
 
 type
 
@@ -47,6 +47,7 @@ type
       var ItemColor: TColor; var EraseAction: TItemEraseAction);
     procedure VSTDictionaryDetailsListCompareNodes(Sender: TBaseVirtualTree;
       Node1, Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
+    procedure VSTDictionaryDetailsListDblClick(Sender: TObject);
     procedure VSTDictionaryDetailsListFocusChanging(Sender: TBaseVirtualTree;
       OldNode, NewNode: PVirtualNode; OldColumn, NewColumn: TColumnIndex;
       var Allowed: Boolean);
@@ -78,7 +79,8 @@ type
     procedure VSTDictionaryTablesListHeaderClick(Sender: TVTHeader;
       HitInfo: TVTHeaderHitInfo);
 
-    procedure LoadDictionaryDetailsList(VSTNode: PVirtualNode);
+    procedure LoadDictionaryDetailsList(VSTNode: PVirtualNode;
+      LastUsedDictionaryRowId: integer = EMPTY_INT);
 
   protected
     procedure LoadLanguages; override;
@@ -98,7 +100,7 @@ var
 implementation
 
 uses
-  Language, Helpers, Consts, Repository, Skins, DictionaryDetailFormUnit;
+  Language, Helpers, Repository, Skins, DictionaryDetailFormUnit;
 
 {$R *.lfm}
 
@@ -225,12 +227,13 @@ begin
   VSTDictionaryDetailsList.Width := 342;
 
   VSTDictionaryDetailsList.OnBeforeItemErase := @VSTDictionaryDetailsListBeforeItemErase;
-  VSTDictionaryDetailsList.OnCompareNodes:=@VSTDictionaryDetailsListCompareNodes;
-  VSTDictionaryDetailsList.OnFocusChanging:=@VSTDictionaryDetailsListFocusChanging;
-  VSTDictionaryDetailsList.OnFreeNode:=@VSTDictionaryDetailsListFreeNode;
-  VSTDictionaryDetailsList.OnGetText:=@VSTDictionaryDetailsListGetText;
-  VSTDictionaryDetailsList.OnGetNodeDataSize:=@VSTDictionaryDetailsListGetNodeDataSize;
-  VSTDictionaryDetailsList.OnHeaderClick:=@VSTDictionaryDetailsListHeaderClick;
+  VSTDictionaryDetailsList.OnCompareNodes := @VSTDictionaryDetailsListCompareNodes;
+  VSTDictionaryDetailsList.OnFocusChanging := @VSTDictionaryDetailsListFocusChanging;
+  VSTDictionaryDetailsList.OnFreeNode := @VSTDictionaryDetailsListFreeNode;
+  VSTDictionaryDetailsList.OnDblClick := @VSTDictionaryDetailsListDblClick;
+  VSTDictionaryDetailsList.OnGetText := @VSTDictionaryDetailsListGetText;
+  VSTDictionaryDetailsList.OnGetNodeDataSize := @VSTDictionaryDetailsListGetNodeDataSize;
+  VSTDictionaryDetailsList.OnHeaderClick := @VSTDictionaryDetailsListHeaderClick;
 
   // Add colums
   VSTDictionaryDetailsList.Header.Columns.Add.Text :=
@@ -343,6 +346,13 @@ begin
       0: Result := CompareText(data1^.ddtnd.Text, data2^.ddtnd.Text);
     end;
   end;
+end;
+
+// Triggered when double clicked
+procedure TDictionaryTablesManagementForm.VSTDictionaryDetailsListDblClick(
+  Sender: TObject);
+begin
+  EditDetailAction.Execute;
 end;
 
 // Load dictionary table detail list after focus Changing
@@ -531,7 +541,7 @@ end;
 
 // Load dictionary details list
 procedure TDictionaryTablesManagementForm.LoadDictionaryDetailsList(
-  VSTNode: PVirtualNode);
+  VSTNode: PVirtualNode; LastUsedDictionaryRowId: integer = EMPTY_INT);
 var
   data: PDictionaryTableNodeRec;
   dictionaryType: TDictionaryType;
@@ -555,7 +565,7 @@ begin
   TRepository.GetDictionaryCodeFromSelectedItem(cboParentTablesList, parentDictionaryRowCode);
 
   TRepository.LoadDictionaryDetails(VSTDictionaryDetailsList, dictionaryType,
-    parentDictionaryType, parentDictionaryRowCode);
+    parentDictionaryType, parentDictionaryRowCode, LastUsedDictionaryRowId);
 end;
 
 procedure TDictionaryTablesManagementForm.LoadLanguages;
@@ -649,7 +659,9 @@ begin
     if mr = mrOk then
     begin
       // Refresh dictionary details list
-      LoadDictionaryDetailsList(VSTDictionaryTablesList.GetFirstSelected);
+      if DictionaryDetailForm.LastUsedDictionaryRowId <> EMPTY_INT then
+        LoadDictionaryDetailsList(VSTDictionaryTablesList.GetFirstSelected,
+          DictionaryDetailForm.LastUsedDictionaryRowId);
     end;
 
   finally

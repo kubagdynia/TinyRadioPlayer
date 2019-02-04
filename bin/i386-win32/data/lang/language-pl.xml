@@ -80,6 +80,7 @@
 		<Item name="DictionaryTablesManagement.Detail.DictionaryItemName" type="string">Nazwa</Item>
 		<Item name="DictionaryTablesManagement.Detail.DictionaryItemCode" type="string">Kod</Item>
 		<Item name="DictionaryTablesManagement.Detail.DictionaryItemPosition" type="string">Pozycja</Item>
+		<Item name="DictionaryTablesManagement.Detail.BeforeDeleteQuestion" type="string">Czy chcesz usunąć wybraną pozycję słownikową?</Item>
 		
 		<!-- Dictionary Tables -->
 		<Item name="DictionaryTables.Genre" type="string">Gatunek</Item>

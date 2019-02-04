@@ -16,7 +16,7 @@ interface
 
 uses
   Classes, SysUtils, StdCtrls, ZConnection, RadioPlayerTypes, MainRepository,
-  BaseRepository, VirtualTrees;
+  BaseRepository, VirtualTrees, Consts;
 
 type
 
@@ -49,6 +49,8 @@ type
     class function DoesAnyStationUseTheGivenItemOfTheDictionary(
       DictionaryType: TDictionaryType; DictionaryRowCode: string;
       out ItemIsUsed: boolean): ErrorId;
+    class function UpdateStationDictionaryCode(DictionaryType: TDictionaryType;
+      OldCode: string; NewCode: string): ErrorId;
 
     // Dictionary
     class function AddDictionary(const Name: string; const Code: string;
@@ -83,7 +85,8 @@ type
     class function LoadDictionaryDetails(var VstList: TVirtualStringTree;
       DictionaryType: TDictionaryType;
       ParentDictionaryType: TDictionaryType = TDictionaryType.dkNone;
-      ParentDictionaryRowCode: string = ''): ErrorId;
+      ParentDictionaryRowCode: string = EMPTY_STR;
+      LastUsedDictionaryRowId: integer = EMPTY_INT): ErrorId;
     class function GetDictionaryTypeByDictionaryRowId(DictionaryRowId: integer;
       out DictionaryType: TDictionaryType): ErrorId;
     class function GetParentDictionaryType(DictionaryType: TDictionaryType;
@@ -186,6 +189,12 @@ begin
     DictionaryType, DictionaryRowCode, ItemIsUsed);
 end;
 
+class function TRepository.UpdateStationDictionaryCode(
+  DictionaryType: TDictionaryType; OldCode: string; NewCode: string): ErrorId;
+begin
+  Result := FMainRepo.StationRepo.UpdateStationDictionaryCode(DictionaryType, OldCode, NewCode);
+end;
+
 class function TRepository.AddDictionary(const Name: string;
   const Code: string; const Description: string; out DictionaryId: integer): ErrorId;
 begin
@@ -286,10 +295,12 @@ end;
 class function TRepository.LoadDictionaryDetails(
   var VstList: TVirtualStringTree; DictionaryType: TDictionaryType;
   ParentDictionaryType: TDictionaryType = TDictionaryType.dkNone;
-  ParentDictionaryRowCode: string = ''): ErrorId;
+  ParentDictionaryRowCode: string = EMPTY_STR;
+  LastUsedDictionaryRowId: integer = EMPTY_INT): ErrorId;
 begin
   Result := FMainRepo.DictionaryRepo.LoadDictionaryDetails(VstList,
-    DictionaryType, ParentDictionaryType, ParentDictionaryRowCode);
+    DictionaryType, ParentDictionaryType, ParentDictionaryRowCode,
+    LastUsedDictionaryRowId);
 end;
 
 class function TRepository.GetDictionaryTypeByDictionaryRowId(
