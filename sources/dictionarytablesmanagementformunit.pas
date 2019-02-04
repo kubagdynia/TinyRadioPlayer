@@ -17,7 +17,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, BCPanel, BCLabel, BCButton, Forms, Controls,
   Graphics, Dialogs, ActnList, StdCtrls, BaseFormUnit, VirtualTrees,
-  RadioPlayerTypes;
+  RadioPlayerTypes, Consts;
 
 type
 
@@ -79,7 +79,8 @@ type
     procedure VSTDictionaryTablesListHeaderClick(Sender: TVTHeader;
       HitInfo: TVTHeaderHitInfo);
 
-    procedure LoadDictionaryDetailsList(VSTNode: PVirtualNode);
+    procedure LoadDictionaryDetailsList(VSTNode: PVirtualNode;
+      LastUsedDictionaryRowId: integer = EMPTY_INT);
 
   protected
     procedure LoadLanguages; override;
@@ -99,7 +100,7 @@ var
 implementation
 
 uses
-  Language, Helpers, Consts, Repository, Skins, DictionaryDetailFormUnit;
+  Language, Helpers, Repository, Skins, DictionaryDetailFormUnit;
 
 {$R *.lfm}
 
@@ -540,7 +541,7 @@ end;
 
 // Load dictionary details list
 procedure TDictionaryTablesManagementForm.LoadDictionaryDetailsList(
-  VSTNode: PVirtualNode);
+  VSTNode: PVirtualNode; LastUsedDictionaryRowId: integer = EMPTY_INT);
 var
   data: PDictionaryTableNodeRec;
   dictionaryType: TDictionaryType;
@@ -564,7 +565,7 @@ begin
   TRepository.GetDictionaryCodeFromSelectedItem(cboParentTablesList, parentDictionaryRowCode);
 
   TRepository.LoadDictionaryDetails(VSTDictionaryDetailsList, dictionaryType,
-    parentDictionaryType, parentDictionaryRowCode);
+    parentDictionaryType, parentDictionaryRowCode, LastUsedDictionaryRowId);
 end;
 
 procedure TDictionaryTablesManagementForm.LoadLanguages;
@@ -658,7 +659,9 @@ begin
     if mr = mrOk then
     begin
       // Refresh dictionary details list
-      LoadDictionaryDetailsList(VSTDictionaryTablesList.GetFirstSelected);
+      if DictionaryDetailForm.LastUsedDictionaryRowId <> EMPTY_INT then
+        LoadDictionaryDetailsList(VSTDictionaryTablesList.GetFirstSelected,
+          DictionaryDetailForm.LastUsedDictionaryRowId);
     end;
 
   finally

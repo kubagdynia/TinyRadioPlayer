@@ -30,6 +30,9 @@ type
     ParentDictionaryType: TDictionaryType;
     ParentDictionaryRowCode: string;
     DictionaryDetailTableNodeData: TDictionaryDetailTableNodeData;
+
+    // Id of the last added, edited or deleted record
+    FLastUsedDictionaryRowId: integer;
   protected
     procedure LoadLanguages; override;
     procedure LoadSkins; override;
@@ -41,6 +44,8 @@ type
       AparentDictionaryRowCode: string;
       ADictionaryDetailTableNodeData: TDictionaryDetailTableNodeData); overload;
     destructor Destroy; override;
+
+    property LastUsedDictionaryRowId : integer read FLastUsedDictionaryRowId;
   end;
 
 var
@@ -49,7 +54,7 @@ var
 implementation
 
 uses
-  LCLType, TRPErrors, Language, Helpers, Repository;
+  LCLType, TRPErrors, Language, Helpers, Repository, Consts;
 
 {$R *.lfm}
 
@@ -184,6 +189,10 @@ var
   dictionaryRowId: integer;
   err: ErrorId;
 begin
+  err := ERR_OK;
+
+  dictionaryRowId := EMPTY_INT;
+
   case FOpenMode of
     TOpenMode.omNew:
       err := TRepository.AddDictionaryRow(
@@ -195,6 +204,7 @@ begin
         dictionaryRowId);
 
     TOpenMode.omEdit:
+    begin
       err := TRepository.UpdateDictionaryRow(
         edtDictionaryItemName.Text,
         edtDictionaryItemCode.Text,
@@ -202,15 +212,33 @@ begin
         TRepository.GetDictionaryName(DictionaryType),
         ParentDictionaryRowCode,
         DictionaryDetailTableNodeData.ID);
+      dictionaryRowId := DictionaryDetailTableNodeData.ID;
+    end;
 
     TOpenMode.omDelete:
-      err := TRepository.DeleteDictionaryRow(DictionaryDetailTableNodeData.ID);
+    begin
+      if QuestionDlg(
+          GetLanguageItem('Dialog.Question', 'Question'),
+          GetLanguageItem('DictionaryTablesManagement.Detail.BeforeDeleteQuestion', 'Are you sure you want to delete this dictionary item?'),
+          mtConfirmation,
+          [mrYes, GetLanguageItem('Dialog.Answer.Yes', 'Yes'), mrNo, GetLanguageItem('Dialog.Answer.No', 'No'), 'IsDefault'],
+          0) = mrYes then
+      begin
+        err := TRepository.DeleteDictionaryRow(DictionaryDetailTableNodeData.ID);
+        dictionaryRowId := DictionaryDetailTableNodeData.ID;
+      end else
+        Exit;
+    end;
+
   end;
 
   if err <> ERR_OK then
     ShowWarningMessage(err)
   else
+  begin
+    FLastUsedDictionaryRowId := dictionaryRowId;
     inherited;
+  end;
 end;
 
 procedure TDictionaryDetailForm.edtDictionaryItemPositionChange(Sender: TObject);

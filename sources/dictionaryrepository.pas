@@ -99,7 +99,8 @@ type
     function LoadDictionaryDetails(var VstList: TVirtualStringTree;
       DictionaryType: TDictionaryType;
       ParentDictionaryType: TDictionaryType = TDictionaryType.dkNone;
-      ParentDictionaryRowCode: string = ''): ErrorId;
+      ParentDictionaryRowCode: string = EMPTY_STR;
+      LastUsedDictionaryRowId: integer = EMPTY_INT): ErrorId;
 
     // ComboBox
     function AddDictionaryItemsToComboBox(var ComboBox: TComboBox;
@@ -971,7 +972,8 @@ end;
 function TDictionaryRepository.LoadDictionaryDetails(
   var VstList: TVirtualStringTree; DictionaryType: TDictionaryType;
   ParentDictionaryType: TDictionaryType = TDictionaryType.dkNone;
-  ParentDictionaryRowCode: string = ''): ErrorId;
+  ParentDictionaryRowCode: string = EMPTY_STR;
+  LastUsedDictionaryRowId: integer = EMPTY_INT): ErrorId;
 var
   i: integer;
   err: ErrorId;
@@ -1037,6 +1039,10 @@ begin
 
         data^.ddtnd := TDictionaryDetailTableNodeData.Create(dictionaryTable^.Id,
           dictionaryTable^.Text, dictionaryTable^.Code, dictionaryTable^.Position);
+
+        if (dictionaryTable^.Id = LastUsedDictionaryRowId) then
+          VstList.Selected[node] := true;
+
       end;
 
       // Sort items

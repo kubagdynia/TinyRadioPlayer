@@ -16,7 +16,7 @@ interface
 
 uses
   Classes, SysUtils, StdCtrls, ZConnection, RadioPlayerTypes, MainRepository,
-  BaseRepository, VirtualTrees;
+  BaseRepository, VirtualTrees, Consts;
 
 type
 
@@ -85,7 +85,8 @@ type
     class function LoadDictionaryDetails(var VstList: TVirtualStringTree;
       DictionaryType: TDictionaryType;
       ParentDictionaryType: TDictionaryType = TDictionaryType.dkNone;
-      ParentDictionaryRowCode: string = ''): ErrorId;
+      ParentDictionaryRowCode: string = EMPTY_STR;
+      LastUsedDictionaryRowId: integer = EMPTY_INT): ErrorId;
     class function GetDictionaryTypeByDictionaryRowId(DictionaryRowId: integer;
       out DictionaryType: TDictionaryType): ErrorId;
     class function GetParentDictionaryType(DictionaryType: TDictionaryType;
@@ -294,10 +295,12 @@ end;
 class function TRepository.LoadDictionaryDetails(
   var VstList: TVirtualStringTree; DictionaryType: TDictionaryType;
   ParentDictionaryType: TDictionaryType = TDictionaryType.dkNone;
-  ParentDictionaryRowCode: string = ''): ErrorId;
+  ParentDictionaryRowCode: string = EMPTY_STR;
+  LastUsedDictionaryRowId: integer = EMPTY_INT): ErrorId;
 begin
   Result := FMainRepo.DictionaryRepo.LoadDictionaryDetails(VstList,
-    DictionaryType, ParentDictionaryType, ParentDictionaryRowCode);
+    DictionaryType, ParentDictionaryType, ParentDictionaryRowCode,
+    LastUsedDictionaryRowId);
 end;
 
 class function TRepository.GetDictionaryTypeByDictionaryRowId(

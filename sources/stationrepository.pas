@@ -242,7 +242,7 @@ begin
   err := ERR_OK;
 
   try
-    if (Trim(OldCode) = EMPTY_STR) or (Trim(NewCode) = EMPTY_STR) then
+    if (Trim(OldCode) = EMPTY_STR) or (Trim(NewCode) = EMPTY_STR) or (Trim(NewCode) = Trim(OldCode)) then
     begin
       Result := err;
       Exit;

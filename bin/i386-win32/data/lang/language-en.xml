@@ -80,6 +80,7 @@
 		<Item name="DictionaryTablesManagement.Detail.DictionaryItemName" type="string">Name</Item>
 		<Item name="DictionaryTablesManagement.Detail.DictionaryItemCode" type="string">Code</Item>
 		<Item name="DictionaryTablesManagement.Detail.DictionaryItemPosition" type="string">Position</Item>
+		<Item name="DictionaryTablesManagement.Detail.BeforeDeleteQuestion" type="string">Are you sure you want to delete this dictionary item?</Item>
 		
 		<!-- Dictionary Tables -->
 		<Item name="DictionaryTables.Genre" type="string">Genre</Item>
