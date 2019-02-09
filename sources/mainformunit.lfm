@@ -15,15 +15,69 @@ object MainForm: TMainForm
   OnResize = FormResize
   Position = poScreenCenter
   LCLVersion = '1.8.4.0'
-  object StationListPanel: TPanel
+  object StationListPanel: TBCPanel
     Left = 0
     Height = 394
     Top = 64
     Width = 485
     Align = alClient
-    BevelOuter = bvSpace
-    ClientHeight = 394
-    ClientWidth = 485
+    Background.Color = clBtnFace
+    Background.ColorOpacity = 255
+    Background.Gradient1.StartColor = clWhite
+    Background.Gradient1.StartColorOpacity = 255
+    Background.Gradient1.DrawMode = dmSet
+    Background.Gradient1.EndColor = clBlack
+    Background.Gradient1.EndColorOpacity = 255
+    Background.Gradient1.ColorCorrection = True
+    Background.Gradient1.GradientType = gtLinear
+    Background.Gradient1.Point1XPercent = 0
+    Background.Gradient1.Point1YPercent = 0
+    Background.Gradient1.Point2XPercent = 0
+    Background.Gradient1.Point2YPercent = 100
+    Background.Gradient1.Sinus = False
+    Background.Gradient2.StartColor = clWhite
+    Background.Gradient2.StartColorOpacity = 255
+    Background.Gradient2.DrawMode = dmSet
+    Background.Gradient2.EndColor = clBlack
+    Background.Gradient2.EndColorOpacity = 255
+    Background.Gradient2.ColorCorrection = True
+    Background.Gradient2.GradientType = gtLinear
+    Background.Gradient2.Point1XPercent = 0
+    Background.Gradient2.Point1YPercent = 0
+    Background.Gradient2.Point2XPercent = 0
+    Background.Gradient2.Point2YPercent = 100
+    Background.Gradient2.Sinus = False
+    Background.Gradient1EndPercent = 35
+    Background.Style = bbsColor
+    BevelInner = bvNone
+    BevelOuter = bvRaised
+    BevelWidth = 1
+    Border.Color = clBlack
+    Border.ColorOpacity = 255
+    Border.LightColor = clWhite
+    Border.LightOpacity = 255
+    Border.LightWidth = 0
+    Border.Style = bboNone
+    Border.Width = 1
+    BorderBCStyle = bpsBorder
+    Caption = 'BCPanel1'
+    FontEx.Color = clDefault
+    FontEx.EndEllipsis = False
+    FontEx.FontQuality = fqSystemClearType
+    FontEx.Height = 0
+    FontEx.SingleLine = True
+    FontEx.Shadow = False
+    FontEx.ShadowColor = clBlack
+    FontEx.ShadowColorOpacity = 255
+    FontEx.ShadowRadius = 5
+    FontEx.ShadowOffsetX = 5
+    FontEx.ShadowOffsetY = 5
+    FontEx.Style = []
+    FontEx.TextAlignment = bcaCenter
+    FontEx.WordBreak = False
+    Rounding.RoundX = 1
+    Rounding.RoundY = 1
+    Rounding.RoundOptions = []
     TabOrder = 2
     object SearchPanel: TBCPanel
       Left = 4
@@ -62,7 +116,7 @@ object MainForm: TMainForm
       Background.Gradient1EndPercent = 35
       Background.Style = bbsColor
       BevelInner = bvNone
-      BevelOuter = bvRaised
+      BevelOuter = bvNone
       BevelWidth = 1
       Border.Color = 15790320
       Border.ColorOpacity = 255
@@ -90,16 +144,17 @@ object MainForm: TMainForm
       Rounding.RoundOptions = []
       TabOrder = 0
       object edtSearch: TEdit
-        Left = 286
+        Left = 293
         Height = 23
         Top = 8
         Width = 184
         Anchors = [akTop, akRight]
+        Color = clWindow
         OnChange = edtSearchChange
         TabOrder = 0
       end
       object btnSearch: TBCButton
-        Left = 257
+        Left = 264
         Height = 23
         Top = 8
         Width = 23
@@ -304,14 +359,14 @@ object MainForm: TMainForm
       Background.Gradient1EndPercent = 35
       Background.Style = bbsColor
       BevelInner = bvNone
-      BevelOuter = bvRaised
+      BevelOuter = bvNone
       BevelWidth = 1
       Border.Color = clBlack
       Border.ColorOpacity = 255
       Border.LightColor = clWhite
       Border.LightOpacity = 255
       Border.LightWidth = 0
-      Border.Style = bboNone
+      Border.Style = bboSolid
       Border.Width = 1
       FontEx.Color = clDefault
       FontEx.EndEllipsis = False
@@ -333,7 +388,7 @@ object MainForm: TMainForm
       TabOrder = 1
       OnResize = PeakmeterPanelResize
       object pbLeftLevelMeter: TBGRAFlashProgressBar
-        Left = 1
+        Left = 0
         Height = 18
         Top = 1
         Width = 235
@@ -402,7 +457,7 @@ object MainForm: TMainForm
       Background.Style = bbsColor
       BevelInner = bvNone
       BevelOuter = bvNone
-      BevelWidth = 1
+      BevelWidth = 0
       Border.Color = clBlack
       Border.ColorOpacity = 255
       Border.LightColor = clWhite
@@ -428,6 +483,7 @@ object MainForm: TMainForm
       Rounding.RoundY = 1
       Rounding.RoundOptions = []
       TabOrder = 2
+      OnResize = MainPanelResize
     end
   end
   object TopInfoPanel: TBCPanel

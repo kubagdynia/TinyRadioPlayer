@@ -85,6 +85,8 @@ type
     class procedure ChangeSkin(const SkinName: string);
     class procedure LoadSkin();
     class function GetBitmapItem(Name: string): TBitmap;
+    class function GetStringItem(Name: string): string;
+    class function GetColorItem(Name: string): TColor;
 
     // events
     class procedure RegisterSkinChangeEvent(const ANotification: TNotifyEvent);
@@ -446,6 +448,16 @@ end;
 class function TSkins.GetBitmapItem(Name: string): TBitmap;
 begin
   Result := FSkinData.GetBitmapItem(Name);
+end;
+
+class function TSkins.GetStringItem(Name: string): string;
+begin
+  Result := FSkinData.GetStringItem(Name);
+end;
+
+class function TSkins.GetColorItem(Name: string): TColor;
+begin
+  Result := FSkinData.GetColorItem(Name);
 end;
 
 // Add a skin change event to the event list. Will be fired up when the skin changes.
