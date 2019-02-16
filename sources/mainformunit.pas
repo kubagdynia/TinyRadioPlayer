@@ -19,19 +19,17 @@ uses
   Forms, Controls, Graphics, Dialogs, LCLType, StdCtrls,
   ExtCtrls, Menus, Helpers, RadioPlayer, RadioPlayerTypes, VirtualTrees,
   ImgList, ActnList, CTRPTextScroll, CTRPTrackBar, zipper,
-  OpenStationUrlFormUnit, Skins, Consts;
+  OpenStationUrlFormUnit, Skins, Consts, CTRPCustomDrawn;
 
 type
 
   { TMainForm }
-
   TMainForm = class(TForm)
     BCPanel1: TBCPanel;
     OpenDictionaryTablesAction: TAction;
     DeleteStationAction: TAction;
     EditStationAction: TAction;
     AddStationAction: TAction;
-    btnSearch: TBCButton;
     miDictionaryTables: TMenuItem;
     miColumnSettings: TMenuItem;
     miShowBothScrollBars: TMenuItem;
@@ -68,7 +66,6 @@ type
     btnPlay: TBCButton;
     pbRightLevelMeter: TBGRAFlashProgressBar;
     Timer1: TTimer;
-    SearchTimer: TTimer;
     procedure AddStationActionExecute(Sender: TObject);
     procedure BottomFunctionPanelResize(Sender: TObject);
     procedure btnOpenClick(Sender: TObject);
@@ -78,7 +75,6 @@ type
     procedure MainPanelResize(Sender: TObject);
     procedure OpenDictionaryTablesActionExecute(Sender: TObject);
     procedure EditStationActionExecute(Sender: TObject);
-    procedure edtSearchChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormResize(Sender: TObject);
@@ -90,18 +86,18 @@ type
     procedure PopupMenuStationListPopup(Sender: TObject);
     procedure RadioPlayerRadioPlay(Sender: TObject);
     procedure RadioPlayerRadioPlayerTags(AMessage: string; APlayerMessageType: TPlayerMessageType);
-    procedure SearchTimerTimer(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
   private
     procedure LoadLoanguages;
     procedure LoadSettings;
     procedure LoadSkin;
-    procedure AddLanguageItems;
-    procedure AddSkinItems;
+    procedure AddMenuLanguageItems;
+    procedure AddMenuSkinItems;
     procedure OnLanguageChange(Sender: TObject);
     procedure CreateVstStationList;
     procedure miLanguageItemClick(Sender: TObject);
     procedure miSkinsItemClick(Sender: TObject);
+    procedure SearchEditDelayChange(ASender: TObject; AText: string);
     procedure TextScrollMouseEnter(Sender: TObject);
     procedure TextScrollMouseLeave(Sender: TObject);
     procedure SkinDoneStream(Sender: TObject; var AStream: TStream;
@@ -147,6 +143,8 @@ type
 
     TextScroll: TCTRPTextScroll;
     VolumeTrackBar: TCTRPTrackBar;
+
+    SearchEdit: TCTRPEdit;
   end;
 
 var
@@ -183,23 +181,23 @@ begin
   TextScroll := TCTRPTextScroll.Create(Self);
   TextScroll.Parent := TopInfoPanel;
 
-  //TextScroll.Lines.TextScrollLine1.BackgroundColor := RGBToColor(0, 175, 240);
-  TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderColor := RGBToColor(0, 175, 240);
+  //TextScroll.Lines.TextScrollLine1.BackgroundColor := RGBToColor(100, 175, 240);
+  {TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderColor := RGBToColor(0, 175, 240);
   TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderWidth := 2;
   TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderColor := RGBToColor(0, 175, 240);
   TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderWidth := 2;
   TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderColor := RGBToColor(0, 175, 240);
-  TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderWidth := 2;
+  TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderWidth := 2;  }
   TextScroll.Lines.TextScrollLine1.ScrollText := 'Tiny Radio Player';
 
   //TextScroll.Lines.TextScrollLine2.BackgroundColor := RGBToColor(0, 175, 240);
-  TextScroll.Lines.TextScrollLine2.BackgroundColor := clGreen;
+ { TextScroll.Lines.TextScrollLine2.BackgroundColor := clGreen;
   TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderColor := RGBToColor(0, 175, 240);
   TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderWidth := 2;
   TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderColor := RGBToColor(0, 175, 240);
   TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderWidth := 2;
   TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderColor := RGBToColor(0, 175, 240);
-  TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderWidth := 2;
+  TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderWidth := 2;   }
   TextScroll.Lines.TextScrollLine2.ScrollText := 'ver. 0.1';
 
   TextScroll.OnMouseEnter := @TextScrollMouseEnter;
@@ -211,22 +209,12 @@ begin
   LoadSettings;
   LoadSkin;
 
-  TextScroll.Lines.TextScrollLine1.BackgroundColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine1.Border.BorderBottom.BorderColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine2.BackgroundColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine2.Border.BorderTop.BorderColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderColor := TSkins.GetColorItem('Color1');
-
   CreateVstStationList;
 
   LoadLoanguages;
-  AddLanguageItems;
-  AddSkinItems;
+
+  AddMenuLanguageItems;
+  AddMenuSkinItems;
 
   TLanguage.RegisterLanguageChangeEvent(@OnLanguageChange);
 
@@ -243,12 +231,23 @@ begin
 
   MainForm.Width := TTRPSettings.GetValue('MainForm.Width', 485);
   MainForm.Height := TTRPSettings.GetValue('MainForm.Height', 516);
+
+  SearchEdit := TCTRPEdit.Create(Self);
+  SearchEdit.Parent := SearchPanel;
+  SearchEdit.Left := 293;
+  SearchEdit.Top := 8;
+  SearchEdit.Width := 184;
+  SearchEdit.Height := 23;
+  SearchEdit.Anchors := [akTop, akRight];
+  SearchEdit.Color := TSkins.GetColorItem('Color1');
+  SearchEdit.Font.Color := clWhite;
+
+  SearchEdit.OnDelayChange := @SearchEditDelayChange;
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
   FreeAndNil(RadioPlayer);
-
   FreeAndNil(TextScroll);
 end;
 
@@ -348,12 +347,6 @@ begin
 
   miEditStation.Enabled := stationSelected;
   miDeleteStation.Enabled := stationSelected;
-end;
-
-procedure TMainForm.edtSearchChange(Sender: TObject);
-begin
-  SearchTimer.Enabled := False;
-  SearchTimer.Enabled := True;
 end;
 
 procedure TMainForm.BottomFunctionPanelResize(Sender: TObject);
@@ -512,12 +505,6 @@ begin
   end;
 end;
 
-procedure TMainForm.SearchTimerTimer(Sender: TObject);
-begin
-  SearchTimer.Enabled := False;
-  TRepository.LoadStations(VstStationList, edtSearch.Text);
-end;
-
 procedure TMainForm.Timer1Timer(Sender: TObject);
 var
   level: integer;
@@ -584,7 +571,7 @@ begin
   TSkins.LoadSkin();
 end;
 
-procedure TMainForm.AddLanguageItems;
+procedure TMainForm.AddMenuLanguageItems;
 var
   i: integer;
   subItem: TMenuItem;
@@ -600,7 +587,7 @@ begin
   end;
 end;
 
-procedure TMainForm.AddSkinItems;
+procedure TMainForm.AddMenuSkinItems;
 var
   i: integer;
   subItem: TMenuItem;
@@ -745,8 +732,8 @@ begin
   //TextScroll.Lines.TextScrollLine1.BackgroundColor := RGBToColor(0, 168, 229);
   //TextScroll.Lines.TextScrollLine2.BackgroundColor := RGBToColor(0, 168, 229);
 
-  TextScroll.Lines.TextScrollLine1.BackgroundColor := MixingColors(TSkins.GetColorItem('Color1'), clWhite, 96, 4);
-  TextScroll.Lines.TextScrollLine2.BackgroundColor := MixingColors(TSkins.GetColorItem('Color1'), clWhite, 96, 4);
+  //TextScroll.Lines.TextScrollLine1.BackgroundColor := MixingColors(TSkins.GetColorItem('Color1'), clWhite, 96, 4);
+  //TextScroll.Lines.TextScrollLine2.BackgroundColor := MixingColors(TSkins.GetColorItem('Color1'), clWhite, 96, 4);
 end;
 
 procedure TMainForm.TextScrollMouseLeave(Sender: TObject);
@@ -754,8 +741,8 @@ begin
   //TextScroll.Lines.TextScrollLine1.BackgroundColor := RGBToColor(0, 175, 240);
   //TextScroll.Lines.TextScrollLine2.BackgroundColor := RGBToColor(0, 175, 240);
 
-  TextScroll.Lines.TextScrollLine1.BackgroundColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine2.BackgroundColor := TSkins.GetColorItem('Color1');
+  //TextScroll.Lines.TextScrollLine1.BackgroundColor := TSkins.GetColorItem('Color1');
+  //TextScroll.Lines.TextScrollLine2.BackgroundColor := TSkins.GetColorItem('Color1');
 end;
 
 procedure TMainForm.VolumeTrackBarPositionChange(ASender: TObject;
@@ -805,6 +792,11 @@ begin
 
     TSkins.ChangeSkin(mi.Caption);
   end;
+end;
+
+procedure TMainForm.SearchEditDelayChange(ASender: TObject; AText: string);
+begin
+  TRepository.LoadStations(VstStationList, AText);
 end;
 
 // Called when the background of a node is about to be erased
@@ -1061,9 +1053,9 @@ end;
 
 procedure TMainForm.SkinLoaded(Sender: TObject; var ASkinData: TSkinData);
 begin
+  // VolumeTrackBar
   VolumeTrackBar.Track.TrackBackground.BackgroundColor :=
     ASkinData.GetColorItem('VolumeTrackBar.Track.TrackBackground.BackgroundColor');
-
   VolumeTrackBar.Track.TrackBorder.BorderTop.BorderColor :=
     ASkinData.GetColorItem('VolumeTrackBar.Track.TrackBorder.BorderTop.BorderColor');
   VolumeTrackBar.Track.TrackBorder.BorderRight.BorderColor :=
@@ -1072,24 +1064,42 @@ begin
     ASkinData.GetColorItem('VolumeTrackBar.Track.TrackBorder.BorderBottom.BorderColor');
   VolumeTrackBar.Track.TrackBorder.BorderLeft.BorderColor :=
     ASkinData.GetColorItem('VolumeTrackBar.Track.TrackBorder.BorderLeft.BorderColor');
-
-  SearchPanel.Background.Color := ASkinData.GetColorItem('VolumeTrackBar.Track.TrackBackground.BackgroundColor');
-  StationListPanel.Background.Color := ASkinData.GetColorItem('VolumeTrackBar.Track.TrackBackground.BackgroundColor');
-  PeakmeterPanel.Background.Color := ASkinData.GetColorItem('VolumeTrackBar.Track.TrackBackground.BackgroundColor');
-  PeakmeterPanel.Border.Color := ASkinData.GetColorItem('Color1');
-  MainPanel.Background.Color := ASkinData.GetColorItem('Color1');
-  edtSearch.Color := ASkinData.GetColorItem('Color1');
-
-
   VolumeTrackBar.Thumb.ThumbFontColor :=
     ASkinData.GetColorItem('VolumeTrackBar.Thumb.ThumbFontColor');
 
-  BottomFunctionPanel.Background.Gradient1.StartColor := ASkinData.GetColorItem('Color1');
-  BottomFunctionPanel.Background.Gradient1.EndColor := ASkinData.GetColorItem('Color2');
+  // Panels
+  SearchPanel.Background.Color := ASkinData.GetColorItem('SearchPanel.BackgroundColor');
+  StationListPanel.Background.Color := ASkinData.GetColorItem('StationListPanel.BackgroundColor');
+  MainPanel.Background.Color := ASkinData.GetColorItem('MainPanel.BackgroundColor');
+
+  // PeakmeterPanel
+  PeakmeterPanel.Background.Color := ASkinData.GetColorItem('PeakmeterPanel.BackgroundColor');
+  PeakmeterPanel.Border.Color := ASkinData.GetColorItem('PeakmeterPanel.BorderColor');
+
+  // BottomFunctionPanel
+  BottomFunctionPanel.Background.Gradient1.StartColor := ASkinData.GetColorItem('BottomFunctionPanel.Background.Gradient1.StartColor');
+  BottomFunctionPanel.Background.Gradient1.EndColor := ASkinData.GetColorItem('BottomFunctionPanel.Background.Gradient1.EndColor');
+
+  // TextScroll
+  TextScroll.Lines.TextScrollLine1.BackgroundColor := TSkins.GetColorItem('Color1');
+  TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderColor := TSkins.GetColorItem('Color1');
+  TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderWidth := 2;
+  TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderColor := TSkins.GetColorItem('Color1');
+  TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderWidth := 2;
+  TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderColor := TSkins.GetColorItem('Color1');
+  TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderWidth := 2;
+  TextScroll.Lines.TextScrollLine1.Border.BorderBottom.BorderColor := TSkins.GetColorItem('Color1');
+  TextScroll.Lines.TextScrollLine2.BackgroundColor := TSkins.GetColorItem('Color1');
+  TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderColor := TSkins.GetColorItem('Color1');
+  TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderWidth := 2;
+  TextScroll.Lines.TextScrollLine2.Border.BorderTop.BorderColor := TSkins.GetColorItem('Color1');
+  TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderColor := TSkins.GetColorItem('Color1');
+  TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderWidth := 2;
+  TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderColor := TSkins.GetColorItem('Color1');
+  TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderWidth := 10;
 
 
-
-  btnSearch.Glyph.Assign(ASkinData.GetBitmapItem('icoSearch'));
+  // Bitmaps
   miAddStation.Bitmap.Assign(ASkinData.GetBitmapItem('btnAdd'));
   miEditStation.Bitmap.Assign(ASkinData.GetBitmapItem('btnEdit'));
   miDeleteStation.Bitmap.Assign(ASkinData.GetBitmapItem('btnDelete'));
