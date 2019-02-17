@@ -15,7 +15,7 @@ Description:         Main Form
 interface
 
 uses
-  Classes, SysUtils, FileUtil, BCButton, BGRAFlashProgressBar, BCLabel, BCPanel,
+  Classes, SysUtils, FileUtil, BCButton, BGRAFlashProgressBar, BCPanel,
   Forms, Controls, Graphics, Dialogs, LCLType, StdCtrls,
   ExtCtrls, Menus, Helpers, RadioPlayer, RadioPlayerTypes, VirtualTrees,
   ImgList, ActnList, CTRPTextScroll, CTRPTrackBar, zipper,
@@ -180,26 +180,8 @@ begin
   // Create text scroll
   TextScroll := TCTRPTextScroll.Create(Self);
   TextScroll.Parent := TopInfoPanel;
-
-  //TextScroll.Lines.TextScrollLine1.BackgroundColor := RGBToColor(100, 175, 240);
-  {TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderColor := RGBToColor(0, 175, 240);
-  TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderWidth := 2;
-  TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderColor := RGBToColor(0, 175, 240);
-  TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderWidth := 2;
-  TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderColor := RGBToColor(0, 175, 240);
-  TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderWidth := 2;  }
   TextScroll.Lines.TextScrollLine1.ScrollText := 'Tiny Radio Player';
-
-  //TextScroll.Lines.TextScrollLine2.BackgroundColor := RGBToColor(0, 175, 240);
- { TextScroll.Lines.TextScrollLine2.BackgroundColor := clGreen;
-  TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderColor := RGBToColor(0, 175, 240);
-  TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderWidth := 2;
-  TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderColor := RGBToColor(0, 175, 240);
-  TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderWidth := 2;
-  TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderColor := RGBToColor(0, 175, 240);
-  TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderWidth := 2;   }
   TextScroll.Lines.TextScrollLine2.ScrollText := 'ver. 0.1';
-
   TextScroll.OnMouseEnter := @TextScrollMouseEnter;
   TextScroll.OnMouseLeave := @TextScrollMouseLeave;
 
@@ -207,9 +189,20 @@ begin
   //TextScroll.PopupMenu := pmRedTextScroll;
 
   LoadSettings;
-  LoadSkin;
 
   CreateVstStationList;
+
+  // Create SearchEdit
+  SearchEdit := TCTRPEdit.Create(Self);
+  SearchEdit.Parent := SearchPanel;
+  SearchEdit.Left := 293;
+  SearchEdit.Top := 8;
+  SearchEdit.Width := 184;
+  SearchEdit.Height := 23;
+  SearchEdit.Anchors := [akTop, akRight];
+  SearchEdit.OnDelayChange := @SearchEditDelayChange;
+
+  LoadSkin;
 
   LoadLoanguages;
 
@@ -231,18 +224,6 @@ begin
 
   MainForm.Width := TTRPSettings.GetValue('MainForm.Width', 485);
   MainForm.Height := TTRPSettings.GetValue('MainForm.Height', 516);
-
-  SearchEdit := TCTRPEdit.Create(Self);
-  SearchEdit.Parent := SearchPanel;
-  SearchEdit.Left := 293;
-  SearchEdit.Top := 8;
-  SearchEdit.Width := 184;
-  SearchEdit.Height := 23;
-  SearchEdit.Anchors := [akTop, akRight];
-  SearchEdit.Color := TSkins.GetColorItem('Color1');
-  SearchEdit.Font.Color := clWhite;
-
-  SearchEdit.OnDelayChange := @SearchEditDelayChange;
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
@@ -610,6 +591,7 @@ end;
 
 procedure TMainForm.CreateVstStationList;
 begin
+  // Requires correctly loaded settings
 
   VstStationList := TVirtualStringTree.Create(Self);
 
@@ -642,7 +624,6 @@ begin
   VstStationList.OnAdvancedHeaderDraw := @VstStationListAdvancedHeaderDraw;
 
   // Add columns
-
   VstStationList.Header.Columns.Add.Text :=
     GetLanguageItem('MainForm.StationList.StationName', 'Station Name');
   VstStationList.Header.Columns[0].Width := TTRPSettings.GetValue('StationList.ColumnWidth.StationName', 240);
@@ -681,32 +662,6 @@ begin
   VstStationList.TreeOptions.SelectionOptions := [toDisableDrawSelection, toExtendedFocus, toFullRowSelect, toMiddleClickSelect, toRightClickSelect];  // toCenterScrollIntoView
   VstStationList.TreeOptions.StringOptions := [toSaveCaptions];
 
-  // Nodes color
-  //VstStationList.Colors.FocusedSelectionColor := MixingColors(clHighlight,clWindow,70,20);
-  //VstStationList.Colors.FocusedSelectionBorderColor := MixingColors(clHighlight,clWindow,70,20);
-  VstStationList.Colors.FocusedSelectionColor := RGBToColor(255, 121, 198); //MixingColors(RGBToColor(255, 121, 198), clWindow ,70,20);
-  VstStationList.Colors.FocusedSelectionBorderColor := RGBToColor(255, 121, 198); //MixingColors(RGBToColor(255, 121, 198),clWindow,70,20);
-
-  VstStationList.Colors.HotColor := clGreen;// clWhite;
-  //VstStationList.Colors.UnfocusedSelectionColor := MixingColors(clHighlight,clWindow,60,40);
-  //VstStationList.Colors.UnfocusedSelectionBorderColor := MixingColors(clHighlight,clWindow,60,40);
-  VstStationList.Colors.UnfocusedSelectionColor := MixingColors(RGBToColor(255, 121, 198), clBlack, 95, 5);
-  VstStationList.Colors.UnfocusedSelectionBorderColor := MixingColors(RGBToColor(255, 121, 198), clBlack, 95, 5);
-
-  // ****************
-  //VstStationList.Colors.BorderColor := clRed;
-  //VstStationList.Colors.GridLineColor := clRed;
-
-  VstStationList.Font.Color := RGBToColor(98, 114, 164);
-
-  VstStationList.Color := RGBToColor(40, 42, 54);
-
-  //VstStationList.Header.Background:= clRed;
-  //VstStationList.Colors.FocusedSelectionBorderColor := clRed;
-  //VstStationList.Colors.HotColor := clRed;
-  //VstStationList.Colors.UnfocusedSelectionColor := clRed;
-  //VstStationList.Colors.UnfocusedSelectionBorderColor := clRed;
-
   // Sort direction
   VstStationList.Header.SortDirection :=
     IIF(TTRPSettings.GetValue('StationList.SortDirection', 'ASC') = 'ASC', TSortDirection.sdAscending, TSortDirection.sdDescending);
@@ -723,26 +678,68 @@ begin
     VstStationList.ScrollBarOptions.ScrollBars := ssVertical;
     miShowBothScrollBars.Checked := false;
   end;
-
-  //VstStationList.Show;
 end;
 
 procedure TMainForm.TextScrollMouseEnter(Sender: TObject);
 begin
-  //TextScroll.Lines.TextScrollLine1.BackgroundColor := RGBToColor(0, 168, 229);
-  //TextScroll.Lines.TextScrollLine2.BackgroundColor := RGBToColor(0, 168, 229);
+  TextScroll.Lines.TextScrollLine1.BackgroundColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.BackgroundColor.OnMouseEnter');
+  TextScroll.Lines.TextScrollLine2.BackgroundColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.BackgroundColor.OnMouseEnter');
 
-  //TextScroll.Lines.TextScrollLine1.BackgroundColor := MixingColors(TSkins.GetColorItem('Color1'), clWhite, 96, 4);
-  //TextScroll.Lines.TextScrollLine2.BackgroundColor := MixingColors(TSkins.GetColorItem('Color1'), clWhite, 96, 4);
+  TextScroll.Lines.TextScrollLine1.FontColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.FontColor.OnMouseEnter');
+  TextScroll.Lines.TextScrollLine2.FontColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.FontColor.OnMouseEnter');
+
+  TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderColor.OnMouseEnter');
+  TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderColor.OnMouseEnter');
+  TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderColor.OnMouseEnter');
+  TextScroll.Lines.TextScrollLine1.Border.BorderBottom.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.Border.BorderBottom.BorderColor.OnMouseEnter');
+
+  TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderColor.OnMouseEnter');
+  TextScroll.Lines.TextScrollLine2.Border.BorderTop.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.Border.BorderTop.BorderColor.OnMouseEnter');
+  TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderColor.OnMouseEnter');
+  TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderColor.OnMouseEnter');
 end;
 
 procedure TMainForm.TextScrollMouseLeave(Sender: TObject);
 begin
-  //TextScroll.Lines.TextScrollLine1.BackgroundColor := RGBToColor(0, 175, 240);
-  //TextScroll.Lines.TextScrollLine2.BackgroundColor := RGBToColor(0, 175, 240);
+  TextScroll.Lines.TextScrollLine1.BackgroundColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.BackgroundColor');
+  TextScroll.Lines.TextScrollLine2.BackgroundColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.BackgroundColor');
 
-  //TextScroll.Lines.TextScrollLine1.BackgroundColor := TSkins.GetColorItem('Color1');
-  //TextScroll.Lines.TextScrollLine2.BackgroundColor := TSkins.GetColorItem('Color1');
+  TextScroll.Lines.TextScrollLine1.FontColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.FontColor');
+  TextScroll.Lines.TextScrollLine2.FontColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.FontColor');
+
+  TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderColor');
+  TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderColor');
+  TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderColor');
+  TextScroll.Lines.TextScrollLine1.Border.BorderBottom.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.Border.BorderBottom.BorderColor');
+
+  TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderColor');
+  TextScroll.Lines.TextScrollLine2.Border.BorderTop.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.Border.BorderTop.BorderColor');
+  TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderColor');
+  TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderColor');
 end;
 
 procedure TMainForm.VolumeTrackBarPositionChange(ASender: TObject;
@@ -757,7 +754,7 @@ procedure TMainForm.VstStationListAdvancedHeaderDraw(Sender: TVTHeader;
 begin
   if hpeBackground in Elements then
   begin
-    PaintInfo.TargetCanvas.Brush.Color := TSkins.GetColorItem('Color1');
+    PaintInfo.TargetCanvas.Brush.Color := TSkins.GetColorItem('StationList.Header.BackgroundColor');
     PaintInfo.TargetCanvas.FillRect(PaintInfo.PaintRectangle);
   end;
 end;
@@ -820,8 +817,7 @@ begin
     // Coloring every second line
     if (Odd(Node^.Index)) then
     begin
-      //ItemColor := GridLineColor;
-      ItemColor := MixingColors(RGBToColor(40, 42, 54), clWhite, 99, 1);
+      ItemColor := TSkins.GetColorItem('StationList.Grid.Every2ndLineColor');
       EraseAction := eaColor;
     end;
   end;
@@ -1052,6 +1048,8 @@ begin
 end;
 
 procedure TMainForm.SkinLoaded(Sender: TObject; var ASkinData: TSkinData);
+var
+  r1, g1, b1, r2, g2, b2: Byte;
 begin
   // VolumeTrackBar
   VolumeTrackBar.Track.TrackBackground.BackgroundColor :=
@@ -1077,27 +1075,72 @@ begin
   PeakmeterPanel.Border.Color := ASkinData.GetColorItem('PeakmeterPanel.BorderColor');
 
   // BottomFunctionPanel
-  BottomFunctionPanel.Background.Gradient1.StartColor := ASkinData.GetColorItem('BottomFunctionPanel.Background.Gradient1.StartColor');
-  BottomFunctionPanel.Background.Gradient1.EndColor := ASkinData.GetColorItem('BottomFunctionPanel.Background.Gradient1.EndColor');
+  BottomFunctionPanel.Background.Gradient1.StartColor :=
+    ASkinData.GetColorItem('BottomFunctionPanel.Background.Gradient1.StartColor');
+  BottomFunctionPanel.Background.Gradient1.EndColor :=
+    ASkinData.GetColorItem('BottomFunctionPanel.Background.Gradient1.EndColor');
 
   // TextScroll
-  TextScroll.Lines.TextScrollLine1.BackgroundColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderWidth := 2;
-  TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderWidth := 2;
-  TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderWidth := 2;
-  TextScroll.Lines.TextScrollLine1.Border.BorderBottom.BorderColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine2.BackgroundColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderWidth := 2;
-  TextScroll.Lines.TextScrollLine2.Border.BorderTop.BorderColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderWidth := 2;
-  TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderColor := TSkins.GetColorItem('Color1');
-  TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderWidth := 10;
+  // Line 1
+  TextScroll.Lines.TextScrollLine1.BackgroundColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.BackgroundColor');
+  TextScroll.Lines.TextScrollLine1.FontColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.FontColor');
+  TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderColor');
+  TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderWidth :=
+    TSkins.GetIntItem('TextScroll.Lines.TextScrollLine1.Border.BorderLeft.BorderWidth');
+  TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderColor');
+  TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderWidth :=
+    TSkins.GetIntItem('TextScroll.Lines.TextScrollLine1.Border.BorderTop.BorderWidth');
+  TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderColor');
+  TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderWidth :=
+    TSkins.GetIntItem('TextScroll.Lines.TextScrollLine1.Border.BorderRight.BorderWidth');
+  TextScroll.Lines.TextScrollLine1.Border.BorderBottom.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine1.Border.BorderBottom.BorderColor');
+  TextScroll.Lines.TextScrollLine1.Border.BorderBottom.BorderWidth :=
+    TSkins.GetIntItem('TextScroll.Lines.TextScrollLine1.Border.BorderBottom.BorderWidth');
+  // Line 2
+  TextScroll.Lines.TextScrollLine2.BackgroundColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.BackgroundColor');
+  TextScroll.Lines.TextScrollLine2.FontColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.FontColor');
+  TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderColor');
+  TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderWidth :=
+    TSkins.GetIntItem('TextScroll.Lines.TextScrollLine2.Border.BorderLeft.BorderWidth');
+  TextScroll.Lines.TextScrollLine2.Border.BorderTop.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.Border.BorderTop.BorderColor');
+  TextScroll.Lines.TextScrollLine2.Border.BorderTop.BorderWidth :=
+    TSkins.GetIntItem('TextScroll.Lines.TextScrollLine2.Border.BorderTop.BorderWidth');
+  TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderColor');
+  TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderWidth :=
+    TSkins.GetIntItem('TextScroll.Lines.TextScrollLine2.Border.BorderRight.BorderWidth');
+  TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderColor :=
+    TSkins.GetColorItem('TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderColor');
+  TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderWidth :=
+    TSkins.GetIntItem('TextScroll.Lines.TextScrollLine2.Border.BorderBottom.BorderWidth');
 
+  // StationList
+  VstStationList.Colors.FocusedSelectionColor :=
+    TSkins.GetColorItem('StationList.Grid.FocusedSelectionColor');
+  VstStationList.Colors.FocusedSelectionBorderColor :=
+    TSkins.GetColorItem('StationList.Grid.FocusedSelectionBorderColor');
+  VstStationList.Font.Color :=
+    TSkins.GetColorItem('StationList.Grid.FontColor');
+  VstStationList.Color :=
+    TSkins.GetColorItem('StationList.Grid.BackgroundColor');
+  VstStationList.Colors.UnfocusedSelectionColor :=
+    TSkins.GetColorItem('StationList.Grid.UnfocusedSelectionColor');
+  VstStationList.Colors.UnfocusedSelectionBorderColor :=
+    TSkins.GetColorItem('StationList.Grid.UnfocusedSelectionBorderColor');
+
+  // SearchEdit
+  SearchEdit.Color := TSkins.GetColorItem('SearchEdit.Color');
+  SearchEdit.Font.Color := TSkins.GetColorItem('SearchEdit.FontColor');
 
   // Bitmaps
   miAddStation.Bitmap.Assign(ASkinData.GetBitmapItem('btnAdd'));

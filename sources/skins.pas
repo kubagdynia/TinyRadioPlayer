@@ -29,7 +29,7 @@ type
 
   TSkinData = class
   private
-    FSkinItemsHashmap: TStringList;
+    FSkinItemsHashmap: TStrings;
     FBitmapList: TStrings;
     procedure ClearBitmapList;
   public
@@ -40,6 +40,7 @@ type
     function AddBitmap(Name: string; Bitmap: TBitmap): integer;
     function AddBitmap(Name: string; var AStream: TStream): integer;
 
+    function GetIntItem(Name: string): integer;
     function GetStringItem(Name: string): string;
     function GetColorItem(Name: string): TColor;
     function GetBitmapItem(Name: string): TBitmap;
@@ -85,6 +86,7 @@ type
     class procedure ChangeSkin(const SkinName: string);
     class procedure LoadSkin();
     class function GetBitmapItem(Name: string): TBitmap;
+    class function GetIntItem(Name: string): integer;
     class function GetStringItem(Name: string): string;
     class function GetColorItem(Name: string): TColor;
 
@@ -186,12 +188,38 @@ begin
   Result := bitmap;
 end;
 
+function TSkinData.GetIntItem(Name: string): integer;
+var
+  index: integer;
+begin
+  if Name = EMPTY_STR then
+    Result := EMPTY_INT
+  else
+  begin
+
+    index := FSkinItemsHashmap.IndexOfName(Name);
+
+    if index = EMPTY_INT then
+      RaiseErrorMessage(ERR_CANT_LOAD_SKIN_ITEMS, ClassName, 'GetIntItem');
+
+    Result := StrToInt(FSkinItemsHashmap.Values[Name]);
+  end;
+end;
+
 function TSkinData.GetStringItem(Name: string): string;
+var
+  index: integer;
 begin
   if Name = EMPTY_STR then
     Result := EMPTY_STR
   else
   begin
+
+    index := FSkinItemsHashmap.IndexOfName(Name);
+
+    if index = EMPTY_INT then
+      RaiseErrorMessage(ERR_CANT_LOAD_SKIN_ITEMS, ClassName, 'GetStringItem');
+
     Result := FSkinItemsHashmap.Values[Name];
   end;
 end;
@@ -448,6 +476,11 @@ end;
 class function TSkins.GetBitmapItem(Name: string): TBitmap;
 begin
   Result := FSkinData.GetBitmapItem(Name);
+end;
+
+class function TSkins.GetIntItem(Name: string): integer;
+begin
+  Result := FSkinData.GetIntItem(Name);
 end;
 
 class function TSkins.GetStringItem(Name: string): string;

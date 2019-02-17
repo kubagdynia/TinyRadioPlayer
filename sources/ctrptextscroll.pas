@@ -15,15 +15,18 @@ type
   TCTRPTextScrollLineProperty = class(TCTRPProperty)
   const
     DEFAULT_BACKGROUND_COLOR = ({r} 0 or ({g} 0 shl 8) or ({b} 0 shl 16)); // Black
+    DEFAULT_FONT_COLOR = ({r} 255 or ({g} 255 shl 8) or ({b} 255 shl 16)); // Black
   private
     { Private declarations }
     FBorder: TCTRPBordersProperty;
     FBackgroundColor: TColor;
+    FFontColor: TColor;
     FScrollText: string;
     FBlinkTimer: TTimer;
 
     procedure SetBorder(AValue: TCTRPBordersProperty);
     procedure SetBackgroundColor(AValue: TColor);
+    procedure SetFontColor(AValue: TColor);
     procedure SetScrollText(AValue: string);
     procedure BlinkTimerOnTimer(Sender: TObject);
   protected
@@ -40,6 +43,8 @@ type
     property Border: TCTRPBordersProperty read FBorder write SetBorder;
     property BackgroundColor: TColor read FBackgroundColor write SetBackgroundColor
       default DEFAULT_BACKGROUND_COLOR;
+    property FontColor: TColor read FFontColor write SetFontColor
+      default DEFAULT_FONT_COLOR;
     property ScrollText: string read FScrollText write SetScrollText;
   end;
 
@@ -109,8 +114,7 @@ type
       WithThemeSpace: Boolean); override;
     procedure Paint; override;
     procedure ReclcLinesRect;
-    function DoMouseWheel(Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint
-      ): Boolean; override;
+    function DoMouseWheel(Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint): Boolean; override;
     procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
       override;
     procedure WMEraseBkgnd(var Message: TLMEraseBkgnd); message LM_ERASEBKGND;
@@ -170,6 +174,7 @@ begin
   FBorder.OnChange := @OnChangeProc;
 
   FBackgroundColor := DEFAULT_BACKGROUND_COLOR;
+  FFontColor := DEFAULT_FONT_COLOR;
 
   // Create timer to be able to blinking new text
   FBlinkTimer := TTimer.Create(AControl);
@@ -230,17 +235,23 @@ end;
 
 procedure TCTRPTextScrollLineProperty.SetBackgroundColor(AValue: TColor);
 begin
-  if FBackgroundColor = AValue then
-    Exit;
+  if FBackgroundColor = AValue then Exit;
   FBackgroundColor := AValue;
+
+  Change;
+end;
+
+procedure TCTRPTextScrollLineProperty.SetFontColor(AValue: TColor);
+begin
+  if FFontColor = AValue then Exit;
+  FFontColor := AValue;
 
   Change;
 end;
 
 procedure TCTRPTextScrollLineProperty.SetScrollText(AValue: string);
 begin
-  if FScrollText = AValue then
-    Exit;
+  if FScrollText = AValue then Exit;
   FScrollText := AValue;
 
   Change;
@@ -501,7 +512,8 @@ begin
       dmSet);
 
   // Draw text line 1
-  FBmp.TextRect(FLine1Rect, FLine1Rect.Left, FLine2Rect.Top, Lines.TextScrollLine1.ScrollText, textStyle, BGRA(255,255,255));
+  FBmp.TextRect(FLine1Rect, FLine1Rect.Left, FLine2Rect.Top, Lines.TextScrollLine1.ScrollText, textStyle,
+    ColorToBGRA(Lines.TextScrollLine1.FontColor));
 
   // PREPARE 2nd line
   FBmp.Rectangle(FLine2Rect,
@@ -538,7 +550,7 @@ begin
 
   // Draw text line 2
   FBmp.TextRect(Rect( FLine2Rect.Left-50, FLine2Rect.Top, FLine2Rect.Right+50, FLine2Rect.Bottom),
-    FLine2Rect.Left, FLine2Rect.Top, Lines.TextScrollLine2.ScrollText, textStyle, BGRA(255,255,255));
+    FLine2Rect.Left, FLine2Rect.Top, Lines.TextScrollLine2.ScrollText, textStyle, ColorToBGRA(Lines.TextScrollLine2.FontColor));
 
   // Draw progress bar
   if ProgressBarVisible and (FProgressBarValue > 0) then
