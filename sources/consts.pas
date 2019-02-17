@@ -50,7 +50,7 @@ const
 
 { - - - - - - - - - - - - - - - - - - Skins - - - - - - - - - - - - - - - - - - }
   SKIN_FILE_EXTENSION       = '.zip';
-  DEFAULT_SKIN              = 'skin';
+  DEFAULT_SKIN              = 'dracula';
   SKIN_FILE_PATTERN         = '*' + SKIN_FILE_EXTENSION;
 
 { - - - - - - - - - - - - - - - - - Database - - - - - - - - - - - - - - - - - }

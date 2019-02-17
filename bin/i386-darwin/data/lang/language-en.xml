@@ -7,11 +7,14 @@
 		<Item name="WarningMessage.General" type="string">Warning!</Item>
 		<Item name="InformationMessage.General" type="string">Information!</Item>
 		<Item name="ErrorMessage.UnspecifiedError" type="string">An unspecified error occurred!</Item>
+		<Item name="ErrorMessage.IncorrectConstructor" type="string">Incorrect constructor. You should use the constructor with parameters.</Item>
 		<Item name="ErrorMessage.DbConnectionNotEstablished" type="string">The connection to the database has not been established yet!</Item>
 		<Item name="ErrorMessage.StationRepositoryNotAssigned" type="string">The station repository has not been assigned yet!</Item>
 		<Item name="ErrorMessage.DictionaryRepositoryNotAssigned" type="string">The dictionary repository has not been assigned yet!</Item>
 		<Item name="ErrorMessage.CantLoadSkinItems" type="string">Skin elements can not be loaded!</Item>
 		<Item name="ErrorMessage.DictionaryTypeCanNotBeSpecified" type="string">The dictionary type can not be specified!</Item>
+		<Item name="ErrorMessage.DictionaryRowExists" type="string">This element of the dictionary already exists!</Item>
+		<Item name="ErrorMessage.DictionaryRowCanNotBeDeleted" type="string">This dictionary element is used so it can not be deleted!</Item>
 		
 		<Item name="Dialog.Question" type="string">Question</Item>
 		<Item name="Dialog.Answer.Yes" type="string">Yes</Item>
@@ -68,6 +71,16 @@
 		<Item name="DictionaryTablesManagement.Title" type="string">Add, edit or delete dictionary tables</Item>
 		<Item name="DictionaryTablesManagement.Column.DictionaryName" type="string">Dictionary</Item>
 		<Item name="DictionaryTablesManagement.Column.DictionaryDetailName" type="string">Name</Item>
+		<Item name="DictionaryTablesManagement.Detail.AddNewDictionaryItem" type="string">Add a new dictionary item</Item>
+		<Item name="DictionaryTablesManagement.Detail.EditDictionaryItem" type="string">Edit dictionary item</Item>
+		<Item name="DictionaryTablesManagement.Detail.DeleteDictionaryItem" type="string">Delete doctionary item</Item>
+		<Item name="DictionaryTablesManagement.Detail.Save" type="string">Save</Item>
+		<Item name="DictionaryTablesManagement.Detail.Delete" type="string">Delete</Item>
+		<Item name="DictionaryTablesManagement.Detail.ParentDictionary" type="string">Parent Dictionary</Item>
+		<Item name="DictionaryTablesManagement.Detail.DictionaryItemName" type="string">Name</Item>
+		<Item name="DictionaryTablesManagement.Detail.DictionaryItemCode" type="string">Code</Item>
+		<Item name="DictionaryTablesManagement.Detail.DictionaryItemPosition" type="string">Position</Item>
+		<Item name="DictionaryTablesManagement.Detail.BeforeDeleteQuestion" type="string">Are you sure you want to delete this dictionary item?</Item>
 		
 		<!-- Dictionary Tables -->
 		<Item name="DictionaryTables.Genre" type="string">Genre</Item>

@@ -79,7 +79,7 @@
         <PackageName Value="LCL"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="26">
+    <Units Count="27">
       <Unit0>
         <Filename Value="TinyRadioPlayer.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -227,6 +227,11 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="DictionaryDetailFormUnit"/>
       </Unit25>
+      <Unit26>
+        <Filename Value="ctrpcustomdrawn.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="CTRPCustomDrawn"/>
+      </Unit26>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
