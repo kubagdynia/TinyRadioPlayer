@@ -55,7 +55,6 @@ type
     SearchPanel: TBCPanel;
     BottomFunctionPanel: TBCPanel;
     TopInfoPanel: TBCPanel;
-    edtSearch: TEdit;
     MainMenu1: TMainMenu;
     miLanguage: TMenuItem;
     miSettings: TMenuItem;
@@ -211,7 +210,7 @@ begin
 
   TLanguage.RegisterLanguageChangeEvent(@OnLanguageChange);
 
-  TRepository.LoadStations(VstStationList, edtSearch.Text);
+  TRepository.LoadStations(VstStationList, SearchEdit.Text);
 
   // Calculating position of function buttons and volume
   btnPrev.Tag := (BottomFunctionPanel.Width div 2) - btnPrev.Left;
@@ -990,7 +989,7 @@ begin
           mr := StationDetailForm.ShowModal;
 
           if mr = mrOK then
-            TRepository.LoadStations(VstStationList, edtSearch.Text);
+            TRepository.LoadStations(VstStationList, SearchEdit.Text);
         finally
           FreeAndNil(StationDetailForm);
         end;
@@ -1004,7 +1003,7 @@ begin
           mr := StationDetailForm.ShowModal;
 
           if mr = mrOK then
-            TRepository.LoadStations(VstStationList, edtSearch.Text);
+            TRepository.LoadStations(VstStationList, SearchEdit.Text);
 
         finally
           FreeAndNil(StationDetailForm);
@@ -1019,7 +1018,7 @@ begin
           mr := StationDetailForm.ShowModal;
 
           if mr = mrOK then
-            TRepository.LoadStations(VstStationList, edtSearch.Text);
+            TRepository.LoadStations(VstStationList, SearchEdit.Text);
 
         finally
           FreeAndNil(StationDetailForm);
