@@ -200,6 +200,14 @@ begin
 
   Self.Caption := GetLanguageItem('StationDetail.WindowName', 'Station Detail');
 
+  lblStationName.Caption := GetLanguageItem('StationDetail.StationName', 'Station Name');
+  lblStreamUrl.Caption := GetLanguageItem('StationDetail.StreamUrl', 'Stream Url');
+  lblWebpageUrl.Caption := GetLanguageItem('StationDetail.Webpage', 'Webpage');
+  lblDescription.Caption := GetLanguageItem('StationDetail.Description', 'Description');
+  lblGenre.Caption := GetLanguageItem('StationDetail.Genre', 'Genre');
+  lblCountry.Caption := GetLanguageItem('StationDetail.Country', 'Country');
+  btnWWWOpen.Caption := GetLanguageItem('StationDetail.Go', 'Go');
+
   case OpenMode of
     omNew:
     begin

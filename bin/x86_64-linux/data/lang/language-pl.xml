@@ -63,6 +63,13 @@
 		<Item name="StationDetail.TitleNew" type="string">Dodaj nową stację</Item>
 		<Item name="StationDetail.TitleEdit" type="string">Edytuj stację</Item>
 		<Item name="StationDetail.TitleDelete" type="string">Usuń stację</Item>
+		<Item name="StationDetail.StationName" type="string">Nazwa Stacji</Item>
+		<Item name="StationDetail.StreamUrl" type="string">Adres Url Strumienia</Item>
+		<Item name="StationDetail.Webpage" type="string">Webpage</Item>
+		<Item name="StationDetail.Description" type="string">Opis</Item>
+		<Item name="StationDetail.Genre" type="string">Gatunek</Item>
+		<Item name="StationDetail.Country" type="string">Kraj</Item>
+		<Item name="StationDetail.Go" type="string">Idź</Item>
 		<Item name="StationDetail.Error.StationAlreadyExists" type="string">Stacja o takiej nazwie już istnieje!</Item>
 		<Item name="StationDetail.BeforeDeleteQuestion" type="string">Czy chcesz usunąć wybraną stację?</Item>
 				
