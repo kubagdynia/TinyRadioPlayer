@@ -154,7 +154,7 @@ begin
 
   node := VstStationsList.GetFirstSelected;
 
-  if Node <> nil then
+  if node <> nil then
     data := VstStationsList.GetNodeData(node)
   else
     exit;

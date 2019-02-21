@@ -25,6 +25,11 @@ type
 
   { TMainForm }
   TMainForm = class(TForm)
+    NextAction: TAction;
+    PrevAction: TAction;
+    btnStop: TBCButton;
+    StopAction: TAction;
+    PlayAction: TAction;
     BCPanel1: TBCPanel;
     OpenDictionaryTablesAction: TAction;
     DeleteStationAction: TAction;
@@ -47,8 +52,6 @@ type
     btnPrev: TBCButton;
     btnNext: TBCButton;
     btnOpen: TBCButton;
-    btnStop: TBCButton;
-    btnPause: TBCButton;
     MainPanel: TBCPanel;
     PeakmeterPanel: TBCPanel;
     PopupMenuStationList: TPopupMenu;
@@ -67,11 +70,9 @@ type
     Timer1: TTimer;
     procedure AddStationActionExecute(Sender: TObject);
     procedure BottomFunctionPanelResize(Sender: TObject);
-    procedure btnOpenClick(Sender: TObject);
-    procedure btnPlayClick(Sender: TObject);
-    procedure btnStopClick(Sender: TObject);
     procedure DeleteStationActionExecute(Sender: TObject);
     procedure MainPanelResize(Sender: TObject);
+    procedure NextActionExecute(Sender: TObject);
     procedure OpenDictionaryTablesActionExecute(Sender: TObject);
     procedure EditStationActionExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -82,9 +83,12 @@ type
     procedure miExitClick(Sender: TObject);
     procedure OpenUrlActionExecute(Sender: TObject);
     procedure PeakmeterPanelResize(Sender: TObject);
+    procedure PlayActionExecute(Sender: TObject);
     procedure PopupMenuStationListPopup(Sender: TObject);
+    procedure PrevActionExecute(Sender: TObject);
     procedure RadioPlayerRadioPlay(Sender: TObject);
     procedure RadioPlayerRadioPlayerTags(AMessage: string; APlayerMessageType: TPlayerMessageType);
+    procedure StopActionExecute(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
   private
     procedure LoadLoanguages;
@@ -135,6 +139,8 @@ type
       Node: PVirtualNode; Column: TColumnIndex);
 
     procedure StationDetailManagement(OpenMode: TOpenMode; DropFileName: string = EMPTY_STR);
+
+    procedure RadioActions(Sender: TObject);
   public
     RadioPlayer: TRadioPlayer;
 
@@ -211,15 +217,6 @@ begin
   TLanguage.RegisterLanguageChangeEvent(@OnLanguageChange);
 
   TRepository.LoadStations(VstStationList, SearchEdit.Text);
-
-  // Calculating position of function buttons and volume
-  btnPrev.Tag := (BottomFunctionPanel.Width div 2) - btnPrev.Left;
-  btnPlay.Tag := (BottomFunctionPanel.Width div 2) - btnPlay.Left;
-  btnPause.Tag := (BottomFunctionPanel.Width div 2) - btnPause.Left;
-  btnStop.Tag := (BottomFunctionPanel.Width div 2) - btnStop.Left;
-  btnNext.Tag := (BottomFunctionPanel.Width div 2) - btnNext.Left;
-  btnRec.Tag := (BottomFunctionPanel.Width div 2) - btnRec.Left;
-  btnOpen.Tag := (BottomFunctionPanel.Width div 2) - btnOpen.Left;
 
   MainForm.Width := TTRPSettings.GetValue('MainForm.Width', 485);
   MainForm.Height := TTRPSettings.GetValue('MainForm.Height', 516);
@@ -319,6 +316,51 @@ begin
 
 end;
 
+procedure TMainForm.PlayActionExecute(Sender: TObject);
+begin
+  RadioActions(Sender);
+end;
+
+procedure TMainForm.PrevActionExecute(Sender: TObject);
+begin
+  RadioActions(Sender);
+end;
+
+procedure TMainForm.NextActionExecute(Sender: TObject);
+begin
+  RadioActions(Sender);
+end;
+
+procedure TMainForm.StopActionExecute(Sender: TObject);
+begin
+  RadioPlayer.Stop();
+end;
+
+procedure TMainForm.RadioActions(Sender: TObject);
+var
+  node: PVirtualNode;
+begin
+  if Sender is TAction then
+  begin
+
+    node := VstStationList.GetFirstSelected();
+
+    if node = nil then
+      node := VstStationList.GetFirst()
+    else if Sender = NextAction then
+       node := VstStationList.GetNext(node)
+    else if Sender = PrevAction then
+       node := VstStationList.GetPrevious(node);
+
+    if node <> nil then
+      VstStationList.Selected[node] := true;
+
+    RadioPlayer.PlayStation(
+      RadioPlayer.GetSelectedStationId(VstStationList),
+      VolumeTrackBar.Position);
+  end;
+end;
+
 procedure TMainForm.PopupMenuStationListPopup(Sender: TObject);
 var
   stationSelected: boolean;
@@ -337,7 +379,7 @@ var
   buttonSpace: byte;
   button7: integer;
 begin
-  buttonCount := 7;
+  buttonCount := 6;
   buttonWidth := 23;
   buttonSpace := 2;
 
@@ -366,9 +408,8 @@ begin
     VolumeTrackBar.Left := BottomFunctionPanel.Width - VolumeTrackBar.Width - 3;
   end;
 
-  btnPrev.Left := button7 - (7 * buttonWidth) - (6 * buttonSpace);
-  btnPlay.Left := button7 - (6 * buttonWidth) - (5 * buttonSpace);
-  btnPause.Left := button7 - (5 * buttonWidth) - (4 * buttonSpace);
+  btnPrev.Left := button7 - (6 * buttonWidth) - (5 * buttonSpace);
+  btnPlay.Left := button7 - (5 * buttonWidth) - (4 * buttonSpace);
   btnStop.Left := button7 - (4 * buttonWidth) - (3 * buttonSpace);
   btnNext.Left := button7 - (3 * buttonWidth) - (2 * buttonSpace);
   btnRec.Left := button7 - (2 * buttonWidth) - buttonSpace;
@@ -421,21 +462,6 @@ begin
     end;
 
   end;
-end;
-
-procedure TMainForm.btnOpenClick(Sender: TObject);
-begin
-  OpenUrlActionExecute(Self);
-end;
-
-procedure TMainForm.btnPlayClick(Sender: TObject);
-begin
-  //RadioPlayer.PlayURL(edtStreamUrl.Caption, VolumeTrackBar.Position);
-end;
-
-procedure TMainForm.btnStopClick(Sender: TObject);
-begin
-  RadioPlayer.Stop();
 end;
 
 procedure TMainForm.RadioPlayerRadioPlay(Sender: TObject);
@@ -1153,7 +1179,6 @@ begin
   miEditStation.Bitmap.Assign(ASkinData.GetBitmapItem('btnEdit'));
   miDeleteStation.Bitmap.Assign(ASkinData.GetBitmapItem('btnDelete'));
   btnPlay.Glyph.Assign(ASkinData.GetBitmapItem('btnPlay'));
-  btnPause.Glyph.Assign(ASkinData.GetBitmapItem('btnPause'));
   btnPrev.Glyph.Assign(ASkinData.GetBitmapItem('btnPrev'));
   btnStop.Glyph.Assign(ASkinData.GetBitmapItem('btnStop'));
   btnNext.Glyph.Assign(ASkinData.GetBitmapItem('btnNext'));
