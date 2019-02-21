@@ -5,7 +5,7 @@ object MainForm: TMainForm
   Width = 485
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Tiny Radio Player'
-  ClientHeight = 491
+  ClientHeight = 496
   ClientWidth = 485
   Constraints.MinHeight = 60
   Constraints.MinWidth = 230
@@ -17,7 +17,7 @@ object MainForm: TMainForm
   LCLVersion = '1.8.4.0'
   object StationListPanel: TBCPanel
     Left = 0
-    Height = 389
+    Height = 394
     Top = 64
     Width = 485
     Align = alClient
@@ -82,7 +82,7 @@ object MainForm: TMainForm
     object SearchPanel: TBCPanel
       Left = 4
       Height = 41
-      Top = 347
+      Top = 352
       Width = 477
       Align = alBottom
       BorderSpacing.Left = 3
@@ -147,7 +147,7 @@ object MainForm: TMainForm
     object PeakmeterPanel: TBCPanel
       Left = 4
       Height = 20
-      Top = 327
+      Top = 332
       Width = 477
       Align = alBottom
       BorderSpacing.Left = 3
@@ -242,7 +242,7 @@ object MainForm: TMainForm
     end
     object MainPanel: TBCPanel
       Left = 4
-      Height = 323
+      Height = 328
       Top = 4
       Width = 477
       Align = alClient
@@ -374,7 +374,7 @@ object MainForm: TMainForm
   object BottomFunctionPanel: TBCPanel
     Left = 0
     Height = 38
-    Top = 453
+    Top = 458
     Width = 485
     Align = alBottom
     Background.Color = clBtnFace

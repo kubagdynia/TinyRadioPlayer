@@ -1141,6 +1141,13 @@ begin
   SearchEdit.Color := TSkins.GetColorItem('SearchEdit.Color');
   SearchEdit.Font.Color := TSkins.GetColorItem('SearchEdit.FontColor');
 
+  // LeftLevelMeter
+  pbLeftLevelMeter.BackgroundColor := TSkins.GetColorItem('LeftLevelMeter.BackgroundColor');
+  pbLeftLevelMeter.Color := TSkins.GetColorItem('LeftLevelMeter.Color');
+  // RightLevelMeter
+  pbRightLevelMeter.BackgroundColor := TSkins.GetColorItem('RightLevelMeter.BackgroundColor');
+  pbRightLevelMeter.Color := TSkins.GetColorItem('RightLevelMeter.Color');
+
   // Bitmaps
   miAddStation.Bitmap.Assign(ASkinData.GetBitmapItem('btnAdd'));
   miEditStation.Bitmap.Assign(ASkinData.GetBitmapItem('btnEdit'));
