@@ -59,6 +59,8 @@ type
     function ChannelGetLevel: DWORD;
     function NumberOfRunningThreads: integer;
 
+    function NoCurrentStationLoaded: Boolean;
+
     property OnRadioPlayerTags: TRadioPlayerTagsEvent
       read FOnRadioPlayerTags write FOnRadioPlayerTags;
     property OnRadioPlay: TNotifyEvent read FOnRadioPlay write FOnRadioPlay;
@@ -78,6 +80,8 @@ uses
 constructor TRadioPlayer.Create;
 begin
   inherited Create;
+
+  FCurrentStationId := EMPTY_INT;
 
   RadioInit;
 
@@ -142,6 +146,7 @@ var
   StationInfo: TStationInfo;
 begin
   TRepository.LoadStation(StationInfo, StationId);
+  FCurrentStationId := StationId;
   PlayURL(StationInfo.StreamUrl, Volume);
 end;
 
@@ -168,7 +173,10 @@ begin
   Result := False;
 
   if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+  begin
     Result := FRadioPlayerThreads[FActiveRadioPlayerThread].Stop;
+    FCurrentStationId := EMPTY_INT;
+  end;
 end;
 
 // Change volume of the active thread
@@ -206,6 +214,11 @@ begin
   for i := Low(FRadioPlayerThreads) to High(FRadioPlayerThreads) do
     if FRadioPlayerThreads[i] <> nil then
       Result := Result + 1;
+end;
+
+function TRadioPlayer.NoCurrentStationLoaded: Boolean;
+begin
+  Result := CurrentStationId = EMPTY_INT;
 end;
 
 // Displays an error message

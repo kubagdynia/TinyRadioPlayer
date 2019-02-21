@@ -25,7 +25,12 @@ type
 
   { TMainForm }
   TMainForm = class(TForm)
+    miCopyTitleToClipboard: TMenuItem;
+    miSearchOnYoutube: TMenuItem;
+    miSpace1: TMenuItem;
+    miStationInfo: TMenuItem;
     NextAction: TAction;
+    PopupMenuTextScroll: TPopupMenu;
     PrevAction: TAction;
     btnStop: TBCButton;
     StopAction: TAction;
@@ -72,6 +77,9 @@ type
     procedure BottomFunctionPanelResize(Sender: TObject);
     procedure DeleteStationActionExecute(Sender: TObject);
     procedure MainPanelResize(Sender: TObject);
+    procedure miCopyTitleToClipboardClick(Sender: TObject);
+    procedure miSearchOnYoutubeClick(Sender: TObject);
+    procedure miStationInfoClick(Sender: TObject);
     procedure NextActionExecute(Sender: TObject);
     procedure OpenDictionaryTablesActionExecute(Sender: TObject);
     procedure EditStationActionExecute(Sender: TObject);
@@ -158,7 +166,8 @@ var
 implementation
 
 uses
-  Language, TRPSettings, Repository, StationDetailFormUnit, DictionaryTablesManagementFormUnit;
+  Language, TRPSettings, Repository, StationDetailFormUnit, DictionaryTablesManagementFormUnit,
+  LCLIntf, Clipbrd;
 
 {$R *.lfm}
 
@@ -191,7 +200,7 @@ begin
   TextScroll.OnMouseLeave := @TextScrollMouseLeave;
 
   TextScroll.Align := alClient;
-  //TextScroll.PopupMenu := pmRedTextScroll;
+  TextScroll.PopupMenu := PopupMenuTextScroll;
 
   LoadSettings;
 
@@ -446,6 +455,36 @@ begin
   VstStationList.Height := MainPanel.Height - 2;
 end;
 
+procedure TMainForm.miCopyTitleToClipboardClick(Sender: TObject);
+begin
+  Clipboard.AsText := TextScroll.Lines.TextScrollLine1.ScrollText;
+end;
+
+procedure TMainForm.miSearchOnYoutubeClick(Sender: TObject);
+begin
+  OpenURL(
+    Format(YOUTUBE_SEARCH_PATH,
+      [TextScroll.Lines.TextScrollLine1.ScrollText]));
+end;
+
+procedure TMainForm.miStationInfoClick(Sender: TObject);
+begin
+  if Assigned(StationDetailForm) or RadioPlayer.NoCurrentStationLoaded then Exit;
+
+  StationDetailForm := TStationDetailForm.Create(Self, omNormal,
+    RadioPlayer.CurrentStationId);
+  try
+
+    if StationDetailForm.ShowModal = mrOK then
+    begin
+
+    end;
+
+  finally
+    FreeAndNil(StationDetailForm);
+  end;
+end;
+
 procedure TMainForm.OpenDictionaryTablesActionExecute(Sender: TObject);
 var
   mr: TModalResult;
@@ -563,6 +602,13 @@ begin
     GetLanguageItem('MainForm.StationList.PopupMenu.EditStation', 'Edit Station');
   miDeleteStation.Caption :=
     GetLanguageItem('MainForm.StationList.PopupMenu.DeleteStation', 'Delete Station');
+
+  miStationInfo.Caption :=
+    GetLanguageItem('MainForm.TopTextScroll.PopupMenu.StationInfo', 'Station Info');
+  miSearchOnYoutube.Caption :=
+    GetLanguageItem('MainForm.TopTextScroll.PopupMenu.SearchOnYoutube', 'Search on YouTube');
+  miCopyTitleToClipboard.Caption :=
+    GetLanguageItem('MainForm.TopTextScroll.PopupMenu.CopyTitleToClipboard', 'Copy Title to Clipboard');
 end;
 
 procedure TMainForm.LoadSettings;

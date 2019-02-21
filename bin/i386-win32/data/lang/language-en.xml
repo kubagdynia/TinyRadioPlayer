@@ -50,6 +50,11 @@
 		<Item name="MainForm.StationList.PopupMenu.EditStation" type="string">Edit Station</Item>
 		<Item name="MainForm.StationList.PopupMenu.DeleteStation" type="string">Delete Station</Item>
 		
+		<!-- Main Form - Top Text Scroll - PopupMenu -->
+		<Item name="MainForm.TopTextScroll.PopupMenu.StationInfo" type="string">Station Info</Item>
+		<Item name="MainForm.TopTextScroll.PopupMenu.SearchOnYoutube" type="string">Search on YouTube</Item>
+		<Item name="MainForm.TopTextScroll.PopupMenu.CopyTitleToClipboard" type="string">Copy Title to Clipboard</Item>
+		
 		<!-- Test -->
 		<Item name="Test.Button.Play" type="string">Play</Item>
 		<Item name="Test.Button.Stop" type="string">Stop</Item>

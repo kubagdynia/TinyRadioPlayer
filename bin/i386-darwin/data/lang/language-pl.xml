@@ -50,6 +50,11 @@
 		<Item name="MainForm.StationList.PopupMenu.EditStation" type="string">Edytuj Stację</Item>
 		<Item name="MainForm.StationList.PopupMenu.DeleteStation" type="string">Usuń Stację</Item>
 		
+		<!-- Main Form - Top Text Scroll - PopupMenu -->
+		<Item name="MainForm.TopTextScroll.PopupMenu.StationInfo" type="string">Informacja o stacji</Item>
+		<Item name="MainForm.TopTextScroll.PopupMenu.SearchOnYoutube" type="string">Szukaj na YouTube</Item>
+		<Item name="MainForm.TopTextScroll.PopupMenu.CopyTitleToClipboard" type="string">Kopiuj tytuł do schowka</Item>		
+		
 		<!-- Test -->
 		<Item name="Test.Button.Play" type="string">Odtwórz</Item>
 		<Item name="Test.Button.Stop" type="string">Zatrzymaj</Item>

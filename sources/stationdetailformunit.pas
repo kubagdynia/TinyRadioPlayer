@@ -119,7 +119,19 @@ begin
       mmoDescription.Enabled := false;
       cboGenre.Enabled := false;
       cboCountry.Enabled := false;
+    end;
 
+    omNormal:
+    begin
+      LoadStationData(FStationId);
+      btnOk.Enabled := true;
+      btnCancel.Visible := false;
+      edtStationName.Enabled := false;
+      edtStreamUrl.Enabled := false;
+      edtWebpageUrl.Enabled := false;
+      mmoDescription.Enabled := false;
+      cboGenre.Enabled := false;
+      cboCountry.Enabled := false;
     end;
 
   end;
@@ -225,6 +237,11 @@ begin
     begin
       lblTitle.Caption := GetLanguageItem('StationDetail.TitleDelete', 'Delete station');
       btnOk.Caption := GetLanguageItem('Button.Delete', 'Delete');
+    end;
+
+    omNormal:
+    begin
+      lblTitle.Caption := EMPTY_STR;
     end;
   end;
 end;

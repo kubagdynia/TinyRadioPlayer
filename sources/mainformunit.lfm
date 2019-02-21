@@ -1560,4 +1560,23 @@ object MainForm: TMainForm
       end
     end
   end
+  object PopupMenuTextScroll: TPopupMenu
+    left = 304
+    top = 8
+    object miStationInfo: TMenuItem
+      Caption = 'Station Info'
+      OnClick = miStationInfoClick
+    end
+    object miSpace1: TMenuItem
+      Caption = '-'
+    end
+    object miSearchOnYoutube: TMenuItem
+      Caption = 'Search on YouTube'
+      OnClick = miSearchOnYoutubeClick
+    end
+    object miCopyTitleToClipboard: TMenuItem
+      Caption = 'Copy Title to Clipboard'
+      OnClick = miCopyTitleToClipboardClick
+    end
+  end
 end
