@@ -15,8 +15,8 @@ Description:         Thread that supports stream play and all related tasks
 interface
 
 uses
-  Classes, SysUtils, LCLIntf, Dialogs, LCLType, FileUtil, Consts,
-  lazdynamic_bass, RadioPlayerTypes;
+  Classes, SysUtils, LCLIntf, Dialogs, LCLType, FileUtil, Consts, RadioPlayerTypes,
+  { Bass } lazdynamic_bass, lazdynamic_bass_fx;
 
 const
   PLAY_PROGRESS = 25;
@@ -27,22 +27,30 @@ type
   TStreamStatusEvent = procedure(ASender: TObject; AThreadIndex: integer) of object;
 
   // Custom thread class
+
+  { TRadioPlayerThread }
+
   TRadioPlayerThread = class(TThread)
   private
     FActive: boolean;
     FThreadIndex: integer;
-    FChannel: HSTREAM;
-    FVolume: integer;  // main volume
-    FReq: DWord;
+
+    FChannel: HSTREAM;    // a handle
+    FVolume: integer;     // main volume
+    FReq: DWord;          // sample rate
+    FFloatable: DWord;    // floating-point channel support? 0 = no, else yes
+    FFxEq: DWord;         // dsp peaking eq handle
+    FEq: BASS_BFX_PEAKEQ; // dsp peaking equalizer
+
+    // Equalizer
+    FEqEnabled: boolean;
+
     FCritSection: TCriticalSection;
     FChannelStatus: DWord;
     FStreamUrlToPlay: string;
 
     FPlayerMessage: string;
     FPlayerMessageType: TPlayerMessageType;
-
-    // floating-point channel support? 0 = no, else yes
-    FFloatable: DWord;
 
     // Custom events
     FOnStreamPlaying: TStreamStatusEvent;
@@ -67,7 +75,7 @@ type
     procedure SynchronizeOnStreamPaused;
     procedure SynchronizeOnStreamStalled;
   public
-    constructor Create(CreateSuspended : boolean; Floatable: DWord = 0);
+    constructor Create(ACreateSuspended : boolean; AFloatable: DWord = 0; AEqualizerEnable: boolean = false);
     destructor Destroy; override;
 
     function ErrorGetCode: Integer;
@@ -82,6 +90,11 @@ type
     function ChangeVolume(Value: Integer): Boolean;
     procedure PlayURL(AStreamUrl: string;
       const AVolume: Integer; const AThreadIndex: Integer);
+
+    // Equalizer
+    procedure EqualizerEnable();
+    procedure EqualizerDisable();
+    procedure UpdateEQ(Band: integer; Pos: Integer);
 
     property OnStreamPlaying: TStreamStatusEvent read FOnStreamPlaying write FOnStreamPlaying;
     property OnStreamStopped: TNotifyEvent read FOnStreamStopped write FOnStreamStopped;
@@ -219,17 +232,19 @@ begin
 
 end;
 
-constructor TRadioPlayerThread.Create(CreateSuspended: boolean;
-  Floatable: DWord = 0);
+constructor TRadioPlayerThread.Create(ACreateSuspended: boolean;
+  AFloatable: DWord = 0; AEqualizerEnable: boolean = false);
 begin
   FActive := false;
   FThreadIndex := EMPTY_INT;
   FChannel := 0;
   FReq := 0;
 
+  FEqEnabled := AEqualizerEnable;
+
   FStreamUrlToPlay := EMPTY_STR;
 
-  FFloatable := Floatable;
+  FFloatable := AFloatable;
 
   FChannelStatus := BASS_ACTIVE_STOPPED;
 
@@ -250,7 +265,7 @@ begin
   FOnStreamStopped := nil;
   FOnStreamStalled := nil;
 
-  inherited Create(CreateSuspended);
+  inherited Create(ACreateSuspended);
 end;
 
 destructor TRadioPlayerThread.Destroy;
@@ -518,6 +533,8 @@ begin
   SendPlayerMessage(IntToStr(progress), TPlayerMessageType.Progress); // Buffering progress
 end;
 
+{$REGION 'Equalizer'}
+
 // Things to be done by the thread
 procedure TRadioPlayerThread.Execute;
 var
@@ -553,8 +570,61 @@ begin
 
     if FActive then MetaStream else StreamStop;
   end;
-
 end;
+
+procedure TRadioPlayerThread.EqualizerEnable();
+begin
+  if FEqEnabled then exit;
+
+  FEqEnabled := true;
+
+  // set peaking equalizer effect with no bands
+  FFxEq := BASS_ChannelSetFX(FChannel, BASS_FX_BFX_PEAKEQ, 0);
+
+  with FEq do begin
+    fBandwidth := 2.5;
+    FQ := 0;
+    fGain := 0;
+    lChannel := BASS_BFX_CHANALL;
+
+    // create 1st band for bass
+    FEq.lBand := 0;
+    FEq.fCenter := 125;
+    BASS_FXSetParameters(FFxEq, @FEq);
+
+    // create 2nd band for mid
+    FEq.lBand := 1;
+    FEq.fCenter := 1000;
+    BASS_FXSetParameters(FFxEq, @FEq);
+
+    // create 3rd band for treble
+    FEq.lBand := 2;
+    FEq.fCenter := 8000;
+    BASS_FXSetParameters(FFxEq, @FEq);
+  end;
+
+  // update dsp eq
+  UpdateEQ(0, 5); // -12 __ 0 __ 12
+end;
+
+procedure TRadioPlayerThread.EqualizerDisable();
+begin
+  if not FEqEnabled then exit;
+
+  FEqEnabled := false;
+  BASS_ChannelRemoveFX(FChannel, FFxEq);
+end;
+
+procedure TRadioPlayerThread.UpdateEQ(Band: integer; Pos: Integer);
+begin
+  FEq.lBand := Band;    // get b band values
+
+  BASS_FXGetParameters(FFxEq, @FEq);
+  FEq.fGain := Pos;
+  BASS_FXSetParameters(FFxEq, @FEq);
+end;
+
+{$ENDREGION}
 
 end.
 

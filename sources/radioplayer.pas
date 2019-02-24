@@ -16,7 +16,8 @@ interface
 
 uses
   Classes, SysUtils,  LCLIntf, Dialogs, LCLType, ExtCtrls, Consts, Helpers,
-  RadioPlayerThread, lazdynamic_bass, RadioPlayerTypes, VirtualTrees;
+  RadioPlayerThread, RadioPlayerTypes, VirtualTrees,
+  { Bass } lazdynamic_bass, lazdynamic_bass_fx;
 
 const
   MAX_PLAYER_THREADS = 3;
@@ -54,6 +55,9 @@ type
 
     function Stop(): Boolean;
     procedure Volume(Value: Integer);
+
+    procedure EqualizerEnable;
+    procedure EqualizerDisable;
 
     function ChannelIsActiveAndPlaying: Boolean;
     function ChannelGetLevel: DWORD;
@@ -110,7 +114,8 @@ begin
   BASS_Free();
 
   // release the bass library
-  Unload_BASSDLL();
+  Unload_BASSDLL;
+  Unload_BASSFXDLL;
 
   inherited Destroy;
 end;
@@ -186,6 +191,18 @@ begin
     FRadioPlayerThreads[FActiveRadioPlayerThread].ChangeVolume(Value);
 end;
 
+procedure TRadioPlayer.EqualizerEnable;
+begin
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    FRadioPlayerThreads[FActiveRadioPlayerThread].EqualizerEnable;
+end;
+
+procedure TRadioPlayer.EqualizerDisable;
+begin
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    FRadioPlayerThreads[FActiveRadioPlayerThread].EqualizerDisable();
+end;
+
 // Check if channel from the active thread is active and playing
 function TRadioPlayer.ChannelIsActiveAndPlaying: Boolean;
 begin
@@ -235,18 +252,28 @@ procedure TRadioPlayer.RadioInit;
 begin
   {$IFDEF WIN32}
   Load_BASSDLL(ConcatPaths([GetApplicationPath, LIB_PATH, 'bass.dll']));
+  Load_BASSFXDLL(ConcatPaths([GetApplicationPath, LIB_PATH, 'bass_fx.dll']));
   {$ELSE}
     {$IFDEF UNIX}
     Load_BASSDLL(ConcatPaths([GetApplicationPath, LIB_PATH, 'libbass.so']));
+    Load_BASSFXDLL(ConcatPaths([GetApplicationPath, LIB_PATH, 'libbass_fx.so']));
     {$ELSE}
     Load_BASSDLL(ConcatPaths([GetApplicationPath, LIB_PATH, 'libbass.dylib']));
+    Load_BASSFXDLL(ConcatPaths([GetApplicationPath, LIB_PATH, 'libbass_fx.dylib']));
     {$ENDIF}
   {$ENDIF}
 
   // check the correct BASS was loaded
-  if (HIWORD(BASS_GetVersion()) <> BASSVERSION) then
+  if (HiWord(BASS_GetVersion()) <> BASSVERSION) then
   begin
-    Dialogs.MessageDlg('error','An incorrect version of BASS.DLL was loaded', mtError, [mbOk],0);
+    Dialogs.MessageDlg('error','An incorrect version of BASS was loaded', mtError, [mbOk],0);
+    Halt;
+  end;
+
+  // check the correct BASS_FX was loaded
+  if (HiWord(BASS_FX_GetVersion()) <> BASSVERSION) then
+  begin
+    Dialogs.MessageDlg('error','An incorrect version of BASS_FX was loaded', mtError, [mbOk],0);
     Halt;
   end;
 
@@ -266,7 +293,9 @@ begin
 
   // Initialize audio - default device, 44100hz, stereo, 16 bits
   if not BASS_Init(-1, 44100, 0, MainWindowHandle, nil) then
+  begin
     Error('Error initializing audio!');
+  end;
 
   // check for floating-point capability
   FFloatable :=

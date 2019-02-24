@@ -25,6 +25,8 @@ type
 
   { TMainForm }
   TMainForm = class(TForm)
+    OpenEqualizerAction: TAction;
+    miEqualizer: TMenuItem;
     miCopyTitleToClipboard: TMenuItem;
     miSearchOnYoutube: TMenuItem;
     miSpace1: TMenuItem;
@@ -89,6 +91,7 @@ type
     procedure miShowBothScrollBarsClick(Sender: TObject);
     procedure miShowVstColumnClick(Sender: TObject);
     procedure miExitClick(Sender: TObject);
+    procedure OpenEqualizerActionExecute(Sender: TObject);
     procedure OpenUrlActionExecute(Sender: TObject);
     procedure PeakmeterPanelResize(Sender: TObject);
     procedure PlayActionExecute(Sender: TObject);
@@ -99,6 +102,8 @@ type
     procedure StopActionExecute(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
   private
+    procedure EqualizerFormEqualizerChange(ASender: TObject; AEnabled: boolean;
+      ABand1Pos: integer);
     procedure LoadLoanguages;
     procedure LoadSettings;
     procedure LoadSkin;
@@ -167,7 +172,7 @@ implementation
 
 uses
   Language, TRPSettings, Repository, StationDetailFormUnit, DictionaryTablesManagementFormUnit,
-  LCLIntf, Clipbrd;
+  LCLIntf, Clipbrd, EqualizerFormUnit;
 
 {$R *.lfm}
 
@@ -295,6 +300,23 @@ end;
 procedure TMainForm.miExitClick(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TMainForm.OpenEqualizerActionExecute(Sender: TObject);
+begin
+  if not Assigned(EqualizerForm) then
+  begin
+    EqualizerForm := TEqualizerForm.Create(Self);
+    EqualizerForm.OnEqualizerChange := @EqualizerFormEqualizerChange;
+    try
+      if EqualizerForm.ShowModal = mrOK then
+      begin
+
+      end;
+    finally
+      FreeAndNil(EqualizerForm);
+    end;
+  end;
 end;
 
 procedure TMainForm.OpenUrlActionExecute(Sender: TObject);
@@ -567,6 +589,15 @@ begin
     pbLeftLevelMeter.Value := 0;
     pbRightLevelMeter.Value := 0;
   end;
+end;
+
+procedure TMainForm.EqualizerFormEqualizerChange(ASender: TObject;
+  AEnabled: boolean; ABand1Pos: integer);
+begin
+  if AEnabled then
+    RadioPlayer.EqualizerEnable
+  else
+    RadioPlayer.EqualizerDisable;
 end;
 
 procedure TMainForm.LoadLoanguages;

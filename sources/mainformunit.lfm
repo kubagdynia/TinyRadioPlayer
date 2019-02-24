@@ -1471,6 +1471,9 @@ object MainForm: TMainForm
       object miSkins: TMenuItem
         Caption = 'Skins'
       end
+      object miEqualizer: TMenuItem
+        Action = OpenEqualizerAction
+      end
     end
   end
   object MainActionList: TActionList
@@ -1496,7 +1499,7 @@ object MainForm: TMainForm
       ShortCut = 16452
     end
     object OpenDictionaryTablesAction: TAction
-      Caption = 'OpenOpenDictionaryTablesAction'
+      Caption = 'Dictionary Tables'
       OnExecute = OpenDictionaryTablesActionExecute
     end
     object PlayAction: TAction
@@ -1510,6 +1513,10 @@ object MainForm: TMainForm
     end
     object NextAction: TAction
       OnExecute = NextActionExecute
+    end
+    object OpenEqualizerAction: TAction
+      Caption = 'Equalizer'
+      OnExecute = OpenEqualizerActionExecute
     end
   end
   object PopupMenuStationList: TPopupMenu
