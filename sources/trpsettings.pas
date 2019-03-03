@@ -15,9 +15,12 @@ Description:         Application settings
 interface
 
 uses
-  Classes, SysUtils, Consts, RadioPlayerTypes;
+  Classes, SysUtils, Consts, RadioPlayerTypes, fgl,
+  laz2_DOM;
 
 type
+
+  TDictionaryOfStringList = specialize TFPGMap<string, TStringList>;
 
   { TTRPSettings }
 
@@ -26,6 +29,9 @@ type
     // class variables and methods belongs to the class, not to the instance
 
     class var SettingsHashmap: TStringList;
+
+    class var SettingsGroups: TDictionaryOfStringList;
+
     // if its true, the settings should be saved before exit
     class var IsUpdated: Boolean;
 
@@ -33,14 +39,24 @@ type
     class function GetSettingsFilePath(): string;
     class procedure Initialize();
     class procedure Finalize();
+
+    class procedure AddSettingsItem(Node: TDOMNode; Target: TStringList);
+    class procedure AddGroupSettings(Node: TDOMNode);
   public
     // static methods
     class function GetValue(const Item: string;
       const DefaultValue: string = EMPTY_STR; const AddIfNoExists: boolean = false): string;
     class function GetValue(const Item: string;
       const DefaultValue: integer = EMPTY_INT; const AddIfNoExists: boolean = false): integer;
+    class function GetValue(const Item: string;
+      const DefaultValue: single = EMPTY_INT; const AddIfNoExists: boolean = false): single;
+
+    class function GetGroupValue(const Item: string; const GroupName: string;
+      const DefaultValue: string = EMPTY_STR; const AddIfNoExists: boolean = false): string;
+
     class function SetValue(const Item: string; const Value: string): ErrorId;
     class function SetValue(const Item: string; const Value: integer): ErrorId;
+    class function SetValue(const Item: string; const Value: single): ErrorId;
     class procedure SaveSettings;
     class procedure LoadSettings;
   end;
@@ -48,7 +64,7 @@ type
 implementation
 
 uses
-  laz2_DOM, laz2_XMLRead, laz2_XMLWrite, TRPErrors;
+  laz2_XMLRead, laz2_XMLWrite, TRPErrors;
 
 class procedure TTRPSettings.CreateDefaultSettings;
 begin
@@ -70,6 +86,9 @@ end;
 
 // Fired up when settings unit is finalization
 class procedure TTRPSettings.Finalize();
+var
+  i: integer;
+  groupCount: integer;
 begin
   if Assigned(SettingsHashmap) then
   begin
@@ -79,6 +98,15 @@ begin
 
     // and free at the end
     SettingsHashmap.Free;
+  end;
+
+  if Assigned(SettingsGroups) then
+  begin
+    groupCount := SettingsGroups.Count - 1;
+    for i := 0 to groupCount do
+      SettingsGroups.Data[i].Free;
+
+    FreeAndNil(SettingsGroups);
   end;
 end;
 
@@ -104,6 +132,54 @@ begin
   Result := StrToInt(GetValue(Item, IntToStr(DefaultValue), AddIfNoExists));
 end;
 
+class function TTRPSettings.GetValue(const Item: string;
+  const DefaultValue: single; const AddIfNoExists: boolean): single;
+begin
+  Result := StrToFloat(GetValue(Item, FloatToStr(DefaultValue), AddIfNoExists));
+end;
+
+class function TTRPSettings.GetGroupValue(const Item: string;
+  const GroupName: string; const DefaultValue: string;
+  const AddIfNoExists: boolean): string;
+var
+  groupIndex: integer;
+begin
+  if (Trim(GroupName) = EMPTY_STR) or (Trim(Item) = EMPTY_STR) then
+  begin
+    if DefaultValue = EMPTY_STR then
+      Result := EMPTY_STR
+    else
+      Result := DefaultValue;
+
+    Exit;
+  end;
+
+  groupIndex := SettingsGroups.IndexOf(GroupName);
+
+  if (groupIndex = EMPTY_INT) then
+  begin
+    if DefaultValue = EMPTY_STR then
+      Result := EMPTY_STR
+    else
+      Result := DefaultValue;
+
+    Exit;
+  end;
+
+  // Get an item
+  Result := SettingsGroups[GroupName].Values[Item];
+
+  // Return default value if item is empty
+  if Result = EMPTY_STR then
+  begin
+    //if AddIfNoExists then
+      //SetValue(Item, DefaultValue);
+
+    Result := DefaultValue;
+  end;
+
+end;
+
 class function TTRPSettings.SetValue(const Item: string; const Value: string): ErrorId;
 var
   existingItemValue: string;
@@ -123,6 +199,11 @@ end;
 class function TTRPSettings.SetValue(const Item: string; const Value: integer): ErrorId;
 begin
   Result := SetValue(Item, IntToStr(Value));
+end;
+
+class function TTRPSettings.SetValue(const Item: string; const Value: single): ErrorId;
+begin
+  Result := SetValue(Item, FloatToStr(Value));
 end;
 
 // Saving data to a file
@@ -177,6 +258,9 @@ begin
   if not Assigned(SettingsHashmap) then
     SettingsHashmap := TStringList.Create;
 
+  if not Assigned(SettingsGroups) then
+    SettingsGroups := TDictionaryOfStringList.Create;
+
   settingsPath := GetSettingsFilePath();
   if not FileExists(settingsPath) then
   begin
@@ -197,15 +281,11 @@ begin
           for i := 0 to (Count - 1) do
           begin
             if Item[i].NodeName = 'Item' then
-            begin
-               if (Item[i].Attributes.GetNamedItem('name') <> nil) and
-                 (Item[i].FirstChild <> nil) then
-               begin
-                 SettingsHashmap.Add(
-                   Item[i].Attributes.GetNamedItem('name').NodeValue +
-                     '=' + Item[i].FirstChild.NodeValue);
-               end;
-            end;
+               AddSettingsItem(Item[i], SettingsHashmap);
+
+            if Item[i].NodeName = 'Group' then
+              AddGroupSettings(Item[i]);
+
           end;
         finally
           Free;
@@ -219,6 +299,53 @@ begin
   end;
 
   IsUpdated := false;
+end;
+
+class procedure TTRPSettings.AddSettingsItem(Node: TDOMNode; Target: TStringList);
+begin
+  if (Node = nil) or (Node.FirstChild = nil) then Exit;
+
+  if Node.Attributes.GetNamedItem('name') <> nil then
+  begin
+    Target.Add(
+      Node.Attributes.GetNamedItem('name').NodeValue + '=' + Node.FirstChild.NodeValue);
+  end;
+end;
+
+class procedure TTRPSettings.AddGroupSettings(Node: TDOMNode);
+var
+  i: integer;
+  groupName: string;
+  groupIndex: integer;
+  hashmap: TStringList;
+begin
+  groupIndex := SettingsGroups.IndexOf(groupName);
+  if groupIndex <> EMPTY_INT then Exit;
+
+  groupName := Node.Attributes.GetNamedItem('name').NodeValue;
+
+  if Node.ChildNodes.Count > 0 then
+  begin
+    hashmap := TStringList.Create;
+
+    with Node.ChildNodes do
+    begin
+
+      try
+        for i := 0 to (Count - 1) do
+        begin
+          if Item[i].NodeName = 'Item' then
+            AddSettingsItem(Item[i], hashmap);
+        end;
+      finally
+        Free;
+      end;
+
+    end;
+
+    SettingsGroups.Add(groupName, hashmap);
+  end;
+
 end;
 
 initialization

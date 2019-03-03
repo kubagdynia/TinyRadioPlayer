@@ -36,6 +36,9 @@ type
     FOnRadioPlayerTags: TRadioPlayerTagsEvent;
     FOnRadioPlay: TNotifyEvent;
     FCurrentStationId: integer;
+
+    FEqualizerConfig: TEqualizerConfig;
+
     procedure Error(msg: string);
     procedure RadioInit;
     function LoadBassPlugins: Boolean;
@@ -45,6 +48,8 @@ type
     procedure ThreadWatcherTimer(Sender: TObject);
     procedure TerminateThread(ThreadIndex: Integer; TerminateIfNotActive: Boolean);
     procedure CreateAndLaunchNewThread(ThreadIndex: Integer);
+
+    procedure LoadEqualizerConfig;
   public
     constructor Create; overload;
     destructor Destroy; override;
@@ -78,7 +83,7 @@ var
 implementation
 
 uses
-  Repository;
+  Repository, TRPSettings;
 
 // Constructor
 constructor TRadioPlayer.Create;
@@ -86,6 +91,8 @@ begin
   inherited Create;
 
   FCurrentStationId := EMPTY_INT;
+
+  LoadEqualizerConfig;
 
   RadioInit;
 
@@ -109,6 +116,9 @@ begin
   begin
     TerminateThread(i, false)
   end;
+
+  if FEqualizerConfig <> nil then
+    FreeAndNil(FEqualizerConfig);
 
   // Close BASS
   BASS_Free();
@@ -410,11 +420,28 @@ procedure TRadioPlayer.CreateAndLaunchNewThread(ThreadIndex: Integer);
 begin
   if FRadioPlayerThreads[ThreadIndex] = nil then
   begin
-    FRadioPlayerThreads[ThreadIndex] := TRadioPlayerThread.Create(True, FFloatable);
+    FRadioPlayerThreads[ThreadIndex] := TRadioPlayerThread.Create(True, FEqualizerConfig, FFloatable);
     FRadioPlayerThreads[ThreadIndex].OnStreamPlaying := @RadioPlayerThreadsOnStreamPlaying;
     FRadioPlayerThreads[ThreadIndex].OnStreamGetTags := @RadioPlayerThreadsStreamGetTags;
     FRadioPlayerThreads[ThreadIndex].Start;
   end;
+end;
+
+procedure TRadioPlayer.LoadEqualizerConfig;
+begin
+  if FEqualizerConfig <> nil then
+    FreeAndNil(FEqualizerConfig);
+
+  FEqualizerConfig := TEqualizerConfig.Create(
+    TTRPSettings.GetValue('Equalizer.Config.Bandwidth', 2.5, true),
+    TTRPSettings.GetValue('Equalizer.Config.Band1.Center', 125, true),
+    TTRPSettings.GetValue('Equalizer.Config.Band2.Center', 250, true),
+    TTRPSettings.GetValue('Equalizer.Config.Band3.Center', 500, true),
+    TTRPSettings.GetValue('Equalizer.Config.Band4.Center', 1000, true),
+    TTRPSettings.GetValue('Equalizer.Config.Band5.Center', 2000, true),
+    TTRPSettings.GetValue('Equalizer.Config.Band6.Center', 4000, true),
+    TTRPSettings.GetValue('Equalizer.Config.Band7.Center', 8000, true),
+    TTRPSettings.GetValue('Equalizer.Config.Band8.Center', 16000, true));
 end;
 
 end.

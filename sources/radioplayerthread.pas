@@ -39,11 +39,13 @@ type
     FVolume: integer;     // main volume
     FReq: DWord;          // sample rate
     FFloatable: DWord;    // floating-point channel support? 0 = no, else yes
+
     FFxEq: DWord;         // dsp peaking eq handle
     FEq: BASS_BFX_PEAKEQ; // dsp peaking equalizer
 
     // Equalizer
     FEqEnabled: boolean;
+    FEqualizerConfig: TEqualizerConfig;
 
     FCritSection: TCriticalSection;
     FChannelStatus: DWord;
@@ -75,7 +77,9 @@ type
     procedure SynchronizeOnStreamPaused;
     procedure SynchronizeOnStreamStalled;
   public
-    constructor Create(ACreateSuspended : boolean; AFloatable: DWord = 0; AEqualizerEnable: boolean = false);
+    constructor Create(
+      ACreateSuspended : boolean; AEqualizerConfig: TEqualizerConfig;
+      AFloatable: DWord = 0; AEqualizerEnable: boolean = false);
     destructor Destroy; override;
 
     function ErrorGetCode: Integer;
@@ -95,6 +99,7 @@ type
     procedure EqualizerEnable();
     procedure EqualizerDisable();
     procedure UpdateEQ(Band: integer; Pos: Integer);
+    procedure UpdateEQRock();
 
     property OnStreamPlaying: TStreamStatusEvent read FOnStreamPlaying write FOnStreamPlaying;
     property OnStreamStopped: TNotifyEvent read FOnStreamStopped write FOnStreamStopped;
@@ -102,6 +107,7 @@ type
     property OnStreamStalled: TNotifyEvent read FOnStreamStalled write FOnStreamStalled;
     property OnStreamGetTags: TStreamGetTagsEvent read FOnStreamGetTags write FOnStreamGetTags;
     property Active: boolean read FActive;
+    property Channel: HSTREAM read FChannel;
 
   end;
 
@@ -232,7 +238,8 @@ begin
 
 end;
 
-constructor TRadioPlayerThread.Create(ACreateSuspended: boolean;
+constructor TRadioPlayerThread.Create(
+  ACreateSuspended: boolean; AEqualizerConfig: TEqualizerConfig;
   AFloatable: DWord = 0; AEqualizerEnable: boolean = false);
 begin
   FActive := false;
@@ -240,6 +247,7 @@ begin
   FChannel := 0;
   FReq := 0;
 
+  FEqualizerConfig := AEqualizerConfig;
   FEqEnabled := AEqualizerEnable;
 
   FStreamUrlToPlay := EMPTY_STR;
@@ -533,8 +541,6 @@ begin
   SendPlayerMessage(IntToStr(progress), TPlayerMessageType.Progress); // Buffering progress
 end;
 
-{$REGION 'Equalizer'}
-
 // Things to be done by the thread
 procedure TRadioPlayerThread.Execute;
 var
@@ -572,6 +578,8 @@ begin
   end;
 end;
 
+{$REGION 'Equalizer'}
+
 procedure TRadioPlayerThread.EqualizerEnable();
 begin
   if FEqEnabled then exit;
@@ -582,29 +590,47 @@ begin
   FFxEq := BASS_ChannelSetFX(FChannel, BASS_FX_BFX_PEAKEQ, 0);
 
   with FEq do begin
-    fBandwidth := 2.5;
+    fBandwidth := FEqualizerConfig.Bandwidth;
     FQ := 0;
     fGain := 0;
     lChannel := BASS_BFX_CHANALL;
 
-    // create 1st band for bass
     FEq.lBand := 0;
-    FEq.fCenter := 125;
+    FEq.fCenter := FEqualizerConfig.Band1Center;
     BASS_FXSetParameters(FFxEq, @FEq);
 
-    // create 2nd band for mid
     FEq.lBand := 1;
-    FEq.fCenter := 1000;
+    FEq.fCenter := FEqualizerConfig.Band2Center;
     BASS_FXSetParameters(FFxEq, @FEq);
 
-    // create 3rd band for treble
     FEq.lBand := 2;
-    FEq.fCenter := 8000;
+    FEq.fCenter := FEqualizerConfig.Band3Center;
+    BASS_FXSetParameters(FFxEq, @FEq);
+
+    FEq.lBand := 3;
+    FEq.fCenter := FEqualizerConfig.Band4Center;
+    BASS_FXSetParameters(FFxEq, @FEq);
+
+    FEq.lBand := 4;
+    FEq.fCenter := FEqualizerConfig.Band5Center;
+    BASS_FXSetParameters(FFxEq, @FEq);
+
+    FEq.lBand := 5;
+    FEq.fCenter := FEqualizerConfig.Band6Center;
+    BASS_FXSetParameters(FFxEq, @FEq);
+
+    FEq.lBand := 6;
+    FEq.fCenter := FEqualizerConfig.Band7Center;
+    BASS_FXSetParameters(FFxEq, @FEq);
+
+    FEq.lBand := 7;
+    FEq.fCenter := FEqualizerConfig.Band8Center;
     BASS_FXSetParameters(FFxEq, @FEq);
   end;
 
   // update dsp eq
-  UpdateEQ(0, 5); // -12 __ 0 __ 12
+  //UpdateEQ(0, 5); // -12 __ 0 __ 12
+  UpdateEQRock;
 end;
 
 procedure TRadioPlayerThread.EqualizerDisable();
@@ -622,6 +648,20 @@ begin
   BASS_FXGetParameters(FFxEq, @FEq);
   FEq.fGain := Pos;
   BASS_FXSetParameters(FFxEq, @FEq);
+end;
+
+procedure TRadioPlayerThread.UpdateEQRock();
+begin
+  UpdateEQ(0, 2);
+  UpdateEQ(1, 3);
+  UpdateEQ(2, -1);
+  UpdateEQ(3, -1);
+  UpdateEQ(4, 0);
+  UpdateEQ(5, 0);
+  UpdateEQ(6, 4);
+  UpdateEQ(7, 4);
+
+
 end;
 
 {$ENDREGION}

@@ -114,7 +114,7 @@ type
     constructor Create(const Id: integer; const Text: string; const Code: string;
       const Position: integer); overload;
 
-    property ID       : integer  read FID    write FID;
+    property ID       : integer read FID write FID;
     property Text     : string read FText write FText;
     property Code     : string read FCode write FCode;
     property Position : integer read FPosition write FPosition;
@@ -126,8 +126,83 @@ type
      ddtnd : TDictionaryDetailTableNodeData;
   end;
 
+{ - - - - - - - - - - - - - - - - TEqualizerConfig - - - - - - - - - - - - - - }
+type
+  TEqualizerConfig = class
+  private
+    procedure SetBandwidth(AValue: single);
+    protected
+      FBandwidth   : single;
+      FBand1Center : integer;
+      FBand2Center : integer;
+      FBand3Center : integer;
+      FBand4Center : integer;
+      FBand5Center : integer;
+      FBand6Center : integer;
+      FBand7Center : integer;
+      FBand8Center : integer;
+    public
+      constructor Create (const ABandwidth: single;
+        const ABand1Center: integer; const ABand2Center: integer; const ABand3Center: integer;
+        const ABand4Center: integer; const ABand5Center: integer; const ABand6Center: integer;
+        const ABand7Center: integer ;const ABand8Center: integer); overload;
+
+      property Bandwidth   : single read FBandwidth write SetBandwidth;
+      property Band1Center : integer read FBand1Center write FBand1Center;
+      property Band2Center : integer read FBand2Center write FBand2Center;
+      property Band3Center : integer read FBand3Center write FBand3Center;
+      property Band4Center : integer read FBand4Center write FBand4Center;
+      property Band5Center : integer read FBand5Center write FBand5Center;
+      property Band6Center : integer read FBand6Center write FBand6Center;
+      property Band7Center : integer read FBand7Center write FBand7Center;
+      property Band8Center : integer read FBand8Center write FBand8Center;
+  end;
+
+{ - - - - - - - - - - - - - - - - TEqualizerPreset - - - - - - - - - - - - - - }
+  type
+
+    { TEqualizerPreset }
+
+    TEqualizerPreset = class
+    private
+      procedure SetBand1Gain(AValue: integer);
+      procedure SetBand2Gain(AValue: integer);
+      procedure SetBand3Gain(AValue: integer);
+      procedure SetBand4Gain(AValue: integer);
+      procedure SetBand5Gain(AValue: integer);
+      procedure SetBand6Gain(AValue: integer);
+      procedure SetBand7Gain(AValue: integer);
+      procedure SetBand8Gain(AValue: integer);
+      protected
+        FName      : string;
+        FBand1Gain : integer;
+        FBand2Gain : integer;
+        FBand3Gain : integer;
+        FBand4Gain : integer;
+        FBand5Gain : integer;
+        FBand6Gain : integer;
+        FBand7Gain : integer;
+        FBand8Gain : integer;
+      public
+        constructor Create (const AName: string;
+          const ABand1Gain: integer; const ABand2Gain: integer; const ABand3Gain: integer;
+          const ABand4Gain: integer; const ABand5Gain: integer; const ABand6Gain: integer;
+          const ABand7Gain: integer ;const ABand8Gain: integer); overload;
+
+        property Name   : string read FName write FName;
+        property Band1Gain : integer read FBand1Gain write SetBand1Gain;
+        property Band2Gain : integer read FBand2Gain write SetBand2Gain;
+        property Band3Gain : integer read FBand3Gain write SetBand3Gain;
+        property Band4Gain : integer read FBand4Gain write SetBand4Gain;
+        property Band5Gain : integer read FBand5Gain write SetBand5Gain;
+        property Band6Gain : integer read FBand6Gain write SetBand6Gain;
+        property Band7Gain : integer read FBand7Gain write SetBand7Gain;
+        property Band8Gain : integer read FBand8Gain write SetBand8Gain;
+    end;
 
 implementation
+
+{ TStationNodeData }
 
 constructor TStationNodeData.Create(const Id: integer; const Name, Genre,
   Country: string);
@@ -140,6 +215,8 @@ begin
   FCountry  := Country;
 end;
 
+{ TDictionaryTableNodeData }
+
 constructor TDictionaryTableNodeData.Create(const Name, TableName: string;
   DictionaryType: TDictionaryType);
 begin
@@ -150,6 +227,8 @@ begin
   FDictionaryType := DictionaryType;
 end;
 
+{ TDictionaryDetailTableNodeData }
+
 constructor TDictionaryDetailTableNodeData.Create(const Id: integer;
   const Text: string; const Code: string; const Position: integer);
 begin
@@ -159,6 +238,156 @@ begin
   FText := Text;
   FCode := Code;
   FPosition := Position;
+end;
+
+{TEqualizerConfig }
+
+constructor TEqualizerConfig.Create(
+  const ABandwidth: single;
+  const ABand1Center: integer; const ABand2Center: integer; const ABand3Center: integer;
+  const ABand4Center: integer; const ABand5Center: integer; const ABand6Center: integer;
+  const ABand7Center: integer; const ABand8Center: integer);
+begin
+  inherited Create;
+
+  Bandwidth := ABandwidth;
+  FBand1Center := ABand1Center;
+  FBand2Center := ABand2Center;
+  FBand3Center := ABand3Center;
+  FBand4Center := ABand4Center;
+  FBand5Center := ABand5Center;
+  FBand6Center := ABand6Center;
+  FBand7Center := ABand7Center;
+  FBand8Center := ABand8Center;
+end;
+
+procedure TEqualizerConfig.SetBandwidth(AValue: single);
+begin
+  if FBandwidth = AValue then Exit;
+
+  if AValue < 0.1 then
+    AValue := 0.1
+  else if AValue >= 10 then
+    AValue := 9.9;
+
+  FBandwidth:=AValue;
+end;
+
+{ TEqualizerPreset }
+
+constructor TEqualizerPreset.Create(const AName: string;
+  const ABand1Gain: integer; const ABand2Gain: integer;
+  const ABand3Gain: integer; const ABand4Gain: integer;
+  const ABand5Gain: integer; const ABand6Gain: integer;
+  const ABand7Gain: integer; const ABand8Gain: integer);
+begin
+  inherited Create;
+
+  FName := AName ;
+  FBand1Gain := ABand1Gain;
+  FBand2Gain := ABand2Gain;
+  FBand3Gain := ABand3Gain;
+  FBand4Gain := ABand4Gain;
+  FBand5Gain := ABand5Gain;
+  FBand6Gain := ABand6Gain;
+  FBand7Gain := ABand7Gain;
+  FBand8Gain := ABand8Gain;
+end;
+
+procedure TEqualizerPreset.SetBand1Gain(AValue: integer);
+begin
+  if FBand1Gain = AValue then Exit;
+
+  if AValue < -12 then
+    AValue := -12
+  else if AValue > 12 then
+    AValue := 12;
+
+  Band1Gain := AValue;
+end;
+
+procedure TEqualizerPreset.SetBand2Gain(AValue: integer);
+begin
+  if FBand2Gain = AValue then Exit;
+
+  if AValue < -12 then
+    AValue := -12
+  else if AValue > 12 then
+    AValue := 12;
+
+  Band2Gain := AValue;
+end;
+
+procedure TEqualizerPreset.SetBand3Gain(AValue: integer);
+begin
+  if FBand3Gain = AValue then Exit;
+
+  if AValue < -12 then
+    AValue := -12
+  else if AValue > 12 then
+    AValue := 12;
+
+  Band3Gain := AValue;
+end;
+
+procedure TEqualizerPreset.SetBand4Gain(AValue: integer);
+begin
+  if FBand4Gain = AValue then Exit;
+
+  if AValue < -12 then
+    AValue := -12
+  else if AValue > 12 then
+    AValue := 12;
+
+  Band4Gain := AValue;
+end;
+
+procedure TEqualizerPreset.SetBand5Gain(AValue: integer);
+begin
+  if FBand5Gain = AValue then Exit;
+
+  if AValue < -12 then
+    AValue := -12
+  else if AValue > 12 then
+    AValue := 12;
+
+  Band5Gain := AValue;
+end;
+
+procedure TEqualizerPreset.SetBand6Gain(AValue: integer);
+begin
+  if FBand6Gain = AValue then Exit;
+
+  if AValue < -12 then
+    AValue := -12
+  else if AValue > 12 then
+    AValue := 12;
+
+  Band6Gain := AValue;
+end;
+
+procedure TEqualizerPreset.SetBand7Gain(AValue: integer);
+begin
+  if FBand7Gain = AValue then Exit;
+
+  if AValue < -12 then
+    AValue := -12
+  else if AValue > 12 then
+    AValue := 12;
+
+  Band7Gain := AValue;
+end;
+
+procedure TEqualizerPreset.SetBand8Gain(AValue: integer);
+begin
+  if FBand8Gain = AValue then Exit;
+
+  if AValue < -12 then
+    AValue := -12
+  else if AValue > 12 then
+    AValue := 12;
+
+  Band8Gain := AValue;
 end;
 
 end.
