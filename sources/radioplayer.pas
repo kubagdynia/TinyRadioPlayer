@@ -433,15 +433,15 @@ begin
     FreeAndNil(FEqualizerConfig);
 
   FEqualizerConfig := TEqualizerConfig.Create(
-    TTRPSettings.GetValue('Equalizer.Config.Bandwidth', 2.5, true),
-    TTRPSettings.GetValue('Equalizer.Config.Band1.Center', 125, true),
-    TTRPSettings.GetValue('Equalizer.Config.Band2.Center', 250, true),
-    TTRPSettings.GetValue('Equalizer.Config.Band3.Center', 500, true),
-    TTRPSettings.GetValue('Equalizer.Config.Band4.Center', 1000, true),
-    TTRPSettings.GetValue('Equalizer.Config.Band5.Center', 2000, true),
-    TTRPSettings.GetValue('Equalizer.Config.Band6.Center', 4000, true),
-    TTRPSettings.GetValue('Equalizer.Config.Band7.Center', 8000, true),
-    TTRPSettings.GetValue('Equalizer.Config.Band8.Center', 16000, true));
+    TTRPSettings.GetGroupValue('Bandwidth', 'Equalizer.Config', 2.5, true),
+    TTRPSettings.GetGroupValue('Band1.Center', 'Equalizer.Config', 125, true),
+    TTRPSettings.GetGroupValue('Band2.Center', 'Equalizer.Config', 250, true),
+    TTRPSettings.GetGroupValue('Band3.Center', 'Equalizer.Config', 500, true),
+    TTRPSettings.GetGroupValue('Band4.Center', 'Equalizer.Config', 1000, true),
+    TTRPSettings.GetGroupValue('Band5.Center', 'Equalizer.Config', 2000, true),
+    TTRPSettings.GetGroupValue('Band6.Center', 'Equalizer.Config', 4000, true),
+    TTRPSettings.GetGroupValue('Band7.Center', 'Equalizer.Config', 8000, true),
+    TTRPSettings.GetGroupValue('Band8.Center', 'Equalizer.Config', 16000, true));
 end;
 
 end.
