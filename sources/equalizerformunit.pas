@@ -6,7 +6,8 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, BCPanel, BCLabel, BCButton, Forms, Controls,
-  Graphics, Dialogs, ActnList, ExtCtrls, StdCtrls, ComCtrls, BaseFormUnit;
+  Graphics, Dialogs, ActnList, ExtCtrls, StdCtrls, ComCtrls, BaseFormUnit,
+  RadioPlayer;
 
 type
 
@@ -17,6 +18,7 @@ type
   TEqualizerForm = class(TBaseForm)
     CheckBox1: TCheckBox;
     GroupBox1: TGroupBox;
+    ComboBox1: TComboBox;
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
@@ -31,11 +33,14 @@ type
     procedure CheckBox1Change(Sender: TObject);
   private
     FOnEqualizerChange: TEqualizerChangeEvent;
+    FRadioPlayer: TRadioPlayer;
+
+    procedure AddPresetNames;
   protected
     procedure LoadLanguages; override;
     procedure LoadSkins; override;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create(AOwner: TComponent; ARadioPlayer: TRadioPlayer); overload;
     destructor Destroy; override;
 
     property OnEqualizerChange: TEqualizerChangeEvent read FOnEqualizerChange write FOnEqualizerChange;
@@ -50,12 +55,17 @@ implementation
 
 { TEqualizerForm }
 
-constructor TEqualizerForm.Create(AOwner: TComponent);
+constructor TEqualizerForm.Create(AOwner: TComponent; ARadioPlayer: TRadioPlayer);
 begin
   inherited Create(AOwner);
 
   btnCancel.Visible := false;
   lblTitle.Visible := false;
+
+  FRadioPlayer := ARadioPlayer;
+
+  AddPresetNames;
+
 end;
 
 destructor TEqualizerForm.Destroy;
@@ -69,6 +79,27 @@ begin
 
   if Assigned(OnEqualizerChange) then
     OnEqualizerChange(Self, GroupBox1.Enabled, tbEq8000.Position);
+end;
+
+procedure TEqualizerForm.AddPresetNames;
+var
+  i: integer;
+  presetsCount: integer;
+begin
+  ComboBox1.Items.BeginUpdate;
+
+  ComboBox1.Clear;
+
+  presetsCount := FRadioPlayer.EqualizerPresets.Count;
+
+  for i := 0 to presetsCount - 1 do
+  begin
+    ComboBox1.Items.Add(FRadioPlayer.EqualizerPresets.Keys[i]);
+  end;
+
+  ComboBox1.Items.EndUpdate;
+
+
 end;
 
 procedure TEqualizerForm.LoadLanguages;

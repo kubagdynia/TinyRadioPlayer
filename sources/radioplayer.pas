@@ -17,10 +17,14 @@ interface
 uses
   Classes, SysUtils,  LCLIntf, Dialogs, LCLType, ExtCtrls, Consts, Helpers,
   RadioPlayerThread, RadioPlayerTypes, VirtualTrees,
-  { Bass } lazdynamic_bass, lazdynamic_bass_fx;
+  { Bass } lazdynamic_bass, lazdynamic_bass_fx,
+  fgl;
 
 const
   MAX_PLAYER_THREADS = 3;
+
+type
+  TEqualizerPresets = specialize TFPGMap<string, TEqualizerPreset>;
 
 type
   TRadioPlayerTagsEvent = procedure(AMessage: string; APlayerMessageType: TPlayerMessageType) of object;
@@ -38,6 +42,7 @@ type
     FCurrentStationId: integer;
 
     FEqualizerConfig: TEqualizerConfig;
+    FEqualizerPresets: TEqualizerPresets;
 
     procedure Error(msg: string);
     procedure RadioInit;
@@ -49,7 +54,8 @@ type
     procedure TerminateThread(ThreadIndex: Integer; TerminateIfNotActive: Boolean);
     procedure CreateAndLaunchNewThread(ThreadIndex: Integer);
 
-    procedure LoadEqualizerConfig;
+    procedure LoadEqualizerConfigAndPresets;
+    procedure LoadPreset(PresetName: string; DefaultValues: array of integer);
   public
     constructor Create; overload;
     destructor Destroy; override;
@@ -75,6 +81,7 @@ type
     property OnRadioPlay: TNotifyEvent read FOnRadioPlay write FOnRadioPlay;
 
     property CurrentStationId: integer read FCurrentStationId;
+    property EqualizerPresets: TEqualizerPresets read FEqualizerPresets;
   end;
 
 var
@@ -92,7 +99,7 @@ begin
 
   FCurrentStationId := EMPTY_INT;
 
-  LoadEqualizerConfig;
+  LoadEqualizerConfigAndPresets;
 
   RadioInit;
 
@@ -109,6 +116,7 @@ end;
 destructor TRadioPlayer.Destroy;
 var
   i: integer;
+  presetsCount: integer;
 begin
   FreeAndNil(FThreadWatcher);
 
@@ -117,8 +125,17 @@ begin
     TerminateThread(i, false)
   end;
 
-  if FEqualizerConfig <> nil then
+  if Assigned(FEqualizerConfig) then
     FreeAndNil(FEqualizerConfig);
+
+  if Assigned(FEqualizerPresets) then
+  begin
+    presetsCount := FEqualizerPresets.Count - 1;
+    for i := 0 to presetsCount do
+      FEqualizerPresets.Data[i]. Free;
+
+    FreeAndNil(FEqualizerPresets);
+  end;
 
   // Close BASS
   BASS_Free();
@@ -427,21 +444,63 @@ begin
   end;
 end;
 
-procedure TRadioPlayer.LoadEqualizerConfig;
+procedure TRadioPlayer.LoadEqualizerConfigAndPresets;
 begin
-  if FEqualizerConfig <> nil then
-    FreeAndNil(FEqualizerConfig);
+  if not Assigned(FEqualizerConfig) then
+    FEqualizerConfig := TEqualizerConfig.Create;
 
-  FEqualizerConfig := TEqualizerConfig.Create(
-    TTRPSettings.GetGroupValue('Bandwidth', 'Equalizer.Config', 2.5, true),
-    TTRPSettings.GetGroupValue('Band1.Center', 'Equalizer.Config', 125, true),
-    TTRPSettings.GetGroupValue('Band2.Center', 'Equalizer.Config', 250, true),
-    TTRPSettings.GetGroupValue('Band3.Center', 'Equalizer.Config', 500, true),
-    TTRPSettings.GetGroupValue('Band4.Center', 'Equalizer.Config', 1000, true),
-    TTRPSettings.GetGroupValue('Band5.Center', 'Equalizer.Config', 2000, true),
-    TTRPSettings.GetGroupValue('Band6.Center', 'Equalizer.Config', 4000, true),
-    TTRPSettings.GetGroupValue('Band7.Center', 'Equalizer.Config', 8000, true),
-    TTRPSettings.GetGroupValue('Band8.Center', 'Equalizer.Config', 16000, true));
+  with FEqualizerConfig do
+  begin
+    Bandwidth := TTRPSettings.GetGroupValue('Bandwidth', 'Equalizer.Config', 2.5, true);
+    Band1Center := TTRPSettings.GetGroupValue('Band1.Center', 'Equalizer.Config', 125, true);
+    Band2Center := TTRPSettings.GetGroupValue('Band2.Center', 'Equalizer.Config', 250, true);
+    Band3Center := TTRPSettings.GetGroupValue('Band3.Center', 'Equalizer.Config', 500, true);
+    Band4Center := TTRPSettings.GetGroupValue('Band4.Center', 'Equalizer.Config', 1000, true);
+    Band5Center := TTRPSettings.GetGroupValue('Band5.Center', 'Equalizer.Config', 2000, true);
+    Band6Center := TTRPSettings.GetGroupValue('Band6.Center', 'Equalizer.Config', 4000, true);
+    Band7Center := TTRPSettings.GetGroupValue('Band7.Center', 'Equalizer.Config', 8000, true);
+    Band8Center := TTRPSettings.GetGroupValue('Band8.Center', 'Equalizer.Config', 16000, true);
+  end;
+
+  if not Assigned(FEqualizerPresets) then
+    FEqualizerPresets := TEqualizerPresets.Create;
+
+  LoadPreset('Default', [ 0,  0,  0,  0,  0,  0,  0,  0]);
+  LoadPreset('Custom1', [ 0,  0,  0,  0,  0,  0,  0,  0]);
+  LoadPreset('Custom2', [-1,  0,  0,  0,  0,  0,  3,  5]);
+  LoadPreset('Blues',   [ 2,  1,  0,  0,  0,  0, -1, -3]);
+  LoadPreset('Classic', [ 6,  3,  0,  0,  0,  0,  2,  2]);
+  LoadPreset('Country', [ 0,  2,  2,  0,  0,  0,  3,  3]);
+  LoadPreset('Dance',   [ 5,  1, -1, -1,  0,  0,  4,  4]);
+  LoadPreset('Jazz',    [ 0,  3,  3,  3,  0,  2,  4,  4]);
+  LoadPreset('Metal',   [ 0,  0,  0,  0,  3,  0,  3,  1]);
+  LoadPreset('NewAge', [ 3,  0,  0,  0,  0,  0,  1,  1]);
+  LoadPreset('Oldies',  [ 2,  1,  0,  0,  0,  0, -2, -5]);
+  LoadPreset('Techno',  [ 4, -1, -1, -1,  0,  0,  5,  5]);
+  LoadPreset('Rock',    [ 2,  3, -1, -1,  0,  0,  4,  4]);
+
+end;
+
+procedure TRadioPlayer.LoadPreset(PresetName: string; DefaultValues: array of integer);
+var
+  preset: TEqualizerPreset;
+begin
+  preset := TEqualizerPreset.Create;
+
+  with preset do
+  begin
+    Name := PresetName;
+    Band1Gain := TTRPSettings.GetGroupValue(PresetName + '.Band1.Gain', 'Equalizer.Presets', DefaultValues[0], true);
+    Band2Gain := TTRPSettings.GetGroupValue(PresetName + '.Band2.Gain', 'Equalizer.Presets', DefaultValues[1], true);
+    Band3Gain := TTRPSettings.GetGroupValue(PresetName + '.Band3.Gain', 'Equalizer.Presets', DefaultValues[2], true);
+    Band4Gain := TTRPSettings.GetGroupValue(PresetName + '.Band4.Gain', 'Equalizer.Presets', DefaultValues[3], true);
+    Band5Gain := TTRPSettings.GetGroupValue(PresetName + '.Band5.Gain', 'Equalizer.Presets', DefaultValues[4], true);
+    Band6Gain := TTRPSettings.GetGroupValue(PresetName + '.Band6.Gain', 'Equalizer.Presets', DefaultValues[5], true);
+    Band7Gain := TTRPSettings.GetGroupValue(PresetName + '.Band7.Gain', 'Equalizer.Presets', DefaultValues[6], true);
+    Band8Gain := TTRPSettings.GetGroupValue(PresetName + '.Band8.Gain', 'Equalizer.Presets', DefaultValues[7], true);
+  end;
+
+  FEqualizerPresets.Add(PresetName, preset);
 end;
 
 end.

@@ -306,7 +306,7 @@ procedure TMainForm.OpenEqualizerActionExecute(Sender: TObject);
 begin
   if not Assigned(EqualizerForm) then
   begin
-    EqualizerForm := TEqualizerForm.Create(Self);
+    EqualizerForm := TEqualizerForm.Create(Self, RadioPlayer);
     EqualizerForm.OnEqualizerChange := @EqualizerFormEqualizerChange;
     try
       if EqualizerForm.ShowModal = mrOK then

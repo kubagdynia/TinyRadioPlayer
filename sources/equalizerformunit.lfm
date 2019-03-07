@@ -153,6 +153,15 @@ inherited EqualizerForm: TEqualizerForm
       OnChange = CheckBox1Change
       TabOrder = 1
     end
+    object ComboBox1: TComboBox[2]
+      Left = 75
+      Height = 23
+      Top = 32
+      Width = 100
+      ItemHeight = 15
+      TabOrder = 2
+      Text = 'ComboBox1'
+    end
   end
   inherited BottomPanel: TBCPanel
     Top = 269
