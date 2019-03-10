@@ -55,6 +55,8 @@ type
       const DefaultValue: integer = EMPTY_INT; const AddIfNoExists: boolean = false): integer;
     class function GetValue(const Item: string;
       const DefaultValue: single = EMPTY_INT; const AddIfNoExists: boolean = false): single;
+    class function GetValue(const Item: string;
+      const DefaultValue: boolean = false; const AddIfNoExists: boolean = false): boolean;
 
     // Get group value
     class function GetGroupValue(const Item: string; const GroupName: string;
@@ -63,11 +65,14 @@ type
       const DefaultValue: integer = EMPTY_INT; const AddIfNoExists: boolean = false): integer;
     class function GetGroupValue(const Item: string; const GroupName: string;
       const DefaultValue: single = EMPTY_INT; const AddIfNoExists: boolean = false): single;
+    class function GetGroupValue(const Item: string; const GroupName: string;
+      const DefaultValue: boolean = false; const AddIfNoExists: boolean = false): boolean;
 
     // Set value
     class function SetValue(const Item: string; const Value: string): ErrorId;
     class function SetValue(const Item: string; const Value: integer): ErrorId;
     class function SetValue(const Item: string; const Value: single): ErrorId;
+    class function SetValue(const Item: string; const Value: boolean): ErrorId;
 
     // Set group value
     class function SetGroupValue(const Item: string; const GroupName: string;
@@ -76,6 +81,8 @@ type
       const Value: integer): ErrorId;
     class function SetGroupValue(const Item: string; const GroupName: string;
       const Value: single): ErrorId;
+    class function SetGroupValue(const Item: string; const GroupName: string;
+      const Value: boolean): ErrorId;
 
     class procedure SaveSettings;
     class procedure LoadSettings;
@@ -158,6 +165,12 @@ begin
   Result := StrToFloat(GetValue(Item, FloatToStr(DefaultValue), AddIfNoExists));
 end;
 
+class function TTRPSettings.GetValue(const Item: string;
+  const DefaultValue: boolean; const AddIfNoExists: boolean): boolean;
+begin
+  Result := FullStrToBool(GetValue(Item, BoolToFullStr(DefaultValue), AddIfNoExists));
+end;
+
 class function TTRPSettings.GetGroupValue(const Item: string;
   const GroupName: string; const DefaultValue: string;
   const AddIfNoExists: boolean): string;
@@ -213,6 +226,13 @@ begin
   Result := StrToFloat(GetGroupValue(Item, GroupName, FloatToStr(DefaultValue), AddIfNoExists));
 end;
 
+class function TTRPSettings.GetGroupValue(const Item: string;
+  const GroupName: string; const DefaultValue: boolean;
+  const AddIfNoExists: boolean): boolean;
+begin
+  Result := FullStrToBool(GetGroupValue(Item, GroupName, BoolToFullStr(DefaultValue), AddIfNoExists));
+end;
+
 class function TTRPSettings.SetValue(const Item: string; const Value: string): ErrorId;
 var
   existingItemValue: string;
@@ -237,6 +257,11 @@ end;
 class function TTRPSettings.SetValue(const Item: string; const Value: single): ErrorId;
 begin
   Result := SetValue(Item, FloatToStr(Value));
+end;
+
+class function TTRPSettings.SetValue(const Item: string; const Value: boolean): ErrorId;
+begin
+  Result := SetValue(Item, BoolToFullStr(Value));
 end;
 
 class function TTRPSettings.SetGroupValue(const Item: string;
@@ -298,6 +323,12 @@ class function TTRPSettings.SetGroupValue(const Item: string;
   const GroupName: string; const Value: single): ErrorId;
 begin
   Result := SetGroupValue(Item, GroupName, FloatToStr(Value));
+end;
+
+class function TTRPSettings.SetGroupValue(const Item: string;
+  const GroupName: string; const Value: boolean): ErrorId;
+begin
+  Result := SetGroupValue(Item, GroupName, BoolToFullStr(Value));
 end;
 
 // Saving data to a file

@@ -130,32 +130,31 @@ type
 type
   TEqualizerConfig = class
   private
-    FBandwidth   : single;
-    FBand1Center : integer;
-    FBand2Center : integer;
-    FBand3Center : integer;
-    FBand4Center : integer;
-    FBand5Center : integer;
-    FBand6Center : integer;
-    FBand7Center : integer;
-    FBand8Center : integer;
+    FEnabled       : boolean;
+    FBandwidth     : single;
+    FBand1Center   : integer;
+    FBand2Center   : integer;
+    FBand3Center   : integer;
+    FBand4Center   : integer;
+    FBand5Center   : integer;
+    FBand6Center   : integer;
+    FBand7Center   : integer;
+    FBand8Center   : integer;
+    FDefaultPreset : string;
 
     procedure SetBandwidth(AValue: single);
   public
-    constructor Create (const ABandwidth: single;
-      const ABand1Center: integer; const ABand2Center: integer; const ABand3Center: integer;
-      const ABand4Center: integer; const ABand5Center: integer; const ABand6Center: integer;
-      const ABand7Center: integer ;const ABand8Center: integer); overload;
-
-    property Bandwidth   : single read FBandwidth write SetBandwidth;
-    property Band1Center : integer read FBand1Center write FBand1Center;
-    property Band2Center : integer read FBand2Center write FBand2Center;
-    property Band3Center : integer read FBand3Center write FBand3Center;
-    property Band4Center : integer read FBand4Center write FBand4Center;
-    property Band5Center : integer read FBand5Center write FBand5Center;
-    property Band6Center : integer read FBand6Center write FBand6Center;
-    property Band7Center : integer read FBand7Center write FBand7Center;
-    property Band8Center : integer read FBand8Center write FBand8Center;
+    property Enabled       : boolean read FEnabled       write FEnabled;
+    property Bandwidth     : single  read FBandwidth     write SetBandwidth;
+    property Band1Center   : integer read FBand1Center   write FBand1Center;
+    property Band2Center   : integer read FBand2Center   write FBand2Center;
+    property Band3Center   : integer read FBand3Center   write FBand3Center;
+    property Band4Center   : integer read FBand4Center   write FBand4Center;
+    property Band5Center   : integer read FBand5Center   write FBand5Center;
+    property Band6Center   : integer read FBand6Center   write FBand6Center;
+    property Band7Center   : integer read FBand7Center   write FBand7Center;
+    property Band8Center   : integer read FBand8Center   write FBand8Center;
+    property DefaultPreset : string  read FDefaultPreset write FDefaultPreset;
   end;
 
 { - - - - - - - - - - - - - - - - TEqualizerPreset - - - - - - - - - - - - - - }
@@ -238,25 +237,6 @@ begin
 end;
 
 {TEqualizerConfig }
-
-constructor TEqualizerConfig.Create(
-  const ABandwidth: single;
-  const ABand1Center: integer; const ABand2Center: integer; const ABand3Center: integer;
-  const ABand4Center: integer; const ABand5Center: integer; const ABand6Center: integer;
-  const ABand7Center: integer; const ABand8Center: integer);
-begin
-  inherited Create;
-
-  Bandwidth := ABandwidth;
-  FBand1Center := ABand1Center;
-  FBand2Center := ABand2Center;
-  FBand3Center := ABand3Center;
-  FBand4Center := ABand4Center;
-  FBand5Center := ABand5Center;
-  FBand6Center := ABand6Center;
-  FBand7Center := ABand7Center;
-  FBand8Center := ABand8Center;
-end;
 
 procedure TEqualizerConfig.SetBandwidth(AValue: single);
 begin

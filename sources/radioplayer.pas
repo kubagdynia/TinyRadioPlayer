@@ -69,6 +69,8 @@ type
 
     procedure EqualizerEnable;
     procedure EqualizerDisable;
+    procedure UpdateEqualizerPreset(const APresetName: string;
+      const ABandNumber: ShortInt; const AValue: integer);
 
     function ChannelIsActiveAndPlaying: Boolean;
     function ChannelGetLevel: DWORD;
@@ -81,7 +83,9 @@ type
     property OnRadioPlay: TNotifyEvent read FOnRadioPlay write FOnRadioPlay;
 
     property CurrentStationId: integer read FCurrentStationId;
+
     property EqualizerPresets: TEqualizerPresets read FEqualizerPresets;
+    property EqualizerConfig: TEqualizerConfig read FEqualizerConfig;
   end;
 
 var
@@ -228,6 +232,25 @@ procedure TRadioPlayer.EqualizerDisable;
 begin
   if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
     FRadioPlayerThreads[FActiveRadioPlayerThread].EqualizerDisable();
+end;
+
+procedure TRadioPlayer.UpdateEqualizerPreset(const APresetName: string;
+  const ABandNumber: ShortInt; const AValue: integer);
+begin
+  if (Trim(APresetName) = EMPTY_STR) or (ABandNumber <= 0) or (ABandNumber > 8) then Exit;
+
+  case ABandNumber of
+    1: EqualizerPresets[APresetName].Band1Gain := AValue;
+    2: EqualizerPresets[APresetName].Band2Gain := AValue;
+    3: EqualizerPresets[APresetName].Band3Gain := AValue;
+    4: EqualizerPresets[APresetName].Band4Gain := AValue;
+    5: EqualizerPresets[APresetName].Band5Gain := AValue;
+    6: EqualizerPresets[APresetName].Band6Gain := AValue;
+    7: EqualizerPresets[APresetName].Band7Gain := AValue;
+    8: EqualizerPresets[APresetName].Band8Gain := AValue;
+  end;
+
+  FRadioPlayerThreads[FActiveRadioPlayerThread].UpdateEQ(ABandNumber, AValue);
 end;
 
 // Check if channel from the active thread is active and playing
@@ -451,6 +474,7 @@ begin
 
   with FEqualizerConfig do
   begin
+    Enabled := TTRPSettings.GetGroupValue('Enabled', 'Equalizer.Config', false, true);
     Bandwidth := TTRPSettings.GetGroupValue('Bandwidth', 'Equalizer.Config', 2.5, true);
     Band1Center := TTRPSettings.GetGroupValue('Band1.Center', 'Equalizer.Config', 125, true);
     Band2Center := TTRPSettings.GetGroupValue('Band2.Center', 'Equalizer.Config', 250, true);
@@ -460,6 +484,7 @@ begin
     Band6Center := TTRPSettings.GetGroupValue('Band6.Center', 'Equalizer.Config', 4000, true);
     Band7Center := TTRPSettings.GetGroupValue('Band7.Center', 'Equalizer.Config', 8000, true);
     Band8Center := TTRPSettings.GetGroupValue('Band8.Center', 'Equalizer.Config', 16000, true);
+    DefaultPreset := TTRPSettings.GetGroupValue('DefaultPreset', 'Equalizer.Config', 'Default', true);
   end;
 
   if not Assigned(FEqualizerPresets) then
@@ -474,7 +499,7 @@ begin
   LoadPreset('Dance',   [ 5,  1, -1, -1,  0,  0,  4,  4]);
   LoadPreset('Jazz',    [ 0,  3,  3,  3,  0,  2,  4,  4]);
   LoadPreset('Metal',   [ 0,  0,  0,  0,  3,  0,  3,  1]);
-  LoadPreset('NewAge', [ 3,  0,  0,  0,  0,  0,  1,  1]);
+  LoadPreset('NewAge',  [ 3,  0,  0,  0,  0,  0,  1,  1]);
   LoadPreset('Oldies',  [ 2,  1,  0,  0,  0,  0, -2, -5]);
   LoadPreset('Techno',  [ 4, -1, -1, -1,  0,  0,  5,  5]);
   LoadPreset('Rock',    [ 2,  3, -1, -1,  0,  0,  4,  4]);

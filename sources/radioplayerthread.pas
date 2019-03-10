@@ -46,6 +46,7 @@ type
     // Equalizer
     FEqEnabled: boolean;
     FEqualizerConfig: TEqualizerConfig;
+    FEqualizerPreset: TEqualizerPreset;
 
     FCritSection: TCriticalSection;
     FChannelStatus: DWord;
@@ -630,7 +631,7 @@ begin
 
   // update dsp eq
   //UpdateEQ(0, 5); // -12 __ 0 __ 12
-  UpdateEQRock;
+  //UpdateEQRock;
 end;
 
 procedure TRadioPlayerThread.EqualizerDisable();
