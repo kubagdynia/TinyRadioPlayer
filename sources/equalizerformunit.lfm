@@ -280,6 +280,86 @@ inherited EqualizerForm: TEqualizerForm
         Caption = '-12dB'
         ParentColor = False
       end
+      object lblPos6: TLabel
+        Left = 204
+        Height = 15
+        Top = 62
+        Width = 20
+        Alignment = taRightJustify
+        AutoSize = False
+        Caption = '0'
+        ParentColor = False
+      end
+      object lblPos5: TLabel
+        Left = 164
+        Height = 15
+        Top = 62
+        Width = 20
+        Alignment = taRightJustify
+        AutoSize = False
+        Caption = '0'
+        ParentColor = False
+      end
+      object lblPos4: TLabel
+        Left = 124
+        Height = 15
+        Top = 62
+        Width = 20
+        Alignment = taRightJustify
+        AutoSize = False
+        Caption = '0'
+        ParentColor = False
+      end
+      object lblPos3: TLabel
+        Left = 84
+        Height = 15
+        Top = 62
+        Width = 20
+        Alignment = taRightJustify
+        AutoSize = False
+        Caption = '0'
+        ParentColor = False
+      end
+      object lblPos2: TLabel
+        Left = 44
+        Height = 15
+        Top = 62
+        Width = 20
+        Alignment = taRightJustify
+        AutoSize = False
+        Caption = '0'
+        ParentColor = False
+      end
+      object lblPos1: TLabel
+        Left = 4
+        Height = 15
+        Top = 62
+        Width = 20
+        Alignment = taRightJustify
+        AutoSize = False
+        Caption = '0'
+        ParentColor = False
+      end
+      object lblPos7: TLabel
+        Left = 244
+        Height = 15
+        Top = 62
+        Width = 20
+        Alignment = taRightJustify
+        AutoSize = False
+        Caption = '0'
+        ParentColor = False
+      end
+      object lblPos8: TLabel
+        Left = 284
+        Height = 15
+        Top = 62
+        Width = 20
+        Alignment = taRightJustify
+        AutoSize = False
+        Caption = '0'
+        ParentColor = False
+      end
     end
     object cboPresets: TComboBox[1]
       Left = 260

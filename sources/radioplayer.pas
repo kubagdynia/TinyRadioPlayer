@@ -173,7 +173,8 @@ begin
 
   CreateAndLaunchNewThread(threadToPlayNextStream);
 
-  FRadioPlayerThreads[threadToPlayNextStream].PlayURL(AStreamUrl, AVolume, threadToPlayNextStream);
+  FRadioPlayerThreads[threadToPlayNextStream].PlayURL(AStreamUrl, AVolume,
+    threadToPlayNextStream, FEqualizerPresets[FEqualizerConfig.DefaultPreset]);
 end;
 
 procedure TRadioPlayer.PlayStation(const StationId: integer;
@@ -220,37 +221,6 @@ procedure TRadioPlayer.Volume(Value: Integer);
 begin
   if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
     FRadioPlayerThreads[FActiveRadioPlayerThread].ChangeVolume(Value);
-end;
-
-procedure TRadioPlayer.EqualizerEnable;
-begin
-  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
-    FRadioPlayerThreads[FActiveRadioPlayerThread].EqualizerEnable;
-end;
-
-procedure TRadioPlayer.EqualizerDisable;
-begin
-  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
-    FRadioPlayerThreads[FActiveRadioPlayerThread].EqualizerDisable();
-end;
-
-procedure TRadioPlayer.UpdateEqualizerPreset(const APresetName: string;
-  const ABandNumber: ShortInt; const AValue: integer);
-begin
-  if (Trim(APresetName) = EMPTY_STR) or (ABandNumber <= 0) or (ABandNumber > 8) then Exit;
-
-  case ABandNumber of
-    1: EqualizerPresets[APresetName].Band1Gain := AValue;
-    2: EqualizerPresets[APresetName].Band2Gain := AValue;
-    3: EqualizerPresets[APresetName].Band3Gain := AValue;
-    4: EqualizerPresets[APresetName].Band4Gain := AValue;
-    5: EqualizerPresets[APresetName].Band5Gain := AValue;
-    6: EqualizerPresets[APresetName].Band6Gain := AValue;
-    7: EqualizerPresets[APresetName].Band7Gain := AValue;
-    8: EqualizerPresets[APresetName].Band8Gain := AValue;
-  end;
-
-  FRadioPlayerThreads[FActiveRadioPlayerThread].UpdateEQ(ABandNumber, AValue);
 end;
 
 // Check if channel from the active thread is active and playing
@@ -467,6 +437,44 @@ begin
   end;
 end;
 
+{$REGION 'Equalizer'}
+
+procedure TRadioPlayer.EqualizerEnable;
+begin
+  FEqualizerConfig.Enabled := true;
+
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    FRadioPlayerThreads[FActiveRadioPlayerThread].EqualizerEnable(true);
+end;
+
+procedure TRadioPlayer.EqualizerDisable;
+begin
+  FEqualizerConfig.Enabled := false;
+
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    FRadioPlayerThreads[FActiveRadioPlayerThread].EqualizerDisable();
+end;
+
+procedure TRadioPlayer.UpdateEqualizerPreset(const APresetName: string;
+  const ABandNumber: ShortInt; const AValue: integer);
+begin
+  if (Trim(APresetName) = EMPTY_STR) or (ABandNumber < 1) or (ABandNumber > 8) then Exit;
+
+  case ABandNumber of
+    1: EqualizerPresets[APresetName].Band1Gain := AValue;
+    2: EqualizerPresets[APresetName].Band2Gain := AValue;
+    3: EqualizerPresets[APresetName].Band3Gain := AValue;
+    4: EqualizerPresets[APresetName].Band4Gain := AValue;
+    5: EqualizerPresets[APresetName].Band5Gain := AValue;
+    6: EqualizerPresets[APresetName].Band6Gain := AValue;
+    7: EqualizerPresets[APresetName].Band7Gain := AValue;
+    8: EqualizerPresets[APresetName].Band8Gain := AValue;
+  end;
+
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    FRadioPlayerThreads[FActiveRadioPlayerThread].UpdateEQ(ABandNumber, AValue);
+end;
+
 procedure TRadioPlayer.LoadEqualizerConfigAndPresets;
 begin
   if not Assigned(FEqualizerConfig) then
@@ -527,6 +535,8 @@ begin
 
   FEqualizerPresets.Add(PresetName, preset);
 end;
+
+{$ENDREGION}
 
 end.
 

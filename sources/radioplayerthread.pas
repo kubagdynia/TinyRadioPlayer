@@ -70,6 +70,8 @@ type
     procedure MetaStream;
     procedure SendPlayerMessage(AMessage: string; AMessageType: TPlayerMessageType);
     procedure CheckBufferProgress;
+
+    procedure UpdateEQPreset;
   protected
     procedure Execute; override;
     procedure SynchronizePlayerMessage;
@@ -80,7 +82,7 @@ type
   public
     constructor Create(
       ACreateSuspended : boolean; AEqualizerConfig: TEqualizerConfig;
-      AFloatable: DWord = 0; AEqualizerEnable: boolean = false);
+      AFloatable: DWord = 0);
     destructor Destroy; override;
 
     function ErrorGetCode: Integer;
@@ -94,13 +96,14 @@ type
     function Stop: Boolean;
     function ChangeVolume(Value: Integer): Boolean;
     procedure PlayURL(AStreamUrl: string;
-      const AVolume: Integer; const AThreadIndex: Integer);
+      const AVolume: Integer;
+      const AThreadIndex: Integer;
+      const AEqualizerPreset: TEqualizerPreset);
 
     // Equalizer
-    procedure EqualizerEnable();
+    procedure EqualizerEnable(AUpdateEQPreset: boolean);
     procedure EqualizerDisable();
     procedure UpdateEQ(Band: integer; Pos: Integer);
-    procedure UpdateEQRock();
 
     property OnStreamPlaying: TStreamStatusEvent read FOnStreamPlaying write FOnStreamPlaying;
     property OnStreamStopped: TNotifyEvent read FOnStreamStopped write FOnStreamStopped;
@@ -232,7 +235,11 @@ begin
       // play it!
       if BASS_ChannelPlay(FChannel, FALSE) then
       begin
-        SendPlayerMessage('', TPlayerMessageType.Other);
+
+        if FEqualizerConfig.Enabled then
+          EqualizerEnable(true);
+
+        SendPlayerMessage(EMPTY_STR, TPlayerMessageType.Other);
       end;
 
   end;
@@ -241,15 +248,16 @@ end;
 
 constructor TRadioPlayerThread.Create(
   ACreateSuspended: boolean; AEqualizerConfig: TEqualizerConfig;
-  AFloatable: DWord = 0; AEqualizerEnable: boolean = false);
+  AFloatable: DWord = 0);
 begin
   FActive := false;
   FThreadIndex := EMPTY_INT;
   FChannel := 0;
   FReq := 0;
 
+  FEqualizerPreset := TEqualizerPreset.Create;
+
   FEqualizerConfig := AEqualizerConfig;
-  FEqEnabled := AEqualizerEnable;
 
   FStreamUrlToPlay := EMPTY_STR;
 
@@ -280,6 +288,9 @@ end;
 destructor TRadioPlayerThread.Destroy;
 begin
   StreamStop;
+
+  if Assigned(FEqualizerPreset) then
+    FreeAndNil(FEqualizerPreset);
 
   // Delete critical section
   DeleteCriticalSection(FCritSection);
@@ -383,7 +394,8 @@ begin
 end;
 
 procedure TRadioPlayerThread.PlayURL(AStreamUrl: string;
-  const AVolume: Integer; const AThreadIndex: Integer);
+  const AVolume: Integer; const AThreadIndex: Integer;
+  const AEqualizerPreset: TEqualizerPreset);
 begin
   StreamStop;
 
@@ -393,6 +405,18 @@ begin
   FThreadIndex := AThreadIndex;
   FActive := true;
   FChannelStatus := BASS_ACTIVE_STOPPED;
+
+  // Copy equalizer preset
+  FEqualizerPreset.Name := AEqualizerPreset.Name;
+  FEqualizerPreset.Band1Gain := AEqualizerPreset.Band1Gain;
+  FEqualizerPreset.Band2Gain := AEqualizerPreset.Band2Gain;
+  FEqualizerPreset.Band3Gain := AEqualizerPreset.Band3Gain;
+  FEqualizerPreset.Band4Gain := AEqualizerPreset.Band4Gain;
+  FEqualizerPreset.Band5Gain := AEqualizerPreset.Band5Gain;
+  FEqualizerPreset.Band6Gain := AEqualizerPreset.Band6Gain;
+  FEqualizerPreset.Band7Gain := AEqualizerPreset.Band7Gain;
+  FEqualizerPreset.Band8Gain := AEqualizerPreset.Band8Gain;
+
   // Copy these data to used it by execute method
   FStreamUrlToPlay := AStreamUrl;
 end;
@@ -581,7 +605,22 @@ end;
 
 {$REGION 'Equalizer'}
 
-procedure TRadioPlayerThread.EqualizerEnable();
+procedure TRadioPlayerThread.UpdateEQPreset;
+begin
+  if not FEqEnabled then Exit;
+
+  UpdateEQ(0, FEqualizerPreset.Band1Gain);
+  UpdateEQ(1, FEqualizerPreset.Band2Gain);
+  UpdateEQ(2, FEqualizerPreset.Band3Gain);
+  UpdateEQ(3, FEqualizerPreset.Band4Gain);
+  UpdateEQ(4, FEqualizerPreset.Band5Gain);
+  UpdateEQ(5, FEqualizerPreset.Band6Gain);
+  UpdateEQ(6, FEqualizerPreset.Band7Gain);
+  UpdateEQ(7, FEqualizerPreset.Band8Gain);
+
+end;
+
+procedure TRadioPlayerThread.EqualizerEnable(AUpdateEQPreset: boolean);
 begin
   if FEqEnabled then exit;
 
@@ -629,9 +668,8 @@ begin
     BASS_FXSetParameters(FFxEq, @FEq);
   end;
 
-  // update dsp eq
-  //UpdateEQ(0, 5); // -12 __ 0 __ 12
-  //UpdateEQRock;
+  if AUpdateEQPreset then
+    UpdateEQPreset;
 end;
 
 procedure TRadioPlayerThread.EqualizerDisable();
@@ -644,25 +682,11 @@ end;
 
 procedure TRadioPlayerThread.UpdateEQ(Band: integer; Pos: Integer);
 begin
-  FEq.lBand := Band;    // get b band values
+  FEq.lBand := Band;
 
   BASS_FXGetParameters(FFxEq, @FEq);
   FEq.fGain := Pos;
   BASS_FXSetParameters(FFxEq, @FEq);
-end;
-
-procedure TRadioPlayerThread.UpdateEQRock();
-begin
-  UpdateEQ(0, 2);
-  UpdateEQ(1, 3);
-  UpdateEQ(2, -1);
-  UpdateEQ(3, -1);
-  UpdateEQ(4, 0);
-  UpdateEQ(5, 0);
-  UpdateEQ(6, 4);
-  UpdateEQ(7, 4);
-
-
 end;
 
 {$ENDREGION}

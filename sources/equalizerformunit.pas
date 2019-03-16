@@ -11,14 +11,17 @@ uses
 
 type
 
-  TEqualizerChangeEvent = procedure(ASender: TObject; AEnabled: boolean; ABand1Pos: integer) of object;
-
   { TEqualizerForm }
 
   TEqualizerForm = class(TBaseForm)
     cbOnOff: TCheckBox;
     GroupBox1: TGroupBox;
     cboPresets: TComboBox;
+    lblPos2: TLabel;
+    lblPos1: TLabel;
+    lblPos7: TLabel;
+    lblPos8: TLabel;
+    lblPos6: TLabel;
     lblGain1: TLabel;
     lblGain5: TLabel;
     lblGain3: TLabel;
@@ -29,6 +32,9 @@ type
     lblEqBand6Center: TLabel;
     lblEqBand7Center: TLabel;
     lblEqBand8Center: TLabel;
+    lblPos5: TLabel;
+    lblPos4: TLabel;
+    lblPos3: TLabel;
     lblPresets: TLabel;
     lblEqBand3Center: TLabel;
     lblEqBand1Center: TLabel;
@@ -52,21 +58,22 @@ type
     procedure tbEqBand7GainChange(Sender: TObject);
     procedure tbEqBand8GainChange(Sender: TObject);
   private
-    FOnEqualizerChange: TEqualizerChangeEvent;
     FRadioPlayer: TRadioPlayer;
+
+    FChangeEventsEnabled: boolean;
 
     procedure ConfigEqualizer;
     procedure ConfigEqualizerLabel(BandCenter: integer; BandCenterLabel: TLabel);
     procedure ConfigEqualizerValues(PresetName: string);
     procedure AddPresetNames;
+
+    procedure SetLabelsPOsition(ATrackBar: TTrackBar; ALabel: TLabel);
   protected
     procedure LoadLanguages; override;
     procedure LoadSkins; override;
   public
     constructor Create(AOwner: TComponent; ARadioPlayer: TRadioPlayer); overload;
     destructor Destroy; override;
-
-    property OnEqualizerChange: TEqualizerChangeEvent read FOnEqualizerChange write FOnEqualizerChange;
   end;
 
 var
@@ -83,6 +90,8 @@ uses
 
 constructor TEqualizerForm.Create(AOwner: TComponent; ARadioPlayer: TRadioPlayer);
 begin
+  FChangeEventsEnabled := false;
+
   inherited Create(AOwner);
 
   btnCancel.Visible := false;
@@ -96,6 +105,8 @@ begin
 
   ConfigEqualizer;
   ConfigEqualizerValues(cboPresets.Text);
+
+  FChangeEventsEnabled := true;
 end;
 
 destructor TEqualizerForm.Destroy;
@@ -105,61 +116,113 @@ end;
 
 procedure TEqualizerForm.cbOnOffChange(Sender: TObject);
 begin
-  FRadioPlayer.EqualizerConfig.Enabled := cbOnOff.Checked;
+  if FChangeEventsEnabled then
+  begin
+    if cbOnOff.Checked then
+      FRadioPlayer.EqualizerEnable
+    else
+      FRadioPlayer.EqualizerDisable;
+  end;
 
   GroupBox1.Enabled := cbOnOff.Checked;
 
   lblPresets.Enabled := cbOnOff.Checked;
   cboPresets.Enabled := cbOnOff.Checked;
-
-  if Assigned(OnEqualizerChange) then
-    OnEqualizerChange(Self, GroupBox1.Enabled, tbEqBand3Gain.Position);
 end;
 
 procedure TEqualizerForm.cboPresetsChange(Sender: TObject);
 begin
+  if not FChangeEventsEnabled then exit;
+
   FRadioPlayer.EqualizerConfig.DefaultPreset := cboPresets.Text;
   ConfigEqualizerValues(cboPresets.Text);
 end;
 
 procedure TEqualizerForm.tbEqBand1GainChange(Sender: TObject);
 begin
+  SetLabelsPOsition(tbEqBand1Gain, lblPos1);
+
+  if not FChangeEventsEnabled then exit;
+
   FRadioPlayer.UpdateEqualizerPreset(cboPresets.Text, 1, tbEqBand1Gain.Position);
 end;
 
 procedure TEqualizerForm.tbEqBand2GainChange(Sender: TObject);
 begin
+  SetLabelsPOsition(tbEqBand2Gain, lblPos2);
+
+  if not FChangeEventsEnabled then exit;
+
   FRadioPlayer.UpdateEqualizerPreset(cboPresets.Text, 2, tbEqBand2Gain.Position);
 end;
 
 procedure TEqualizerForm.tbEqBand3GainChange(Sender: TObject);
 begin
+  SetLabelsPOsition(tbEqBand3Gain, lblPos3);
+
+  if not FChangeEventsEnabled then exit;
+
   FRadioPlayer.UpdateEqualizerPreset(cboPresets.Text, 3, tbEqBand3Gain.Position);
 end;
 
 procedure TEqualizerForm.tbEqBand4GainChange(Sender: TObject);
 begin
+  SetLabelsPOsition(tbEqBand4Gain, lblPos4);
+
+  if not FChangeEventsEnabled then exit;
+
   FRadioPlayer.UpdateEqualizerPreset(cboPresets.Text, 4, tbEqBand4Gain.Position);
 end;
 
 procedure TEqualizerForm.tbEqBand5GainChange(Sender: TObject);
 begin
+  SetLabelsPOsition(tbEqBand5Gain, lblPos5);
+
+  if not FChangeEventsEnabled then exit;
+
   FRadioPlayer.UpdateEqualizerPreset(cboPresets.Text, 5, tbEqBand5Gain.Position);
 end;
 
 procedure TEqualizerForm.tbEqBand6GainChange(Sender: TObject);
 begin
+  SetLabelsPOsition(tbEqBand6Gain, lblPos6);
+
+  if not FChangeEventsEnabled then exit;
+
   FRadioPlayer.UpdateEqualizerPreset(cboPresets.Text, 6, tbEqBand6Gain.Position);
 end;
 
 procedure TEqualizerForm.tbEqBand7GainChange(Sender: TObject);
 begin
+  SetLabelsPOsition(tbEqBand7Gain, lblPos7);
+
+  if not FChangeEventsEnabled then exit;
+
   FRadioPlayer.UpdateEqualizerPreset(cboPresets.Text, 7, tbEqBand7Gain.Position);
 end;
 
 procedure TEqualizerForm.tbEqBand8GainChange(Sender: TObject);
 begin
+  SetLabelsPOsition(tbEqBand8Gain, lblPos8);
+
+  if not FChangeEventsEnabled then exit;
+
   FRadioPlayer.UpdateEqualizerPreset(cboPresets.Text, 8, tbEqBand8Gain.Position);
+end;
+
+procedure TEqualizerForm.SetLabelsPOsition(ATrackBar: TTrackBar; ALabel: TLabel);
+var
+  positions: integer;
+  heightTrackBar: integer;
+begin
+  heightTrackBar := ATrackBar.Height - ATrackBar.Top - 4;
+  positions := ATrackBar.Max - ATrackBar.Min + 1;
+
+  ALabel.Caption := IntToStr(ATrackBar.Position);
+
+  ALabel.Left := ATrackBar.Left - ALabel.Width;
+
+  ALabel.Top :=  round((heightTrackBar / 2) - (ATrackBar.Position * (heightTrackBar div positions)) + ATrackBar.Top);
 end;
 
 procedure TEqualizerForm.ConfigEqualizer;

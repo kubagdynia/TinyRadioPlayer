@@ -102,8 +102,6 @@ type
     procedure StopActionExecute(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
   private
-    procedure EqualizerFormEqualizerChange(ASender: TObject; AEnabled: boolean;
-      ABand1Pos: integer);
     procedure LoadLoanguages;
     procedure LoadSettings;
     procedure LoadSkin;
@@ -307,7 +305,6 @@ begin
   if not Assigned(EqualizerForm) then
   begin
     EqualizerForm := TEqualizerForm.Create(Self, RadioPlayer);
-    EqualizerForm.OnEqualizerChange := @EqualizerFormEqualizerChange;
     try
       if EqualizerForm.ShowModal = mrOK then
       begin
@@ -589,15 +586,6 @@ begin
     pbLeftLevelMeter.Value := 0;
     pbRightLevelMeter.Value := 0;
   end;
-end;
-
-procedure TMainForm.EqualizerFormEqualizerChange(ASender: TObject;
-  AEnabled: boolean; ABand1Pos: integer);
-begin
-  if AEnabled then
-    RadioPlayer.EqualizerEnable
-  else
-    RadioPlayer.EqualizerDisable;
 end;
 
 procedure TMainForm.LoadLoanguages;
