@@ -271,10 +271,9 @@ procedure TCTRPDrawer.DrawEditFrame(ADest: TCanvas; ADestPos: TPoint;
   ASize: TSize; AState: TCDControlState; AStateEx: TCDEditStateEx);
 var
   Bitmap: TBGRABitmap;
-  ccc, cc2, cc3, cc4: TBGRAPixel;
+  ccc, cc3, cc4: TBGRAPixel;
 begin
   ccc := ColorToBGRA(AStateEx.RGBColor);
-  cc2 := ColorToBGRA(MixingColors(AStateEx.RGBColor, clWhite, 80, 20));
   cc3 := ColorToBGRA(MixingColors(AStateEx.RGBColor, clBlack, 50, 50));
   cc4 := ColorToBGRA(MixingColors(AStateEx.RGBColor, clBlack, 60, 40));
 

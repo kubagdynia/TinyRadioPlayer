@@ -595,7 +595,8 @@ begin
   miSettings.Caption := GetLanguageItem('MainMenu.Settings', 'Settings');
   miLanguage.Caption := GetLanguageItem('MainMenu.Settings.Language', 'Language');
   miSkins.Caption := GetLanguageItem('MainMenu.Settings.Skins', 'Skins');
-  miDictionaryTables.Caption := GetLanguageItem('MainMenu.DictionaryTables', 'Dictionary Tables');;
+  miDictionaryTables.Caption := GetLanguageItem('MainMenu.Settings.DictionaryTables', 'Dictionary Tables');
+  miEqualizer.Caption := GetLanguageItem('MainMenu.Settings.Equalizer', 'Equalizer');
 
   VstStationList.Header.Columns[0].Text :=
     GetLanguageItem('MainForm.StationList.StationName', 'Station Name');
@@ -1138,8 +1139,6 @@ begin
 end;
 
 procedure TMainForm.SkinLoaded(Sender: TObject; var ASkinData: TSkinData);
-var
-  r1, g1, b1, r2, g2, b2: Byte;
 begin
   // VolumeTrackBar
   VolumeTrackBar.Track.TrackBackground.BackgroundColor :=

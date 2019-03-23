@@ -5,7 +5,7 @@ unit DictionaryDetailFormUnit;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, BCPanel, BCLabel, BCButton, Forms, Controls,
+  Classes, SysUtils, FileUtil, BCLabel, BCButton, Forms, Controls,
   Graphics, Dialogs, ActnList, StdCtrls, RadioPlayerTypes, BaseFormUnit;
 
 type

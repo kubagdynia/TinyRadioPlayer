@@ -682,6 +682,17 @@ end;
 
 procedure TRadioPlayerThread.UpdateEQ(Band: integer; Pos: Integer);
 begin
+  case Band of
+    0: FEqualizerPreset.Band1Gain := Pos;
+    1: FEqualizerPreset.Band2Gain := Pos;
+    2: FEqualizerPreset.Band3Gain := Pos;
+    3: FEqualizerPreset.Band4Gain := Pos;
+    4: FEqualizerPreset.Band5Gain := Pos;
+    5: FEqualizerPreset.Band6Gain := Pos;
+    6: FEqualizerPreset.Band7Gain := Pos;
+    7: FEqualizerPreset.Band8Gain := Pos;
+  end;
+
   FEq.lBand := Band;
 
   BASS_FXGetParameters(FFxEq, @FEq);

@@ -5,7 +5,7 @@ unit EqualizerFormUnit;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, BCPanel, BCLabel, BCButton, Forms, Controls,
+  Classes, SysUtils, FileUtil, BCLabel, BCButton, Forms, Controls,
   Graphics, Dialogs, ActnList, ExtCtrls, StdCtrls, ComCtrls, BaseFormUnit,
   RadioPlayer;
 
@@ -58,6 +58,8 @@ type
     procedure tbEqBand7GainChange(Sender: TObject);
     procedure tbEqBand8GainChange(Sender: TObject);
   private
+    FKhz: string;
+    FHz: string;
     FRadioPlayer: TRadioPlayer;
 
     FChangeEventsEnabled: boolean;
@@ -82,7 +84,7 @@ var
 implementation
 
 uses
-  TRPSettings;
+  TRPSettings, Helpers;
 
 {$R *.lfm}
 
@@ -239,14 +241,12 @@ end;
 
 procedure TEqualizerForm.ConfigEqualizerLabel(BandCenter: integer; BandCenterLabel: TLabel);
 var
-  khz: string = 'kHz';
-  hz: string = 'Hz';
   threshold: integer = 1000;
 begin
   if BandCenter >= threshold then
-    BandCenterLabel.Caption := IntToStr(BandCenter div threshold) + khz
+    BandCenterLabel.Caption := IntToStr(BandCenter div threshold) + FKhz
   else
-    BandCenterLabel.Caption := IntToStr(BandCenter) + hz;
+    BandCenterLabel.Caption := IntToStr(BandCenter) + FHz;
 end;
 
 procedure TEqualizerForm.ConfigEqualizerValues(PresetName: string);
@@ -288,6 +288,12 @@ end;
 procedure TEqualizerForm.LoadLanguages;
 begin
   inherited LoadLanguages;
+
+  Self.Caption := GetLanguageItem('Equalizer.WindowName', 'Equalizer');
+  cbOnOff.Caption := GetLanguageItem('Equalizer.OnOff', 'On / Off');
+  lblPresets.Caption := GetLanguageItem('Equalizer.Presets', 'Presets');
+  FKhz := GetLanguageItem('Equalizer.KHz', 'kHz');
+  FHz := GetLanguageItem('Equalizer.Hz', 'Hz');
 end;
 
 procedure TEqualizerForm.LoadSkins;

@@ -33,7 +33,8 @@
 		<Item name="MainMenu.Settings" type="string">Ustawienia</Item>
 		<Item name="MainMenu.Settings.Language" type="string">Język</Item>
 		<Item name="MainMenu.Settings.Skins" type="string">Skórki</Item>
-		<Item name="MainMenu.DictionaryTables" type="string">Tablice Słownikowe</Item>
+		<Item name="MainMenu.Settings.DictionaryTables" type="string">Tablice Słownikowe</Item>
+		<Item name="MainMenu.Settings.Equalizer" type="string">Equalizer</Item>
 		
 		<!-- Main Form - Station List -->
 		<Item name="MainForm.StationList.StationName" type="string">Nazwa Stacji</Item>
@@ -98,6 +99,13 @@
 		<Item name="DictionaryTables.Genre" type="string">Gatunek</Item>
 		<Item name="DictionaryTables.Region" type="string">Region</Item>
 		<Item name="DictionaryTables.Country" type="string">Kraj</Item>
+		
+		<!-- Equalizer -->
+		<Item name="Equalizer.WindowName" type="string">Equalizer</Item>
+		<Item name="Equalizer.OnOff" type="string">On / Off</Item>
+		<Item name="Equalizer.Presets" type="string">Presets</Item>
+		<Item name="Equalizer.KHz" type="string">kHz</Item>
+		<Item name="Equalizer.Hz" type="string">Hz</Item>
 
 	</Items>
 </Resource>
