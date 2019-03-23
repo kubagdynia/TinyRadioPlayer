@@ -41,6 +41,7 @@ type
     FOnRadioPlay: TNotifyEvent;
     FCurrentStationId: integer;
 
+    // Equalizer
     FEqualizerConfig: TEqualizerConfig;
     FEqualizerPresets: TEqualizerPresets;
 
@@ -54,6 +55,7 @@ type
     procedure TerminateThread(ThreadIndex: Integer; TerminateIfNotActive: Boolean);
     procedure CreateAndLaunchNewThread(ThreadIndex: Integer);
 
+    // Equalizer
     procedure LoadEqualizerConfigAndPresets;
     procedure LoadPreset(PresetName: string; DefaultValues: array of integer);
   public
@@ -67,10 +69,13 @@ type
     function Stop(): Boolean;
     procedure Volume(Value: Integer);
 
+    // Equalizer
     procedure EqualizerEnable;
     procedure EqualizerDisable;
     procedure UpdateEqualizerPreset(const APresetName: string;
       const ABandNumber: ShortInt; const AValue: integer);
+
+    procedure UpdateSettings;
 
     function ChannelIsActiveAndPlaying: Boolean;
     function ChannelGetLevel: DWORD;
@@ -122,6 +127,8 @@ var
   i: integer;
   presetsCount: integer;
 begin
+  UpdateSettings;
+
   FreeAndNil(FThreadWatcher);
 
   for i := Low(FRadioPlayerThreads) to High(FRadioPlayerThreads) do
@@ -434,6 +441,32 @@ begin
     FRadioPlayerThreads[ThreadIndex].OnStreamPlaying := @RadioPlayerThreadsOnStreamPlaying;
     FRadioPlayerThreads[ThreadIndex].OnStreamGetTags := @RadioPlayerThreadsStreamGetTags;
     FRadioPlayerThreads[ThreadIndex].Start;
+  end;
+end;
+
+procedure TRadioPlayer.UpdateSettings;
+var
+  i: integer;
+  presetsCount: integer;
+begin
+  // Update status
+  TTRPSettings.SetGroupValue('Enabled', 'Equalizer.Config', FEqualizerConfig.Enabled);
+
+  // Update default preset
+  TTRPSettings.SetGroupValue('DefaultPreset', 'Equalizer.Config', FEqualizerConfig.DefaultPreset);
+
+  // Update presets
+  presetsCount := FEqualizerPresets.Count - 1;
+  for i := 0 to presetsCount do
+  begin
+    TTRPSettings.SetGroupValue(FEqualizerPresets.Data[i].Name + '.Band1.Gain', 'Equalizer.Presets', FEqualizerPresets.Data[i].Band1Gain);
+    TTRPSettings.SetGroupValue(FEqualizerPresets.Data[i].Name + '.Band2.Gain', 'Equalizer.Presets', FEqualizerPresets.Data[i].Band2Gain);
+    TTRPSettings.SetGroupValue(FEqualizerPresets.Data[i].Name + '.Band3.Gain', 'Equalizer.Presets', FEqualizerPresets.Data[i].Band3Gain);
+    TTRPSettings.SetGroupValue(FEqualizerPresets.Data[i].Name + '.Band4.Gain', 'Equalizer.Presets', FEqualizerPresets.Data[i].Band4Gain);
+    TTRPSettings.SetGroupValue(FEqualizerPresets.Data[i].Name + '.Band5.Gain', 'Equalizer.Presets', FEqualizerPresets.Data[i].Band5Gain);
+    TTRPSettings.SetGroupValue(FEqualizerPresets.Data[i].Name + '.Band6.Gain', 'Equalizer.Presets', FEqualizerPresets.Data[i].Band6Gain);
+    TTRPSettings.SetGroupValue(FEqualizerPresets.Data[i].Name + '.Band7.Gain', 'Equalizer.Presets', FEqualizerPresets.Data[i].Band7Gain);
+    TTRPSettings.SetGroupValue(FEqualizerPresets.Data[i].Name + '.Band8.Gain', 'Equalizer.Presets', FEqualizerPresets.Data[i].Band8Gain);
   end;
 end;
 
