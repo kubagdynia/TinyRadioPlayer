@@ -84,8 +84,6 @@ sources/*.lrs
 #bin/*
 bin/*/TinyRadioPlayer*
 bin/*/settings*
-!bin/**/libbass.so
-!bin/**/bass.dll
-!bin/**/*sqlite3*
+!bin/**/data/lib/*
 bin/**/database.db
 bin/**/*.log

@@ -15,8 +15,8 @@ Description:         Thread that supports stream play and all related tasks
 interface
 
 uses
-  Classes, SysUtils, LCLIntf, Dialogs, LCLType, FileUtil, Consts,
-  lazdynamic_bass, RadioPlayerTypes;
+  Classes, SysUtils, LCLIntf, Dialogs, LCLType, FileUtil, Consts, RadioPlayerTypes,
+  { Bass } lazdynamic_bass, lazdynamic_bass_fx;
 
 const
   PLAY_PROGRESS = 25;
@@ -27,22 +27,33 @@ type
   TStreamStatusEvent = procedure(ASender: TObject; AThreadIndex: integer) of object;
 
   // Custom thread class
+
+  { TRadioPlayerThread }
+
   TRadioPlayerThread = class(TThread)
   private
     FActive: boolean;
     FThreadIndex: integer;
-    FChannel: HSTREAM;
-    FVolume: integer;  // main volume
-    FReq: DWord;
+
+    FChannel: HSTREAM;    // a handle
+    FVolume: integer;     // main volume
+    FReq: DWord;          // sample rate
+    FFloatable: DWord;    // floating-point channel support? 0 = no, else yes
+
+    FFxEq: DWord;         // dsp peaking eq handle
+    FEq: BASS_BFX_PEAKEQ; // dsp peaking equalizer
+
+    // Equalizer
+    FEqEnabled: boolean;
+    FEqualizerConfig: TEqualizerConfig;
+    FEqualizerPreset: TEqualizerPreset;
+
     FCritSection: TCriticalSection;
     FChannelStatus: DWord;
     FStreamUrlToPlay: string;
 
     FPlayerMessage: string;
     FPlayerMessageType: TPlayerMessageType;
-
-    // floating-point channel support? 0 = no, else yes
-    FFloatable: DWord;
 
     // Custom events
     FOnStreamPlaying: TStreamStatusEvent;
@@ -59,6 +70,8 @@ type
     procedure MetaStream;
     procedure SendPlayerMessage(AMessage: string; AMessageType: TPlayerMessageType);
     procedure CheckBufferProgress;
+
+    procedure UpdateEQPreset;
   protected
     procedure Execute; override;
     procedure SynchronizePlayerMessage;
@@ -67,7 +80,9 @@ type
     procedure SynchronizeOnStreamPaused;
     procedure SynchronizeOnStreamStalled;
   public
-    constructor Create(CreateSuspended : boolean; Floatable: DWord = 0);
+    constructor Create(
+      ACreateSuspended : boolean; AEqualizerConfig: TEqualizerConfig;
+      AFloatable: DWord = 0);
     destructor Destroy; override;
 
     function ErrorGetCode: Integer;
@@ -81,7 +96,14 @@ type
     function Stop: Boolean;
     function ChangeVolume(Value: Integer): Boolean;
     procedure PlayURL(AStreamUrl: string;
-      const AVolume: Integer; const AThreadIndex: Integer);
+      const AVolume: Integer;
+      const AThreadIndex: Integer;
+      const AEqualizerPreset: TEqualizerPreset);
+
+    // Equalizer
+    procedure EqualizerEnable(AUpdateEQPreset: boolean);
+    procedure EqualizerDisable();
+    procedure UpdateEQ(Band: integer; Pos: Integer);
 
     property OnStreamPlaying: TStreamStatusEvent read FOnStreamPlaying write FOnStreamPlaying;
     property OnStreamStopped: TNotifyEvent read FOnStreamStopped write FOnStreamStopped;
@@ -89,6 +111,7 @@ type
     property OnStreamStalled: TNotifyEvent read FOnStreamStalled write FOnStreamStalled;
     property OnStreamGetTags: TStreamGetTagsEvent read FOnStreamGetTags write FOnStreamGetTags;
     property Active: boolean read FActive;
+    property Channel: HSTREAM read FChannel;
 
   end;
 
@@ -212,24 +235,33 @@ begin
       // play it!
       if BASS_ChannelPlay(FChannel, FALSE) then
       begin
-        SendPlayerMessage('', TPlayerMessageType.Other);
+
+        if FEqualizerConfig.Enabled then
+          EqualizerEnable(true);
+
+        SendPlayerMessage(EMPTY_STR, TPlayerMessageType.Other);
       end;
 
   end;
 
 end;
 
-constructor TRadioPlayerThread.Create(CreateSuspended: boolean;
-  Floatable: DWord = 0);
+constructor TRadioPlayerThread.Create(
+  ACreateSuspended: boolean; AEqualizerConfig: TEqualizerConfig;
+  AFloatable: DWord = 0);
 begin
   FActive := false;
   FThreadIndex := EMPTY_INT;
   FChannel := 0;
   FReq := 0;
 
+  FEqualizerPreset := TEqualizerPreset.Create;
+
+  FEqualizerConfig := AEqualizerConfig;
+
   FStreamUrlToPlay := EMPTY_STR;
 
-  FFloatable := Floatable;
+  FFloatable := AFloatable;
 
   FChannelStatus := BASS_ACTIVE_STOPPED;
 
@@ -250,12 +282,15 @@ begin
   FOnStreamStopped := nil;
   FOnStreamStalled := nil;
 
-  inherited Create(CreateSuspended);
+  inherited Create(ACreateSuspended);
 end;
 
 destructor TRadioPlayerThread.Destroy;
 begin
   StreamStop;
+
+  if Assigned(FEqualizerPreset) then
+    FreeAndNil(FEqualizerPreset);
 
   // Delete critical section
   DeleteCriticalSection(FCritSection);
@@ -359,7 +394,8 @@ begin
 end;
 
 procedure TRadioPlayerThread.PlayURL(AStreamUrl: string;
-  const AVolume: Integer; const AThreadIndex: Integer);
+  const AVolume: Integer; const AThreadIndex: Integer;
+  const AEqualizerPreset: TEqualizerPreset);
 begin
   StreamStop;
 
@@ -369,6 +405,18 @@ begin
   FThreadIndex := AThreadIndex;
   FActive := true;
   FChannelStatus := BASS_ACTIVE_STOPPED;
+
+  // Copy equalizer preset
+  FEqualizerPreset.Name := AEqualizerPreset.Name;
+  FEqualizerPreset.Band1Gain := AEqualizerPreset.Band1Gain;
+  FEqualizerPreset.Band2Gain := AEqualizerPreset.Band2Gain;
+  FEqualizerPreset.Band3Gain := AEqualizerPreset.Band3Gain;
+  FEqualizerPreset.Band4Gain := AEqualizerPreset.Band4Gain;
+  FEqualizerPreset.Band5Gain := AEqualizerPreset.Band5Gain;
+  FEqualizerPreset.Band6Gain := AEqualizerPreset.Band6Gain;
+  FEqualizerPreset.Band7Gain := AEqualizerPreset.Band7Gain;
+  FEqualizerPreset.Band8Gain := AEqualizerPreset.Band8Gain;
+
   // Copy these data to used it by execute method
   FStreamUrlToPlay := AStreamUrl;
 end;
@@ -553,8 +601,106 @@ begin
 
     if FActive then MetaStream else StreamStop;
   end;
+end;
+
+{$REGION 'Equalizer'}
+
+procedure TRadioPlayerThread.UpdateEQPreset;
+begin
+  if not FEqEnabled then Exit;
+
+  UpdateEQ(0, FEqualizerPreset.Band1Gain);
+  UpdateEQ(1, FEqualizerPreset.Band2Gain);
+  UpdateEQ(2, FEqualizerPreset.Band3Gain);
+  UpdateEQ(3, FEqualizerPreset.Band4Gain);
+  UpdateEQ(4, FEqualizerPreset.Band5Gain);
+  UpdateEQ(5, FEqualizerPreset.Band6Gain);
+  UpdateEQ(6, FEqualizerPreset.Band7Gain);
+  UpdateEQ(7, FEqualizerPreset.Band8Gain);
 
 end;
+
+procedure TRadioPlayerThread.EqualizerEnable(AUpdateEQPreset: boolean);
+begin
+  if FEqEnabled then exit;
+
+  FEqEnabled := true;
+
+  // set peaking equalizer effect with no bands
+  FFxEq := BASS_ChannelSetFX(FChannel, BASS_FX_BFX_PEAKEQ, 0);
+
+  with FEq do begin
+    fBandwidth := FEqualizerConfig.Bandwidth;
+    FQ := 0;
+    fGain := 0;
+    lChannel := BASS_BFX_CHANALL;
+
+    FEq.lBand := 0;
+    FEq.fCenter := FEqualizerConfig.Band1Center;
+    BASS_FXSetParameters(FFxEq, @FEq);
+
+    FEq.lBand := 1;
+    FEq.fCenter := FEqualizerConfig.Band2Center;
+    BASS_FXSetParameters(FFxEq, @FEq);
+
+    FEq.lBand := 2;
+    FEq.fCenter := FEqualizerConfig.Band3Center;
+    BASS_FXSetParameters(FFxEq, @FEq);
+
+    FEq.lBand := 3;
+    FEq.fCenter := FEqualizerConfig.Band4Center;
+    BASS_FXSetParameters(FFxEq, @FEq);
+
+    FEq.lBand := 4;
+    FEq.fCenter := FEqualizerConfig.Band5Center;
+    BASS_FXSetParameters(FFxEq, @FEq);
+
+    FEq.lBand := 5;
+    FEq.fCenter := FEqualizerConfig.Band6Center;
+    BASS_FXSetParameters(FFxEq, @FEq);
+
+    FEq.lBand := 6;
+    FEq.fCenter := FEqualizerConfig.Band7Center;
+    BASS_FXSetParameters(FFxEq, @FEq);
+
+    FEq.lBand := 7;
+    FEq.fCenter := FEqualizerConfig.Band8Center;
+    BASS_FXSetParameters(FFxEq, @FEq);
+  end;
+
+  if AUpdateEQPreset then
+    UpdateEQPreset;
+end;
+
+procedure TRadioPlayerThread.EqualizerDisable();
+begin
+  if not FEqEnabled then exit;
+
+  FEqEnabled := false;
+  BASS_ChannelRemoveFX(FChannel, FFxEq);
+end;
+
+procedure TRadioPlayerThread.UpdateEQ(Band: integer; Pos: Integer);
+begin
+  case Band of
+    0: FEqualizerPreset.Band1Gain := Pos;
+    1: FEqualizerPreset.Band2Gain := Pos;
+    2: FEqualizerPreset.Band3Gain := Pos;
+    3: FEqualizerPreset.Band4Gain := Pos;
+    4: FEqualizerPreset.Band5Gain := Pos;
+    5: FEqualizerPreset.Band6Gain := Pos;
+    6: FEqualizerPreset.Band7Gain := Pos;
+    7: FEqualizerPreset.Band8Gain := Pos;
+  end;
+
+  FEq.lBand := Band;
+
+  BASS_FXGetParameters(FFxEq, @FEq);
+  FEq.fGain := Pos;
+  BASS_FXSetParameters(FFxEq, @FEq);
+end;
+
+{$ENDREGION}
 
 end.
 

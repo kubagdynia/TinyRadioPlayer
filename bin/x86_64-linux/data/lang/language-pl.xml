@@ -50,6 +50,11 @@
 		<Item name="MainForm.StationList.PopupMenu.EditStation" type="string">Edytuj Stację</Item>
 		<Item name="MainForm.StationList.PopupMenu.DeleteStation" type="string">Usuń Stację</Item>
 		
+		<!-- Main Form - Top Text Scroll - PopupMenu -->
+		<Item name="MainForm.TopTextScroll.PopupMenu.StationInfo" type="string">Informacja o stacji</Item>
+		<Item name="MainForm.TopTextScroll.PopupMenu.SearchOnYoutube" type="string">Szukaj na YouTube</Item>
+		<Item name="MainForm.TopTextScroll.PopupMenu.CopyTitleToClipboard" type="string">Kopiuj tytuł do schowka</Item>		
+		
 		<!-- Test -->
 		<Item name="Test.Button.Play" type="string">Odtwórz</Item>
 		<Item name="Test.Button.Stop" type="string">Zatrzymaj</Item>
@@ -63,6 +68,13 @@
 		<Item name="StationDetail.TitleNew" type="string">Dodaj nową stację</Item>
 		<Item name="StationDetail.TitleEdit" type="string">Edytuj stację</Item>
 		<Item name="StationDetail.TitleDelete" type="string">Usuń stację</Item>
+		<Item name="StationDetail.StationName" type="string">Nazwa Stacji</Item>
+		<Item name="StationDetail.StreamUrl" type="string">Adres Url Strumienia</Item>
+		<Item name="StationDetail.Webpage" type="string">Webpage</Item>
+		<Item name="StationDetail.Description" type="string">Opis</Item>
+		<Item name="StationDetail.Genre" type="string">Gatunek</Item>
+		<Item name="StationDetail.Country" type="string">Kraj</Item>
+		<Item name="StationDetail.Go" type="string">Idź</Item>
 		<Item name="StationDetail.Error.StationAlreadyExists" type="string">Stacja o takiej nazwie już istnieje!</Item>
 		<Item name="StationDetail.BeforeDeleteQuestion" type="string">Czy chcesz usunąć wybraną stację?</Item>
 				

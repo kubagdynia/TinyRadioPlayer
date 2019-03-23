@@ -119,7 +119,19 @@ begin
       mmoDescription.Enabled := false;
       cboGenre.Enabled := false;
       cboCountry.Enabled := false;
+    end;
 
+    omNormal:
+    begin
+      LoadStationData(FStationId);
+      btnOk.Enabled := true;
+      btnCancel.Visible := false;
+      edtStationName.Enabled := false;
+      edtStreamUrl.Enabled := false;
+      edtWebpageUrl.Enabled := false;
+      mmoDescription.Enabled := false;
+      cboGenre.Enabled := false;
+      cboCountry.Enabled := false;
     end;
 
   end;
@@ -200,6 +212,14 @@ begin
 
   Self.Caption := GetLanguageItem('StationDetail.WindowName', 'Station Detail');
 
+  lblStationName.Caption := GetLanguageItem('StationDetail.StationName', 'Station Name');
+  lblStreamUrl.Caption := GetLanguageItem('StationDetail.StreamUrl', 'Stream Url');
+  lblWebpageUrl.Caption := GetLanguageItem('StationDetail.Webpage', 'Webpage');
+  lblDescription.Caption := GetLanguageItem('StationDetail.Description', 'Description');
+  lblGenre.Caption := GetLanguageItem('StationDetail.Genre', 'Genre');
+  lblCountry.Caption := GetLanguageItem('StationDetail.Country', 'Country');
+  btnWWWOpen.Caption := GetLanguageItem('StationDetail.Go', 'Go');
+
   case OpenMode of
     omNew:
     begin
@@ -217,6 +237,11 @@ begin
     begin
       lblTitle.Caption := GetLanguageItem('StationDetail.TitleDelete', 'Delete station');
       btnOk.Caption := GetLanguageItem('Button.Delete', 'Delete');
+    end;
+
+    omNormal:
+    begin
+      lblTitle.Caption := EMPTY_STR;
     end;
   end;
 end;

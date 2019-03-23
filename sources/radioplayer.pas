@@ -16,10 +16,15 @@ interface
 
 uses
   Classes, SysUtils,  LCLIntf, Dialogs, LCLType, ExtCtrls, Consts, Helpers,
-  RadioPlayerThread, lazdynamic_bass, RadioPlayerTypes, VirtualTrees;
+  RadioPlayerThread, RadioPlayerTypes, VirtualTrees,
+  { Bass } lazdynamic_bass, lazdynamic_bass_fx,
+  fgl;
 
 const
   MAX_PLAYER_THREADS = 3;
+
+type
+  TEqualizerPresets = specialize TFPGMap<string, TEqualizerPreset>;
 
 type
   TRadioPlayerTagsEvent = procedure(AMessage: string; APlayerMessageType: TPlayerMessageType) of object;
@@ -35,6 +40,11 @@ type
     FOnRadioPlayerTags: TRadioPlayerTagsEvent;
     FOnRadioPlay: TNotifyEvent;
     FCurrentStationId: integer;
+
+    // Equalizer
+    FEqualizerConfig: TEqualizerConfig;
+    FEqualizerPresets: TEqualizerPresets;
+
     procedure Error(msg: string);
     procedure RadioInit;
     function LoadBassPlugins: Boolean;
@@ -44,6 +54,10 @@ type
     procedure ThreadWatcherTimer(Sender: TObject);
     procedure TerminateThread(ThreadIndex: Integer; TerminateIfNotActive: Boolean);
     procedure CreateAndLaunchNewThread(ThreadIndex: Integer);
+
+    // Equalizer
+    procedure LoadEqualizerConfigAndPresets;
+    procedure LoadPreset(PresetName: string; DefaultValues: array of integer);
   public
     constructor Create; overload;
     destructor Destroy; override;
@@ -55,15 +69,28 @@ type
     function Stop(): Boolean;
     procedure Volume(Value: Integer);
 
+    // Equalizer
+    procedure EqualizerEnable;
+    procedure EqualizerDisable;
+    procedure UpdateEqualizerPreset(const APresetName: string;
+      const ABandNumber: ShortInt; const AValue: integer);
+
+    procedure UpdateSettings;
+
     function ChannelIsActiveAndPlaying: Boolean;
     function ChannelGetLevel: DWORD;
     function NumberOfRunningThreads: integer;
+
+    function NoCurrentStationLoaded: Boolean;
 
     property OnRadioPlayerTags: TRadioPlayerTagsEvent
       read FOnRadioPlayerTags write FOnRadioPlayerTags;
     property OnRadioPlay: TNotifyEvent read FOnRadioPlay write FOnRadioPlay;
 
     property CurrentStationId: integer read FCurrentStationId;
+
+    property EqualizerPresets: TEqualizerPresets read FEqualizerPresets;
+    property EqualizerConfig: TEqualizerConfig read FEqualizerConfig;
   end;
 
 var
@@ -72,12 +99,16 @@ var
 implementation
 
 uses
-  Repository;
+  Repository, TRPSettings;
 
 // Constructor
 constructor TRadioPlayer.Create;
 begin
   inherited Create;
+
+  FCurrentStationId := EMPTY_INT;
+
+  LoadEqualizerConfigAndPresets;
 
   RadioInit;
 
@@ -94,7 +125,10 @@ end;
 destructor TRadioPlayer.Destroy;
 var
   i: integer;
+  presetsCount: integer;
 begin
+  UpdateSettings;
+
   FreeAndNil(FThreadWatcher);
 
   for i := Low(FRadioPlayerThreads) to High(FRadioPlayerThreads) do
@@ -102,11 +136,24 @@ begin
     TerminateThread(i, false)
   end;
 
+  if Assigned(FEqualizerConfig) then
+    FreeAndNil(FEqualizerConfig);
+
+  if Assigned(FEqualizerPresets) then
+  begin
+    presetsCount := FEqualizerPresets.Count - 1;
+    for i := 0 to presetsCount do
+      FEqualizerPresets.Data[i]. Free;
+
+    FreeAndNil(FEqualizerPresets);
+  end;
+
   // Close BASS
   BASS_Free();
 
   // release the bass library
-  Unload_BASSDLL();
+  Unload_BASSDLL;
+  Unload_BASSFXDLL;
 
   inherited Destroy;
 end;
@@ -133,7 +180,8 @@ begin
 
   CreateAndLaunchNewThread(threadToPlayNextStream);
 
-  FRadioPlayerThreads[threadToPlayNextStream].PlayURL(AStreamUrl, AVolume, threadToPlayNextStream);
+  FRadioPlayerThreads[threadToPlayNextStream].PlayURL(AStreamUrl, AVolume,
+    threadToPlayNextStream, FEqualizerPresets[FEqualizerConfig.DefaultPreset]);
 end;
 
 procedure TRadioPlayer.PlayStation(const StationId: integer;
@@ -142,6 +190,7 @@ var
   StationInfo: TStationInfo;
 begin
   TRepository.LoadStation(StationInfo, StationId);
+  FCurrentStationId := StationId;
   PlayURL(StationInfo.StreamUrl, Volume);
 end;
 
@@ -154,7 +203,7 @@ begin
 
   node := VstStationsList.GetFirstSelected;
 
-  if Node <> nil then
+  if node <> nil then
     data := VstStationsList.GetNodeData(node)
   else
     exit;
@@ -168,7 +217,10 @@ begin
   Result := False;
 
   if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+  begin
     Result := FRadioPlayerThreads[FActiveRadioPlayerThread].Stop;
+    FCurrentStationId := EMPTY_INT;
+  end;
 end;
 
 // Change volume of the active thread
@@ -208,6 +260,11 @@ begin
       Result := Result + 1;
 end;
 
+function TRadioPlayer.NoCurrentStationLoaded: Boolean;
+begin
+  Result := CurrentStationId = EMPTY_INT;
+end;
+
 // Displays an error message
 procedure TRadioPlayer.Error(msg: string);
 var
@@ -222,18 +279,28 @@ procedure TRadioPlayer.RadioInit;
 begin
   {$IFDEF WIN32}
   Load_BASSDLL(ConcatPaths([GetApplicationPath, LIB_PATH, 'bass.dll']));
+  Load_BASSFXDLL(ConcatPaths([GetApplicationPath, LIB_PATH, 'bass_fx.dll']));
   {$ELSE}
     {$IFDEF UNIX}
     Load_BASSDLL(ConcatPaths([GetApplicationPath, LIB_PATH, 'libbass.so']));
+    Load_BASSFXDLL(ConcatPaths([GetApplicationPath, LIB_PATH, 'libbass_fx.so']));
     {$ELSE}
     Load_BASSDLL(ConcatPaths([GetApplicationPath, LIB_PATH, 'libbass.dylib']));
+    Load_BASSFXDLL(ConcatPaths([GetApplicationPath, LIB_PATH, 'libbass_fx.dylib']));
     {$ENDIF}
   {$ENDIF}
 
   // check the correct BASS was loaded
-  if (HIWORD(BASS_GetVersion()) <> BASSVERSION) then
+  if (HiWord(BASS_GetVersion()) <> BASSVERSION) then
   begin
-    Dialogs.MessageDlg('error','An incorrect version of BASS.DLL was loaded', mtError, [mbOk],0);
+    Dialogs.MessageDlg('error','An incorrect version of BASS was loaded', mtError, [mbOk],0);
+    Halt;
+  end;
+
+  // check the correct BASS_FX was loaded
+  if (HiWord(BASS_FX_GetVersion()) <> BASSVERSION) then
+  begin
+    Dialogs.MessageDlg('error','An incorrect version of BASS_FX was loaded', mtError, [mbOk],0);
     Halt;
   end;
 
@@ -253,7 +320,9 @@ begin
 
   // Initialize audio - default device, 44100hz, stereo, 16 bits
   if not BASS_Init(-1, 44100, 0, MainWindowHandle, nil) then
+  begin
     Error('Error initializing audio!');
+  end;
 
   // check for floating-point capability
   FFloatable :=
@@ -368,12 +437,139 @@ procedure TRadioPlayer.CreateAndLaunchNewThread(ThreadIndex: Integer);
 begin
   if FRadioPlayerThreads[ThreadIndex] = nil then
   begin
-    FRadioPlayerThreads[ThreadIndex] := TRadioPlayerThread.Create(True, FFloatable);
+    FRadioPlayerThreads[ThreadIndex] := TRadioPlayerThread.Create(True, FEqualizerConfig, FFloatable);
     FRadioPlayerThreads[ThreadIndex].OnStreamPlaying := @RadioPlayerThreadsOnStreamPlaying;
     FRadioPlayerThreads[ThreadIndex].OnStreamGetTags := @RadioPlayerThreadsStreamGetTags;
     FRadioPlayerThreads[ThreadIndex].Start;
   end;
 end;
+
+procedure TRadioPlayer.UpdateSettings;
+var
+  i: integer;
+  presetsCount: integer;
+begin
+  // Update status
+  TTRPSettings.SetGroupValue('Enabled', 'Equalizer.Config', FEqualizerConfig.Enabled);
+
+  // Update default preset
+  TTRPSettings.SetGroupValue('DefaultPreset', 'Equalizer.Config', FEqualizerConfig.DefaultPreset);
+
+  // Update presets
+  presetsCount := FEqualizerPresets.Count - 1;
+  for i := 0 to presetsCount do
+  begin
+    TTRPSettings.SetGroupValue(FEqualizerPresets.Data[i].Name + '.Band1.Gain', 'Equalizer.Presets', FEqualizerPresets.Data[i].Band1Gain);
+    TTRPSettings.SetGroupValue(FEqualizerPresets.Data[i].Name + '.Band2.Gain', 'Equalizer.Presets', FEqualizerPresets.Data[i].Band2Gain);
+    TTRPSettings.SetGroupValue(FEqualizerPresets.Data[i].Name + '.Band3.Gain', 'Equalizer.Presets', FEqualizerPresets.Data[i].Band3Gain);
+    TTRPSettings.SetGroupValue(FEqualizerPresets.Data[i].Name + '.Band4.Gain', 'Equalizer.Presets', FEqualizerPresets.Data[i].Band4Gain);
+    TTRPSettings.SetGroupValue(FEqualizerPresets.Data[i].Name + '.Band5.Gain', 'Equalizer.Presets', FEqualizerPresets.Data[i].Band5Gain);
+    TTRPSettings.SetGroupValue(FEqualizerPresets.Data[i].Name + '.Band6.Gain', 'Equalizer.Presets', FEqualizerPresets.Data[i].Band6Gain);
+    TTRPSettings.SetGroupValue(FEqualizerPresets.Data[i].Name + '.Band7.Gain', 'Equalizer.Presets', FEqualizerPresets.Data[i].Band7Gain);
+    TTRPSettings.SetGroupValue(FEqualizerPresets.Data[i].Name + '.Band8.Gain', 'Equalizer.Presets', FEqualizerPresets.Data[i].Band8Gain);
+  end;
+end;
+
+{$REGION 'Equalizer'}
+
+procedure TRadioPlayer.EqualizerEnable;
+begin
+  FEqualizerConfig.Enabled := true;
+
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    FRadioPlayerThreads[FActiveRadioPlayerThread].EqualizerEnable(true);
+end;
+
+procedure TRadioPlayer.EqualizerDisable;
+begin
+  FEqualizerConfig.Enabled := false;
+
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    FRadioPlayerThreads[FActiveRadioPlayerThread].EqualizerDisable();
+end;
+
+procedure TRadioPlayer.UpdateEqualizerPreset(const APresetName: string;
+  const ABandNumber: ShortInt; const AValue: integer);
+begin
+  if (Trim(APresetName) = EMPTY_STR) or (ABandNumber < 1) or (ABandNumber > 8) then Exit;
+
+  case ABandNumber of
+    1: EqualizerPresets[APresetName].Band1Gain := AValue;
+    2: EqualizerPresets[APresetName].Band2Gain := AValue;
+    3: EqualizerPresets[APresetName].Band3Gain := AValue;
+    4: EqualizerPresets[APresetName].Band4Gain := AValue;
+    5: EqualizerPresets[APresetName].Band5Gain := AValue;
+    6: EqualizerPresets[APresetName].Band6Gain := AValue;
+    7: EqualizerPresets[APresetName].Band7Gain := AValue;
+    8: EqualizerPresets[APresetName].Band8Gain := AValue;
+  end;
+
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    FRadioPlayerThreads[FActiveRadioPlayerThread].UpdateEQ(ABandNumber, AValue);
+end;
+
+procedure TRadioPlayer.LoadEqualizerConfigAndPresets;
+begin
+  if not Assigned(FEqualizerConfig) then
+    FEqualizerConfig := TEqualizerConfig.Create;
+
+  with FEqualizerConfig do
+  begin
+    Enabled := TTRPSettings.GetGroupValue('Enabled', 'Equalizer.Config', false, true);
+    Bandwidth := TTRPSettings.GetGroupValue('Bandwidth', 'Equalizer.Config', 2.5, true);
+    Band1Center := TTRPSettings.GetGroupValue('Band1.Center', 'Equalizer.Config', 125, true);
+    Band2Center := TTRPSettings.GetGroupValue('Band2.Center', 'Equalizer.Config', 250, true);
+    Band3Center := TTRPSettings.GetGroupValue('Band3.Center', 'Equalizer.Config', 500, true);
+    Band4Center := TTRPSettings.GetGroupValue('Band4.Center', 'Equalizer.Config', 1000, true);
+    Band5Center := TTRPSettings.GetGroupValue('Band5.Center', 'Equalizer.Config', 2000, true);
+    Band6Center := TTRPSettings.GetGroupValue('Band6.Center', 'Equalizer.Config', 4000, true);
+    Band7Center := TTRPSettings.GetGroupValue('Band7.Center', 'Equalizer.Config', 8000, true);
+    Band8Center := TTRPSettings.GetGroupValue('Band8.Center', 'Equalizer.Config', 16000, true);
+    DefaultPreset := TTRPSettings.GetGroupValue('DefaultPreset', 'Equalizer.Config', 'Default', true);
+  end;
+
+  if not Assigned(FEqualizerPresets) then
+    FEqualizerPresets := TEqualizerPresets.Create;
+
+  LoadPreset('Default', [ 0,  0,  0,  0,  0,  0,  0,  0]);
+  LoadPreset('Custom1', [ 0,  0,  0,  0,  0,  0,  0,  0]);
+  LoadPreset('Custom2', [-1,  0,  0,  0,  0,  0,  3,  5]);
+  LoadPreset('Blues',   [ 2,  1,  0,  0,  0,  0, -1, -3]);
+  LoadPreset('Classic', [ 6,  3,  0,  0,  0,  0,  2,  2]);
+  LoadPreset('Country', [ 0,  2,  2,  0,  0,  0,  3,  3]);
+  LoadPreset('Dance',   [ 5,  1, -1, -1,  0,  0,  4,  4]);
+  LoadPreset('Jazz',    [ 0,  3,  3,  3,  0,  2,  4,  4]);
+  LoadPreset('Metal',   [ 0,  0,  0,  0,  3,  0,  3,  1]);
+  LoadPreset('NewAge',  [ 3,  0,  0,  0,  0,  0,  1,  1]);
+  LoadPreset('Oldies',  [ 2,  1,  0,  0,  0,  0, -2, -5]);
+  LoadPreset('Techno',  [ 4, -1, -1, -1,  0,  0,  5,  5]);
+  LoadPreset('Rock',    [ 2,  3, -1, -1,  0,  0,  4,  4]);
+
+end;
+
+procedure TRadioPlayer.LoadPreset(PresetName: string; DefaultValues: array of integer);
+var
+  preset: TEqualizerPreset;
+begin
+  preset := TEqualizerPreset.Create;
+
+  with preset do
+  begin
+    Name := PresetName;
+    Band1Gain := TTRPSettings.GetGroupValue(PresetName + '.Band1.Gain', 'Equalizer.Presets', DefaultValues[0], true);
+    Band2Gain := TTRPSettings.GetGroupValue(PresetName + '.Band2.Gain', 'Equalizer.Presets', DefaultValues[1], true);
+    Band3Gain := TTRPSettings.GetGroupValue(PresetName + '.Band3.Gain', 'Equalizer.Presets', DefaultValues[2], true);
+    Band4Gain := TTRPSettings.GetGroupValue(PresetName + '.Band4.Gain', 'Equalizer.Presets', DefaultValues[3], true);
+    Band5Gain := TTRPSettings.GetGroupValue(PresetName + '.Band5.Gain', 'Equalizer.Presets', DefaultValues[4], true);
+    Band6Gain := TTRPSettings.GetGroupValue(PresetName + '.Band6.Gain', 'Equalizer.Presets', DefaultValues[5], true);
+    Band7Gain := TTRPSettings.GetGroupValue(PresetName + '.Band7.Gain', 'Equalizer.Presets', DefaultValues[6], true);
+    Band8Gain := TTRPSettings.GetGroupValue(PresetName + '.Band8.Gain', 'Equalizer.Presets', DefaultValues[7], true);
+  end;
+
+  FEqualizerPresets.Add(PresetName, preset);
+end;
+
+{$ENDREGION}
 
 end.
 

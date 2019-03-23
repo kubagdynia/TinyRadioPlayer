@@ -25,6 +25,18 @@ type
 
   { TMainForm }
   TMainForm = class(TForm)
+    OpenEqualizerAction: TAction;
+    miEqualizer: TMenuItem;
+    miCopyTitleToClipboard: TMenuItem;
+    miSearchOnYoutube: TMenuItem;
+    miSpace1: TMenuItem;
+    miStationInfo: TMenuItem;
+    NextAction: TAction;
+    PopupMenuTextScroll: TPopupMenu;
+    PrevAction: TAction;
+    btnStop: TBCButton;
+    StopAction: TAction;
+    PlayAction: TAction;
     BCPanel1: TBCPanel;
     OpenDictionaryTablesAction: TAction;
     DeleteStationAction: TAction;
@@ -47,8 +59,6 @@ type
     btnPrev: TBCButton;
     btnNext: TBCButton;
     btnOpen: TBCButton;
-    btnStop: TBCButton;
-    btnPause: TBCButton;
     MainPanel: TBCPanel;
     PeakmeterPanel: TBCPanel;
     PopupMenuStationList: TPopupMenu;
@@ -67,11 +77,12 @@ type
     Timer1: TTimer;
     procedure AddStationActionExecute(Sender: TObject);
     procedure BottomFunctionPanelResize(Sender: TObject);
-    procedure btnOpenClick(Sender: TObject);
-    procedure btnPlayClick(Sender: TObject);
-    procedure btnStopClick(Sender: TObject);
     procedure DeleteStationActionExecute(Sender: TObject);
     procedure MainPanelResize(Sender: TObject);
+    procedure miCopyTitleToClipboardClick(Sender: TObject);
+    procedure miSearchOnYoutubeClick(Sender: TObject);
+    procedure miStationInfoClick(Sender: TObject);
+    procedure NextActionExecute(Sender: TObject);
     procedure OpenDictionaryTablesActionExecute(Sender: TObject);
     procedure EditStationActionExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -80,11 +91,15 @@ type
     procedure miShowBothScrollBarsClick(Sender: TObject);
     procedure miShowVstColumnClick(Sender: TObject);
     procedure miExitClick(Sender: TObject);
+    procedure OpenEqualizerActionExecute(Sender: TObject);
     procedure OpenUrlActionExecute(Sender: TObject);
     procedure PeakmeterPanelResize(Sender: TObject);
+    procedure PlayActionExecute(Sender: TObject);
     procedure PopupMenuStationListPopup(Sender: TObject);
+    procedure PrevActionExecute(Sender: TObject);
     procedure RadioPlayerRadioPlay(Sender: TObject);
     procedure RadioPlayerRadioPlayerTags(AMessage: string; APlayerMessageType: TPlayerMessageType);
+    procedure StopActionExecute(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
   private
     procedure LoadLoanguages;
@@ -135,6 +150,8 @@ type
       Node: PVirtualNode; Column: TColumnIndex);
 
     procedure StationDetailManagement(OpenMode: TOpenMode; DropFileName: string = EMPTY_STR);
+
+    procedure RadioActions(Sender: TObject);
   public
     RadioPlayer: TRadioPlayer;
 
@@ -152,7 +169,8 @@ var
 implementation
 
 uses
-  Language, TRPSettings, Repository, StationDetailFormUnit, DictionaryTablesManagementFormUnit;
+  Language, TRPSettings, Repository, StationDetailFormUnit, DictionaryTablesManagementFormUnit,
+  LCLIntf, Clipbrd, EqualizerFormUnit;
 
 {$R *.lfm}
 
@@ -185,7 +203,7 @@ begin
   TextScroll.OnMouseLeave := @TextScrollMouseLeave;
 
   TextScroll.Align := alClient;
-  //TextScroll.PopupMenu := pmRedTextScroll;
+  TextScroll.PopupMenu := PopupMenuTextScroll;
 
   LoadSettings;
 
@@ -211,15 +229,6 @@ begin
   TLanguage.RegisterLanguageChangeEvent(@OnLanguageChange);
 
   TRepository.LoadStations(VstStationList, SearchEdit.Text);
-
-  // Calculating position of function buttons and volume
-  btnPrev.Tag := (BottomFunctionPanel.Width div 2) - btnPrev.Left;
-  btnPlay.Tag := (BottomFunctionPanel.Width div 2) - btnPlay.Left;
-  btnPause.Tag := (BottomFunctionPanel.Width div 2) - btnPause.Left;
-  btnStop.Tag := (BottomFunctionPanel.Width div 2) - btnStop.Left;
-  btnNext.Tag := (BottomFunctionPanel.Width div 2) - btnNext.Left;
-  btnRec.Tag := (BottomFunctionPanel.Width div 2) - btnRec.Left;
-  btnOpen.Tag := (BottomFunctionPanel.Width div 2) - btnOpen.Left;
 
   MainForm.Width := TTRPSettings.GetValue('MainForm.Width', 485);
   MainForm.Height := TTRPSettings.GetValue('MainForm.Height', 516);
@@ -291,6 +300,22 @@ begin
   Close;
 end;
 
+procedure TMainForm.OpenEqualizerActionExecute(Sender: TObject);
+begin
+  if not Assigned(EqualizerForm) then
+  begin
+    EqualizerForm := TEqualizerForm.Create(Self, RadioPlayer);
+    try
+      if EqualizerForm.ShowModal = mrOK then
+      begin
+
+      end;
+    finally
+      FreeAndNil(EqualizerForm);
+    end;
+  end;
+end;
+
 procedure TMainForm.OpenUrlActionExecute(Sender: TObject);
 begin
   if not Assigned(OpenStationUrlForm) then
@@ -319,6 +344,51 @@ begin
 
 end;
 
+procedure TMainForm.PlayActionExecute(Sender: TObject);
+begin
+  RadioActions(Sender);
+end;
+
+procedure TMainForm.PrevActionExecute(Sender: TObject);
+begin
+  RadioActions(Sender);
+end;
+
+procedure TMainForm.NextActionExecute(Sender: TObject);
+begin
+  RadioActions(Sender);
+end;
+
+procedure TMainForm.StopActionExecute(Sender: TObject);
+begin
+  RadioPlayer.Stop();
+end;
+
+procedure TMainForm.RadioActions(Sender: TObject);
+var
+  node: PVirtualNode;
+begin
+  if Sender is TAction then
+  begin
+
+    node := VstStationList.GetFirstSelected();
+
+    if node = nil then
+      node := VstStationList.GetFirst()
+    else if Sender = NextAction then
+       node := VstStationList.GetNext(node)
+    else if Sender = PrevAction then
+       node := VstStationList.GetPrevious(node);
+
+    if node <> nil then
+      VstStationList.Selected[node] := true;
+
+    RadioPlayer.PlayStation(
+      RadioPlayer.GetSelectedStationId(VstStationList),
+      VolumeTrackBar.Position);
+  end;
+end;
+
 procedure TMainForm.PopupMenuStationListPopup(Sender: TObject);
 var
   stationSelected: boolean;
@@ -337,7 +407,7 @@ var
   buttonSpace: byte;
   button7: integer;
 begin
-  buttonCount := 7;
+  buttonCount := 6;
   buttonWidth := 23;
   buttonSpace := 2;
 
@@ -366,9 +436,8 @@ begin
     VolumeTrackBar.Left := BottomFunctionPanel.Width - VolumeTrackBar.Width - 3;
   end;
 
-  btnPrev.Left := button7 - (7 * buttonWidth) - (6 * buttonSpace);
-  btnPlay.Left := button7 - (6 * buttonWidth) - (5 * buttonSpace);
-  btnPause.Left := button7 - (5 * buttonWidth) - (4 * buttonSpace);
+  btnPrev.Left := button7 - (6 * buttonWidth) - (5 * buttonSpace);
+  btnPlay.Left := button7 - (5 * buttonWidth) - (4 * buttonSpace);
   btnStop.Left := button7 - (4 * buttonWidth) - (3 * buttonSpace);
   btnNext.Left := button7 - (3 * buttonWidth) - (2 * buttonSpace);
   btnRec.Left := button7 - (2 * buttonWidth) - buttonSpace;
@@ -405,6 +474,36 @@ begin
   VstStationList.Height := MainPanel.Height - 2;
 end;
 
+procedure TMainForm.miCopyTitleToClipboardClick(Sender: TObject);
+begin
+  Clipboard.AsText := TextScroll.Lines.TextScrollLine1.ScrollText;
+end;
+
+procedure TMainForm.miSearchOnYoutubeClick(Sender: TObject);
+begin
+  OpenURL(
+    Format(YOUTUBE_SEARCH_PATH,
+      [TextScroll.Lines.TextScrollLine1.ScrollText]));
+end;
+
+procedure TMainForm.miStationInfoClick(Sender: TObject);
+begin
+  if Assigned(StationDetailForm) or RadioPlayer.NoCurrentStationLoaded then Exit;
+
+  StationDetailForm := TStationDetailForm.Create(Self, omNormal,
+    RadioPlayer.CurrentStationId);
+  try
+
+    if StationDetailForm.ShowModal = mrOK then
+    begin
+
+    end;
+
+  finally
+    FreeAndNil(StationDetailForm);
+  end;
+end;
+
 procedure TMainForm.OpenDictionaryTablesActionExecute(Sender: TObject);
 var
   mr: TModalResult;
@@ -421,21 +520,6 @@ begin
     end;
 
   end;
-end;
-
-procedure TMainForm.btnOpenClick(Sender: TObject);
-begin
-  OpenUrlActionExecute(Self);
-end;
-
-procedure TMainForm.btnPlayClick(Sender: TObject);
-begin
-  //RadioPlayer.PlayURL(edtStreamUrl.Caption, VolumeTrackBar.Position);
-end;
-
-procedure TMainForm.btnStopClick(Sender: TObject);
-begin
-  RadioPlayer.Stop();
 end;
 
 procedure TMainForm.RadioPlayerRadioPlay(Sender: TObject);
@@ -511,7 +595,8 @@ begin
   miSettings.Caption := GetLanguageItem('MainMenu.Settings', 'Settings');
   miLanguage.Caption := GetLanguageItem('MainMenu.Settings.Language', 'Language');
   miSkins.Caption := GetLanguageItem('MainMenu.Settings.Skins', 'Skins');
-  miDictionaryTables.Caption := GetLanguageItem('MainMenu.DictionaryTables', 'Dictionary Tables');;
+  miDictionaryTables.Caption := GetLanguageItem('MainMenu.Settings.DictionaryTables', 'Dictionary Tables');
+  miEqualizer.Caption := GetLanguageItem('MainMenu.Settings.Equalizer', 'Equalizer');
 
   VstStationList.Header.Columns[0].Text :=
     GetLanguageItem('MainForm.StationList.StationName', 'Station Name');
@@ -537,6 +622,13 @@ begin
     GetLanguageItem('MainForm.StationList.PopupMenu.EditStation', 'Edit Station');
   miDeleteStation.Caption :=
     GetLanguageItem('MainForm.StationList.PopupMenu.DeleteStation', 'Delete Station');
+
+  miStationInfo.Caption :=
+    GetLanguageItem('MainForm.TopTextScroll.PopupMenu.StationInfo', 'Station Info');
+  miSearchOnYoutube.Caption :=
+    GetLanguageItem('MainForm.TopTextScroll.PopupMenu.SearchOnYoutube', 'Search on YouTube');
+  miCopyTitleToClipboard.Caption :=
+    GetLanguageItem('MainForm.TopTextScroll.PopupMenu.CopyTitleToClipboard', 'Copy Title to Clipboard');
 end;
 
 procedure TMainForm.LoadSettings;
@@ -1047,8 +1139,6 @@ begin
 end;
 
 procedure TMainForm.SkinLoaded(Sender: TObject; var ASkinData: TSkinData);
-var
-  r1, g1, b1, r2, g2, b2: Byte;
 begin
   // VolumeTrackBar
   VolumeTrackBar.Track.TrackBackground.BackgroundColor :=
@@ -1141,12 +1231,18 @@ begin
   SearchEdit.Color := TSkins.GetColorItem('SearchEdit.Color');
   SearchEdit.Font.Color := TSkins.GetColorItem('SearchEdit.FontColor');
 
+  // LeftLevelMeter
+  pbLeftLevelMeter.BackgroundColor := TSkins.GetColorItem('LeftLevelMeter.BackgroundColor');
+  pbLeftLevelMeter.Color := TSkins.GetColorItem('LeftLevelMeter.Color');
+  // RightLevelMeter
+  pbRightLevelMeter.BackgroundColor := TSkins.GetColorItem('RightLevelMeter.BackgroundColor');
+  pbRightLevelMeter.Color := TSkins.GetColorItem('RightLevelMeter.Color');
+
   // Bitmaps
   miAddStation.Bitmap.Assign(ASkinData.GetBitmapItem('btnAdd'));
   miEditStation.Bitmap.Assign(ASkinData.GetBitmapItem('btnEdit'));
   miDeleteStation.Bitmap.Assign(ASkinData.GetBitmapItem('btnDelete'));
   btnPlay.Glyph.Assign(ASkinData.GetBitmapItem('btnPlay'));
-  btnPause.Glyph.Assign(ASkinData.GetBitmapItem('btnPause'));
   btnPrev.Glyph.Assign(ASkinData.GetBitmapItem('btnPrev'));
   btnStop.Glyph.Assign(ASkinData.GetBitmapItem('btnStop'));
   btnNext.Glyph.Assign(ASkinData.GetBitmapItem('btnNext'));

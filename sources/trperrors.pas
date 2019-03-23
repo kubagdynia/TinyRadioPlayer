@@ -72,6 +72,9 @@ const
   // Skins
   ERR_CANT_LOAD_SKIN_ITEMS                  = $00000201;
 
+  // Settings
+  ERR_SET_GROUP_VALUE                       = $00000301;
+
   procedure ShowErrorMessage(const Err: ErrorId;
     const AClassName: string = EMPTY_STR;
     const AMethodName: string = EMPTY_STR);

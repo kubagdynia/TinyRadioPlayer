@@ -53,6 +53,9 @@ var
 
   function RemoveFileExtension(FileName: string): string;
 
+  function BoolToFullStr(const Value: boolean): string;
+  function FullStrToBool(const Value: string): boolean;
+
 implementation
 
 uses
@@ -185,6 +188,16 @@ end;
 function RemoveFileExtension(FileName: string): string;
 begin
   Result := ChangeFileExt(FileName, EMPTY_STR);
+end;
+
+function BoolToFullStr(const Value: boolean): string;
+begin
+  Result := IIF(Value, 'True', 'False');
+end;
+
+function FullStrToBool(const Value: string): boolean;
+begin
+  Result := IIf(UpperCase(Trim(Value)) = 'TRUE', true, false);
 end;
 
 end.

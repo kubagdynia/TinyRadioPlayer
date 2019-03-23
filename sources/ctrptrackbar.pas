@@ -118,8 +118,6 @@ type
     FMax: integer;
     FMin: integer;
 
-    FHitRect: TRect;  // area where we can click to change thumb position
-
     FTrackBarWasClicked: boolean;
 
     // Track
@@ -627,7 +625,6 @@ end;
 
 procedure TCTRPTrackBar.ChangePosition(const AValueToBeAdded: integer);
 var
-  positionChanged: boolean;
   oldPosition: integer;
 begin
   oldPosition := FPosition;
@@ -859,7 +856,6 @@ procedure TCTRPTrackBar.RecalcTrackRect;
 var
   tx, ty: integer;
   trackSpaceAround: TRect;
-  cd: integer;
 begin
   tx := ClientWidth;
   ty := ClientHeight;
@@ -870,7 +866,6 @@ begin
   case Orientation of
     tbHorizontal:
     begin
-      cd := trackSpaceAround.Top;
       FTrackRect :=
         Rect(trackSpaceAround.Left, trackSpaceAround.Top, tx -
         trackSpaceAround.Right, ty - trackSpaceAround.Bottom);
