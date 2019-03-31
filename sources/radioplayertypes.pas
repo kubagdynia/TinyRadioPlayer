@@ -141,6 +141,10 @@ type
     FBand7Center   : integer;
     FBand8Center   : integer;
     FDefaultPreset : string;
+    FCompressorEnabled : boolean;
+    FDefaultCompressorPreset: string;
+    FDampEnabled : boolean;
+    FDefaultDampPreset: string;
 
     procedure SetBandwidth(AValue: single);
   public
@@ -155,6 +159,10 @@ type
     property Band7Center   : integer read FBand7Center   write FBand7Center;
     property Band8Center   : integer read FBand8Center   write FBand8Center;
     property DefaultPreset : string  read FDefaultPreset write FDefaultPreset;
+    property CompressorEnabled : boolean read FCompressorEnabled write FCompressorEnabled;
+    property DefaultCompressorPreset: string read FDefaultCompressorPreset write FDefaultCompressorPreset;
+    property DampEnabled : boolean read FDampEnabled write FDampEnabled;
+    property DefaultDampPreset: string read FDefaultDampPreset write FDefaultDampPreset;
   end;
 
 { - - - - - - - - - - - - - - - - TEqualizerPreset - - - - - - - - - - - - - - }
@@ -180,12 +188,13 @@ type
       procedure SetBand7Gain(AValue: integer);
       procedure SetBand8Gain(AValue: integer);
     public
-      constructor Create (const AName: string;
-        const ABand1Gain: integer; const ABand2Gain: integer; const ABand3Gain: integer;
-        const ABand4Gain: integer; const ABand5Gain: integer; const ABand6Gain: integer;
-        const ABand7Gain: integer ;const ABand8Gain: integer); overload;
+      constructor Create(const AName: string;
+        const ABand1Gain: integer; const ABand2Gain: integer;
+        const ABand3Gain: integer; const ABand4Gain: integer;
+        const ABand5Gain: integer; const ABand6Gain: integer;
+        const ABand7Gain: integer; const ABand8Gain: integer); overload;
 
-      property Name      : string read FName write FName;
+      property Name      : string  read FName      write FName;
       property Band1Gain : integer read FBand1Gain write SetBand1Gain;
       property Band2Gain : integer read FBand2Gain write SetBand2Gain;
       property Band3Gain : integer read FBand3Gain write SetBand3Gain;
@@ -194,6 +203,44 @@ type
       property Band6Gain : integer read FBand6Gain write SetBand6Gain;
       property Band7Gain : integer read FBand7Gain write SetBand7Gain;
       property Band8Gain : integer read FBand8Gain write SetBand8Gain;
+    end;
+
+{ - - - - - - - - - - - - - - - - TCompressorPreset - - - - - - - - - - - - - - }
+type
+    TCompressorPreset = class
+    private
+      FName      : string;
+      FGain      : single;
+      FThreshold : single;
+      FRatio     : single;
+      FAttack    : single;
+      FRelease   : single;
+    public
+      property Name      : string  read FName      write FName;
+      property Gain      : single  read FGain      write FGain;
+      property Threshold : single  read FThreshold write FThreshold;
+      property Ratio     : single  read FRatio     write FRatio;
+      property Attack    : single  read FAttack    write FAttack;
+      property Release   : single  read FRelease   write FRelease;
+    end;
+
+{ - - - - - - - - - - - - - - - - - TDampPreset - - - - - - - - - - - - - - - }
+type
+    TDampPreset = class
+    private
+      FName      : string;
+      FTarget    : single;
+      FQuiet     : single;
+      FRate      : single;
+      FGain      : single;
+      FDelay     : single;
+    public
+      property Name      : string  read FName      write FName;
+      property Target    : single  read FTarget    write FTarget;
+      property Quiet     : single  read FQuiet     write FQuiet;
+      property Rate      : single  read FRate      write FRate;
+      property Gain      : single  read FGain      write FGain;
+      property Delay     : single  read FDelay     write FDelay;
     end;
 
 implementation

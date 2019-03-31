@@ -27,6 +27,12 @@ type
   TEqualizerPresets = specialize TFPGMap<string, TEqualizerPreset>;
 
 type
+  TCompressorPresets = specialize TFPGMap<string, TCompressorPreset>;
+
+type
+  TDampPresets = specialize TFPGMap<string, TDampPreset>;
+
+type
   TRadioPlayerTagsEvent = procedure(AMessage: string; APlayerMessageType: TPlayerMessageType) of object;
 
   { TRadioPlayer }
@@ -44,6 +50,8 @@ type
     // Equalizer
     FEqualizerConfig: TEqualizerConfig;
     FEqualizerPresets: TEqualizerPresets;
+    FCompressorPresets: TCompressorPresets;
+    FDampPresets: TDampPresets;
 
     procedure Error(msg: string);
     procedure RadioInit;
@@ -57,7 +65,17 @@ type
 
     // Equalizer
     procedure LoadEqualizerConfigAndPresets;
-    procedure LoadPreset(PresetName: string; DefaultValues: array of integer);
+    procedure LoadPreset(APresetName: string; DefaultValues: array of integer);
+
+    // Compressor
+    procedure LoadCompressorConfigAndPressets;
+    procedure LoadCompressorPreset(APresetName: string;
+      AGain, AThreshold, ARatio, AAttack, ARelease: single);
+
+    // DAMP
+    procedure LoadDampConfigAndPressets;
+    procedure LoadDampPreset(APresetName: string;
+      ATarget, AQuiet, ARate, AGain, ADelay: single);
   public
     constructor Create; overload;
     destructor Destroy; override;
@@ -75,6 +93,16 @@ type
     procedure UpdateEqualizerPreset(const APresetName: string;
       const ABandNumber: ShortInt; const AValue: integer);
 
+    // Compressor
+    procedure CompressorEnable;
+    procedure CompressorDisable;
+    procedure UpdateCompressorPreset(APresetName: string);
+
+    // DAMP
+    procedure DampEnable;
+    procedure DampDisable;
+    procedure UpdateDampPreset(APresetName: string);
+
     procedure UpdateSettings;
 
     function ChannelIsActiveAndPlaying: Boolean;
@@ -91,6 +119,8 @@ type
 
     property EqualizerPresets: TEqualizerPresets read FEqualizerPresets;
     property EqualizerConfig: TEqualizerConfig read FEqualizerConfig;
+    property CompressorPresets: TCompressorPresets read FCompressorPresets;
+    property DampPresets: TDampPresets read FDampPresets;
   end;
 
 var
@@ -109,6 +139,8 @@ begin
   FCurrentStationId := EMPTY_INT;
 
   LoadEqualizerConfigAndPresets;
+  LoadCompressorConfigAndPressets;
+  LoadDampConfigAndPressets;
 
   RadioInit;
 
@@ -143,9 +175,27 @@ begin
   begin
     presetsCount := FEqualizerPresets.Count - 1;
     for i := 0 to presetsCount do
-      FEqualizerPresets.Data[i]. Free;
+      FEqualizerPresets.Data[i].Free;
 
     FreeAndNil(FEqualizerPresets);
+  end;
+
+  if Assigned(FCompressorPresets) then
+  begin
+    presetsCount := FCompressorPresets.Count - 1;
+    for i := 0 to presetsCount do
+      FCompressorPresets.Data[i].Free;
+
+    FreeAndNil(FCompressorPresets);
+  end;
+
+  if Assigned(FDampPresets) then
+  begin
+    presetsCount := FDampPresets.Count - 1;
+    for i := 0 to presetsCount do
+      FDampPresets.Data[i].Free;
+
+    FreeAndNil(FDampPresets);
   end;
 
   // Close BASS
@@ -181,7 +231,9 @@ begin
   CreateAndLaunchNewThread(threadToPlayNextStream);
 
   FRadioPlayerThreads[threadToPlayNextStream].PlayURL(AStreamUrl, AVolume,
-    threadToPlayNextStream, FEqualizerPresets[FEqualizerConfig.DefaultPreset]);
+    threadToPlayNextStream,
+    FEqualizerPresets[FEqualizerConfig.DefaultPreset],
+    FCompressorPresets[FEqualizerConfig.DefaultCompressorPreset]);
 end;
 
 procedure TRadioPlayer.PlayStation(const StationId: integer;
@@ -451,9 +503,13 @@ var
 begin
   // Update status
   TTRPSettings.SetGroupValue('Enabled', 'Equalizer.Config', FEqualizerConfig.Enabled);
+  TTRPSettings.SetGroupValue('CompressorEnabled', 'Equalizer.Config', FEqualizerConfig.CompressorEnabled);
+  TTRPSettings.SetGroupValue('DAmpEnabled', 'Equalizer.Config', FEqualizerConfig.DampEnabled);
 
   // Update default preset
   TTRPSettings.SetGroupValue('DefaultPreset', 'Equalizer.Config', FEqualizerConfig.DefaultPreset);
+  TTRPSettings.SetGroupValue('DefaultCompressorPreset', 'Equalizer.Config', FEqualizerConfig.DefaultCompressorPreset);
+  TTRPSettings.SetGroupValue('DefaultDAmpPreset', 'Equalizer.Config', FEqualizerConfig.DefaultDampPreset);
 
   // Update presets
   presetsCount := FEqualizerPresets.Count - 1;
@@ -526,6 +582,10 @@ begin
     Band7Center := TTRPSettings.GetGroupValue('Band7.Center', 'Equalizer.Config', 8000, true);
     Band8Center := TTRPSettings.GetGroupValue('Band8.Center', 'Equalizer.Config', 16000, true);
     DefaultPreset := TTRPSettings.GetGroupValue('DefaultPreset', 'Equalizer.Config', 'Default', true);
+    CompressorEnabled := TTRPSettings.GetGroupValue('CompressorEnabled', 'Equalizer.Config', false, true);
+    DefaultCompressorPreset := TTRPSettings.GetGroupValue('DefaultCompressorPreset', 'Equalizer.Config', 'Default', true);
+    DampEnabled := TTRPSettings.GetGroupValue('DAmpEnabled', 'Equalizer.Config', false, true);
+    DefaultDampPreset := TTRPSettings.GetGroupValue('DefaultDAmpPreset', 'Equalizer.Config', 'Default', true);
   end;
 
   if not Assigned(FEqualizerPresets) then
@@ -547,7 +607,7 @@ begin
 
 end;
 
-procedure TRadioPlayer.LoadPreset(PresetName: string; DefaultValues: array of integer);
+procedure TRadioPlayer.LoadPreset(APresetName: string; DefaultValues: array of integer);
 var
   preset: TEqualizerPreset;
 begin
@@ -555,18 +615,137 @@ begin
 
   with preset do
   begin
-    Name := PresetName;
-    Band1Gain := TTRPSettings.GetGroupValue(PresetName + '.Band1.Gain', 'Equalizer.Presets', DefaultValues[0], true);
-    Band2Gain := TTRPSettings.GetGroupValue(PresetName + '.Band2.Gain', 'Equalizer.Presets', DefaultValues[1], true);
-    Band3Gain := TTRPSettings.GetGroupValue(PresetName + '.Band3.Gain', 'Equalizer.Presets', DefaultValues[2], true);
-    Band4Gain := TTRPSettings.GetGroupValue(PresetName + '.Band4.Gain', 'Equalizer.Presets', DefaultValues[3], true);
-    Band5Gain := TTRPSettings.GetGroupValue(PresetName + '.Band5.Gain', 'Equalizer.Presets', DefaultValues[4], true);
-    Band6Gain := TTRPSettings.GetGroupValue(PresetName + '.Band6.Gain', 'Equalizer.Presets', DefaultValues[5], true);
-    Band7Gain := TTRPSettings.GetGroupValue(PresetName + '.Band7.Gain', 'Equalizer.Presets', DefaultValues[6], true);
-    Band8Gain := TTRPSettings.GetGroupValue(PresetName + '.Band8.Gain', 'Equalizer.Presets', DefaultValues[7], true);
+    Name := APresetName;
+    Band1Gain := TTRPSettings.GetGroupValue(APresetName + '.Band1.Gain', 'Equalizer.Presets', DefaultValues[0], true);
+    Band2Gain := TTRPSettings.GetGroupValue(APresetName + '.Band2.Gain', 'Equalizer.Presets', DefaultValues[1], true);
+    Band3Gain := TTRPSettings.GetGroupValue(APresetName + '.Band3.Gain', 'Equalizer.Presets', DefaultValues[2], true);
+    Band4Gain := TTRPSettings.GetGroupValue(APresetName + '.Band4.Gain', 'Equalizer.Presets', DefaultValues[3], true);
+    Band5Gain := TTRPSettings.GetGroupValue(APresetName + '.Band5.Gain', 'Equalizer.Presets', DefaultValues[4], true);
+    Band6Gain := TTRPSettings.GetGroupValue(APresetName + '.Band6.Gain', 'Equalizer.Presets', DefaultValues[5], true);
+    Band7Gain := TTRPSettings.GetGroupValue(APresetName + '.Band7.Gain', 'Equalizer.Presets', DefaultValues[6], true);
+    Band8Gain := TTRPSettings.GetGroupValue(APresetName + '.Band8.Gain', 'Equalizer.Presets', DefaultValues[7], true);
   end;
 
-  FEqualizerPresets.Add(PresetName, preset);
+  FEqualizerPresets.Add(APresetName, preset);
+end;
+
+{$ENDREGION}
+
+{$REGION 'Compressor'}
+
+procedure TRadioPlayer.CompressorEnable;
+begin
+  FEqualizerConfig.CompressorEnabled := true;
+
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    FRadioPlayerThreads[FActiveRadioPlayerThread].CompressorEnable(true);
+end;
+
+procedure TRadioPlayer.CompressorDisable;
+begin
+  FEqualizerConfig.CompressorEnabled := false;
+
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    FRadioPlayerThreads[FActiveRadioPlayerThread].CompressorDisable();
+end;
+
+procedure TRadioPlayer.UpdateCompressorPreset(APresetName: string);
+begin
+  EqualizerConfig.DefaultCompressorPreset := APresetName;
+
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    FRadioPlayerThreads[FActiveRadioPlayerThread].UpdateCompressorPreset(
+      FCompressorPresets[FEqualizerConfig.DefaultCompressorPreset]);
+end;
+
+procedure TRadioPlayer.LoadCompressorConfigAndPressets;
+begin
+  if not Assigned(FCompressorPresets) then
+    FCompressorPresets := TCompressorPresets.Create;
+
+  LoadCompressorPreset('Default', 5.0, -15.0, 3.0, 20.0, 200.0);
+  LoadCompressorPreset('Soft', 3.7, -15.0, 2.0, 24.0, 800.0);
+  LoadCompressorPreset('Medium', 7.5, -20.0, 4.0, 16.0, 500.0);
+  LoadCompressorPreset('Hard', 10.0, -23.0, 8.0, 12.0, 400.0);
+end;
+
+procedure TRadioPlayer.LoadCompressorPreset(APresetName: string;
+  AGain, AThreshold, ARatio, AAttack, ARelease: single);
+var
+  preset: TCompressorPreset;
+begin
+  preset := TCompressorPreset.Create;
+
+  with preset do
+  begin
+    Name      := APresetName;
+    Gain      := TTRPSettings.GetGroupValue(APresetName + '.Gain',      'Equalizer.Compressor.Presets', AGain,      true);
+    Threshold := TTRPSettings.GetGroupValue(APresetName + '.Threshold', 'Equalizer.Compressor.Presets', AThreshold, true);
+    Ratio     := TTRPSettings.GetGroupValue(APresetName + '.Ratio',     'Equalizer.Compressor.Presets', ARatio,     true);
+    Attack    := TTRPSettings.GetGroupValue(APresetName + '.Attack',    'Equalizer.Compressor.Presets', AAttack,    true);
+    Release   := TTRPSettings.GetGroupValue(APresetName + '.Release',   'Equalizer.Compressor.Presets', ARelease,   true);
+  end;
+
+  FCompressorPresets.Add(APresetName, preset);
+end;
+
+{$ENDREGION}
+
+{$REGION 'DAMP'}
+
+procedure TRadioPlayer.DampEnable;
+begin
+  FEqualizerConfig.DampEnabled := true;
+
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    FRadioPlayerThreads[FActiveRadioPlayerThread].DampEnable(true);
+end;
+
+procedure TRadioPlayer.DampDisable;
+begin
+  FEqualizerConfig.DampEnabled := false;
+
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    FRadioPlayerThreads[FActiveRadioPlayerThread].DampDisable();
+end;
+
+procedure TRadioPlayer.UpdateDampPreset(APresetName: string);
+begin
+  EqualizerConfig.DefaultDampPreset := APresetName;
+
+  if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
+    FRadioPlayerThreads[FActiveRadioPlayerThread].UpdateDampPreset(
+      FDampPresets[FEqualizerConfig.DefaultDampPreset]);
+end;
+
+procedure TRadioPlayer.LoadDampConfigAndPressets;
+begin
+  if not Assigned(FDampPresets) then
+    FDampPresets := TDampPresets.Create;
+
+  LoadDampPreset('Soft', 0.92, 0.02, 0.01, 1.0, 0.5);
+  LoadDampPreset('Medium', 0.94, 0.03, 0.01, 1.0, 0.35);
+  LoadDampPreset('Hard', 0.98, 0.04, 0.02, 2.0, 0.2);
+end;
+
+procedure TRadioPlayer.LoadDampPreset(APresetName: string; ATarget, AQuiet,
+  ARate, AGain, ADelay: single);
+var
+  preset: TDampPreset;
+begin
+  preset := TDampPreset.Create;
+
+  with preset do
+  begin
+    Name   := APresetName;
+    Target := TTRPSettings.GetGroupValue(APresetName + '.Target', 'Equalizer.DAmp.Presets', ATarget, true);
+    Quiet  := TTRPSettings.GetGroupValue(APresetName + '.Quiet',  'Equalizer.DAmp.Presets', AQuiet,  true);
+    Rate   := TTRPSettings.GetGroupValue(APresetName + '.Rate',   'Equalizer.DAmp.Presets', ARate,   true);
+    Gain   := TTRPSettings.GetGroupValue(APresetName + '.Gain',   'Equalizer.DAmp.Presets', AGain,   true);
+    Delay  := TTRPSettings.GetGroupValue(APresetName + '.Delay',  'Equalizer.DAmp.Presets', ADelay,  true);
+  end;
+
+  FDampPresets.Add(APresetName, preset);
 end;
 
 {$ENDREGION}

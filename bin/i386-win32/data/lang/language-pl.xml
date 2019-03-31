@@ -106,6 +106,10 @@
 		<Item name="Equalizer.Presets" type="string">Presets</Item>
 		<Item name="Equalizer.KHz" type="string">kHz</Item>
 		<Item name="Equalizer.Hz" type="string">Hz</Item>
+		<Item name="Equalizer.Compressor" type="string">Compressor</Item>
+		<Item name="Equalizer.CompressorPresets" type="string">Presets</Item>
+		<Item name="Equalizer.DAmp" type="string">Dynamic Amplification</Item>
+		<Item name="Equalizer.DAmpPresets" type="string">Presets</Item>
 
 	</Items>
 </Resource>

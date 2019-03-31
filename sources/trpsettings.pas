@@ -223,7 +223,7 @@ class function TTRPSettings.GetGroupValue(const Item: string;
   const GroupName: string; const DefaultValue: single;
   const AddIfNoExists: boolean): single;
 begin
-  Result := StrToFloat(GetGroupValue(Item, GroupName, FloatToStr(DefaultValue), AddIfNoExists));
+  Result := StrToFloat(GetGroupValue(Item, GroupName, FloatToStrF(DefaultValue, ffGeneral, 7, 2), AddIfNoExists));
 end;
 
 class function TTRPSettings.GetGroupValue(const Item: string;
