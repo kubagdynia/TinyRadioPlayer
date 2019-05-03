@@ -1475,6 +1475,9 @@ object MainForm: TMainForm
         Action = OpenEqualizerAction
       end
     end
+    object miAbout: TMenuItem
+      Action = AboutAction
+    end
   end
   object MainActionList: TActionList
     left = 340
@@ -1517,6 +1520,10 @@ object MainForm: TMainForm
     object OpenEqualizerAction: TAction
       Caption = 'Equalizer'
       OnExecute = OpenEqualizerActionExecute
+    end
+    object AboutAction: TAction
+      Caption = 'About'
+      OnExecute = AboutActionExecute
     end
   end
   object PopupMenuStationList: TPopupMenu
