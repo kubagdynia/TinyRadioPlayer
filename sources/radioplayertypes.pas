@@ -45,6 +45,19 @@ type
     CountryCode         : string;
   end;
 
+{ - - - - - - - - - - - - - - - ApplicationInfo - - - - - - - - - - - - - - - - }
+type
+  TApplicationInfo = packed record
+    CompanyName         : string;
+    FileDescription     : string;
+    FileVersion         : string;
+    InternalName        : string;
+    LegalCopyright      : string;
+    OriginalFilename    : string;
+    ProductName         : string;
+    ProductVersion      : string;
+  end;
+
 { - - - - - - - - - - - - - - - - DictionaryTable - - - - - - - - - - - - - - -}
 type
   PDictionaryTable = ^TDictionaryTable;

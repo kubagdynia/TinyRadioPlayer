@@ -155,6 +155,8 @@ type
     procedure StationDetailManagement(OpenMode: TOpenMode; DropFileName: string = EMPTY_STR);
 
     procedure RadioActions(Sender: TObject);
+
+    procedure TextScrollSetDefaultValues;
   public
     RadioPlayer: TRadioPlayer;
 
@@ -200,8 +202,7 @@ begin
   // Create text scroll
   TextScroll := TCTRPTextScroll.Create(Self);
   TextScroll.Parent := TopInfoPanel;
-  TextScroll.Lines.TextScrollLine1.ScrollText := 'Tiny Radio Player';
-  TextScroll.Lines.TextScrollLine2.ScrollText := 'ver. 0.1';
+  TextScrollSetDefaultValues;
   TextScroll.OnMouseEnter := @TextScrollMouseEnter;
   TextScroll.OnMouseLeave := @TextScrollMouseLeave;
 
@@ -390,6 +391,16 @@ begin
       RadioPlayer.GetSelectedStationId(VstStationList),
       VolumeTrackBar.Position);
   end;
+end;
+
+procedure TMainForm.TextScrollSetDefaultValues;
+var
+  appInfo: TApplicationInfo;
+begin
+  appInfo := GetApplicationInfo;
+
+  TextScroll.Lines.TextScrollLine1.ScrollText := appInfo.ProductName;
+  TextScroll.Lines.TextScrollLine2.ScrollText := appInfo.FileVersion;
 end;
 
 procedure TMainForm.PopupMenuStationListPopup(Sender: TObject);
@@ -614,6 +625,7 @@ begin
   miSkins.Caption := GetLanguageItem('MainMenu.Settings.Skins', 'Skins');
   miDictionaryTables.Caption := GetLanguageItem('MainMenu.Settings.DictionaryTables', 'Dictionary Tables');
   miEqualizer.Caption := GetLanguageItem('MainMenu.Settings.Equalizer', 'Equalizer');
+  miAbout.Caption := GetLanguageItem('MainMenu.About', 'About');
 
   VstStationList.Header.Columns[0].Text :=
     GetLanguageItem('MainForm.StationList.StationName', 'Station Name');

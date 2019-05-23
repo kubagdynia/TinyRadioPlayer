@@ -492,6 +492,7 @@ begin
     FRadioPlayerThreads[ThreadIndex] := TRadioPlayerThread.Create(True, FEqualizerConfig, FFloatable);
     FRadioPlayerThreads[ThreadIndex].OnStreamPlaying := @RadioPlayerThreadsOnStreamPlaying;
     FRadioPlayerThreads[ThreadIndex].OnStreamGetTags := @RadioPlayerThreadsStreamGetTags;
+
     FRadioPlayerThreads[ThreadIndex].Start;
   end;
 end;

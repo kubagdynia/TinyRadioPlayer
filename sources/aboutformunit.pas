@@ -13,7 +13,17 @@ type
   { TAboutForm }
 
   TAboutForm = class(TBaseForm)
-    Label1: TLabel;
+    lblPoweredByValue: TLabel;
+    lblPoweredBy: TLabel;
+    lblPoweredByValue2: TLabel;
+    lblSourceCodeValue: TLabel;
+    lblSourceCode: TLabel;
+    lblLicenseValue: TLabel;
+    lblLicense: TLabel;
+    lblVersion: TLabel;
+    lblFileVersion: TLabel;
+    lblVersionValue: TLabel;
+    lblFileVersionValue: TLabel;
   private
 
   protected
@@ -30,6 +40,8 @@ var
 
 implementation
 
+uses RadioPlayerTypes, Helpers;
+
 {$R *.lfm}
 
 { TAboutForm }
@@ -37,6 +49,14 @@ implementation
 procedure TAboutForm.LoadLanguages;
 begin
   inherited LoadLanguages;
+
+  Self.Caption := GetLanguageItem('About.WindowName', 'About');
+
+  lblVersion.Caption := GetLanguageItem('About.Version', 'Version');
+  lblFileVersion.Caption := GetLanguageItem('About.FileVersion', 'File version');
+  lblLicense.Caption := GetLanguageItem('About.License', 'License');
+  lblSourceCode.Caption := GetLanguageItem('About.SourceCode', 'Source code');
+  lblPoweredBy.Caption := GetLanguageItem('About.PoweredBy', 'Powered by');
 end;
 
 procedure TAboutForm.LoadSkins;
@@ -45,11 +65,21 @@ begin
 end;
 
 constructor TAboutForm.Create(AOwner: TComponent);
+var
+  appInfo: TApplicationInfo;
 begin
   inherited Create(AOwner);
 
   btnCancel.Visible := false;
-  //lblTitle.Visible := false;
+
+  appInfo := GetApplicationInfo;
+
+  lblTitle.Caption := appInfo.ProductName;
+
+  lblVersionValue.Caption := appInfo.ProductVersion;
+  lblFileVersionValue.Caption := appInfo.FileVersion;
+  lblLicenseValue.Caption := appInfo.LegalCopyright;
+
 end;
 
 end.
