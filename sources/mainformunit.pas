@@ -930,7 +930,7 @@ begin
     // Colorize line with currently playing station
     if (Data^.snd.ID = RadioPlayer.CurrentStationId) then
     begin
-      ItemColor := GridLineColorCurrentlyPlaying;
+      ItemColor := TSkins.GetColorItem('StationList.Grid.CurrentlyPlayingStationColor');
       EraseAction := eaColor;
     end
     else
