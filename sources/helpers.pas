@@ -14,7 +14,7 @@ Description:         Useful functions and procedures
 interface
 
 uses
-  Classes, SysUtils, Graphics, Consts, LCLType;
+  Classes, SysUtils, Graphics, Consts, LCLType, RadioPlayerTypes;
 
 var
   ApplicationPath: string = EMPTY_STR;
@@ -56,10 +56,12 @@ var
   function BoolToFullStr(const Value: boolean): string;
   function FullStrToBool(const Value: string): boolean;
 
+  function GetApplicationInfo: TApplicationInfo;
+
 implementation
 
 uses
-  dateutils, Language, Log;
+  dateutils, Language, Log, fileinfo;
 
 // This function returns the application main path
 function GetApplicationPath: string;
@@ -198,6 +200,31 @@ end;
 function FullStrToBool(const Value: string): boolean;
 begin
   Result := IIf(UpperCase(Trim(Value)) = 'TRUE', true, false);
+end;
+
+function GetApplicationInfo: TApplicationInfo;
+var
+  appInfo: TApplicationInfo;
+  fileVerInfo: TFileVersionInfo;
+begin
+  fileVerInfo := TFileVersionInfo.Create(nil);
+
+  try
+    fileVerInfo.ReadFileInfo;
+
+    appInfo.CompanyName      := fileVerInfo.VersionStrings.Values['CompanyName'];
+    appInfo.FileDescription  := fileVerInfo.VersionStrings.Values['FileDescription'];
+    appInfo.FileVersion      := fileVerInfo.VersionStrings.Values['FileVersion'];
+    appInfo.InternalName     := fileVerInfo.VersionStrings.Values['InternalName'];
+    appInfo.LegalCopyright   := fileVerInfo.VersionStrings.Values['LegalCopyright'];
+    appInfo.OriginalFilename := fileVerInfo.VersionStrings.Values['OriginalFilename'];
+    appInfo.ProductName      := fileVerInfo.VersionStrings.Values['ProductName'];
+    appInfo.ProductVersion   := fileVerInfo.VersionStrings.Values['ProductVersion'];
+
+    Result := appInfo;
+  finally
+    fileVerInfo.Free;
+  end;
 end;
 
 end.

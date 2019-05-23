@@ -35,6 +35,7 @@
 		<Item name="MainMenu.Settings.Skins" type="string">Skins</Item>
 		<Item name="MainMenu.Settings.DictionaryTables" type="string">Dictionary Tables</Item>
 		<Item name="MainMenu.Settings.Equalizer" type="string">Equalizer</Item>
+		<Item name="MainMenu.About" type="string">About</Item>
 		
 		<!-- Main Form - Station List -->
 		<Item name="MainForm.StationList.StationName" type="string">Station Name</Item>
@@ -106,6 +107,18 @@
 		<Item name="Equalizer.Presets" type="string">Presets</Item>
 		<Item name="Equalizer.KHz" type="string">kHz</Item>
 		<Item name="Equalizer.Hz" type="string">Hz</Item>
+		<Item name="Equalizer.Compressor" type="string">Compressor</Item>
+		<Item name="Equalizer.CompressorPresets" type="string">Presets</Item>
+		<Item name="Equalizer.DAmp" type="string">Dynamic Amplification</Item>
+		<Item name="Equalizer.DAmpPresets" type="string">Presets</Item>
+		
+		<!-- About -->
+		<Item name="About.WindowName" type="string">About</Item>
+		<Item name="About.Version" type="string">Version:</Item>
+		<Item name="About.FileVersion" type="string">File version:</Item>
+		<Item name="About.License" type="string">License:</Item>
+		<Item name="About.SourceCode" type="string">Source code:</Item>
+		<Item name="About.PoweredBy" type="string">Powered by:</Item>
 
 	</Items>
 </Resource>

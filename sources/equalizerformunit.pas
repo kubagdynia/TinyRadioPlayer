@@ -5,7 +5,7 @@ unit EqualizerFormUnit;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, BCLabel, BCButton, Forms, Controls,
+  Classes, SysUtils, FileUtil, BCLabel, BCButton, BCPanel, Forms, Controls,
   Graphics, Dialogs, ActnList, ExtCtrls, StdCtrls, ComCtrls, BaseFormUnit,
   RadioPlayer;
 
@@ -14,9 +14,14 @@ type
   { TEqualizerForm }
 
   TEqualizerForm = class(TBaseForm)
+    cbDamp: TCheckBox;
+    cboDampPresets: TComboBox;
     cbOnOff: TCheckBox;
+    cbCompressor: TCheckBox;
+    cboCompressorPresets: TComboBox;
     GroupBox1: TGroupBox;
     cboPresets: TComboBox;
+    lblDampPresets: TLabel;
     lblPos2: TLabel;
     lblPos1: TLabel;
     lblPos7: TLabel;
@@ -39,6 +44,7 @@ type
     lblEqBand3Center: TLabel;
     lblEqBand1Center: TLabel;
     lblEqBand2Center: TLabel;
+    lblCompressorPresets: TLabel;
     tbEqBand1Gain: TTrackBar;
     tbEqBand2Gain: TTrackBar;
     tbEqBand3Gain: TTrackBar;
@@ -47,6 +53,10 @@ type
     tbEqBand6Gain: TTrackBar;
     tbEqBand7Gain: TTrackBar;
     tbEqBand8Gain: TTrackBar;
+    procedure cbCompressorChange(Sender: TObject);
+    procedure cbDampChange(Sender: TObject);
+    procedure cboCompressorPresetsChange(Sender: TObject);
+    procedure cboDampPresetsChange(Sender: TObject);
     procedure cbOnOffChange(Sender: TObject);
     procedure cboPresetsChange(Sender: TObject);
     procedure tbEqBand1GainChange(Sender: TObject);
@@ -68,6 +78,9 @@ type
     procedure ConfigEqualizerLabel(BandCenter: integer; BandCenterLabel: TLabel);
     procedure ConfigEqualizerValues(PresetName: string);
     procedure AddPresetNames;
+
+    procedure AddCompressorPressetNames;
+    procedure AddDampPressetNames;
 
     procedure SetLabelsPOsition(ATrackBar: TTrackBar; ALabel: TLabel);
   protected
@@ -102,8 +115,12 @@ begin
   FRadioPlayer := ARadioPlayer;
 
   AddPresetNames;
+  AddCompressorPressetNames;
+  AddDampPressetNames;
 
   cbOnOff.Checked :=  FRadioPlayer.EqualizerConfig.Enabled;
+  cbCompressor.Checked := FRadioPlayer.EqualizerConfig.CompressorEnabled;
+  cbDamp.Checked := FRadioPlayer.EqualizerConfig.DampEnabled;
 
   ConfigEqualizer;
   ConfigEqualizerValues(cboPresets.Text);
@@ -130,6 +147,48 @@ begin
 
   lblPresets.Enabled := cbOnOff.Checked;
   cboPresets.Enabled := cbOnOff.Checked;
+end;
+
+procedure TEqualizerForm.cbCompressorChange(Sender: TObject);
+begin
+  if FChangeEventsEnabled then
+  begin
+    if cbCompressor.Checked then
+      FRadioPlayer.CompressorEnable
+    else
+      FRadioPlayer.CompressorDisable;
+  end;
+
+  lblCompressorPresets.Enabled := cbCompressor.Checked;
+  cboCompressorPresets.Enabled := cbCompressor.Checked;
+end;
+
+procedure TEqualizerForm.cbDampChange(Sender: TObject);
+begin
+  if FChangeEventsEnabled then
+  begin
+    if cbDamp.Checked then
+      FRadioPlayer.DampEnable
+    else
+      FRadioPlayer.DampDisable;
+  end;
+
+  lblDampPresets.Enabled := cbDamp.Checked;
+  cboDampPresets.Enabled := cbDamp.Checked;
+end;
+
+procedure TEqualizerForm.cboCompressorPresetsChange(Sender: TObject);
+begin
+  if not FChangeEventsEnabled then exit;
+
+  FRadioPlayer.UpdateCompressorPreset(cboCompressorPresets.Text);
+end;
+
+procedure TEqualizerForm.cboDampPresetsChange(Sender: TObject);
+begin
+  if not FChangeEventsEnabled then exit;
+
+  FRadioPlayer.UpdateDampPreset(cboDampPresets.Text);
 end;
 
 procedure TEqualizerForm.cboPresetsChange(Sender: TObject);
@@ -285,6 +344,54 @@ begin
   cboPresets.Items.EndUpdate;
 end;
 
+procedure TEqualizerForm.AddCompressorPressetNames;
+var
+  i: integer;
+  presetsCount: integer;
+  presetName: string;
+begin
+  cboCompressorPresets.Items.BeginUpdate;
+
+  cboCompressorPresets.Clear;
+
+  presetsCount := FRadioPlayer.CompressorPresets.Count;
+
+  for i := 0 to presetsCount - 1 do
+  begin
+    presetName := FRadioPlayer.CompressorPresets.Keys[i];
+    cboCompressorPresets.Items.Add(presetName);
+
+    if presetName = FRadioPlayer.EqualizerConfig.DefaultCompressorPreset then
+      cboCompressorPresets.ItemIndex := i;
+  end;
+
+  cboCompressorPresets.Items.EndUpdate;
+end;
+
+procedure TEqualizerForm.AddDampPressetNames;
+var
+  i: integer;
+  presetsCount: integer;
+  presetName: string;
+begin
+  cboDampPresets.Items.BeginUpdate;
+
+  cboDampPresets.Clear;
+
+  presetsCount := FRadioPlayer.DampPresets.Count;
+
+  for i := 0 to presetsCount - 1 do
+  begin
+    presetName := FRadioPlayer.DampPresets.Keys[i];
+    cboDampPresets.Items.Add(presetName);
+
+    if presetName = FRadioPlayer.EqualizerConfig.DefaultDampPreset then
+      cboDampPresets.ItemIndex := i;
+  end;
+
+  cboDampPresets.Items.EndUpdate;
+end;
+
 procedure TEqualizerForm.LoadLanguages;
 begin
   inherited LoadLanguages;
@@ -294,6 +401,11 @@ begin
   lblPresets.Caption := GetLanguageItem('Equalizer.Presets', 'Presets');
   FKhz := GetLanguageItem('Equalizer.KHz', 'kHz');
   FHz := GetLanguageItem('Equalizer.Hz', 'Hz');
+  cbCompressor.Caption := GetLanguageItem('Equalizer.Compressor', 'Compressor');
+  lblCompressorPresets.Caption := GetLanguageItem('Equalizer.CompressorPresets', 'Presets');
+
+  cbDamp.Caption := GetLanguageItem('Equalizer.DAmp', 'Dynamic Amplification');
+  lblDampPresets.Caption := GetLanguageItem('Equalizer.DAmpPresets', 'Presets');
 end;
 
 procedure TEqualizerForm.LoadSkins;

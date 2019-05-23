@@ -109,6 +109,8 @@ begin
 
   err := DictionaryRepo.AddDictionaryRow('Alternative Music', 'AlternativeMusic', 1, dictionaryId, dictionaryRowId);
   err := DictionaryRepo.AddDictionaryRow('Blues', 'Blues', 1, dictionaryId, dictionaryRowId);
+  err := DictionaryRepo.AddDictionaryRow('Classic Hits', 'ClassicHits', 1, dictionaryId, dictionaryRowId);
+  err := DictionaryRepo.AddDictionaryRow('Classic Rock', 'ClassicRock', 1, dictionaryId, dictionaryRowId);
   err := DictionaryRepo.AddDictionaryRow('Classical Music', 'ClassicalMusic', 1, dictionaryId, dictionaryRowId);
   err := DictionaryRepo.AddDictionaryRow('Country Music', 'CountryMusic', 1, dictionaryId, dictionaryRowId);
   err := DictionaryRepo.AddDictionaryRow('Dance Music', 'DanceMusic', 1, dictionaryId, dictionaryRowId);

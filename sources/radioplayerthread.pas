@@ -40,13 +40,24 @@ type
     FReq: DWord;          // sample rate
     FFloatable: DWord;    // floating-point channel support? 0 = no, else yes
 
-    FFxEq: DWord;         // dsp peaking eq handle
-    FEq: BASS_BFX_PEAKEQ; // dsp peaking equalizer
-
     // Equalizer
     FEqEnabled: boolean;
+    FFxEq: DWord;
+    FEq: BASS_BFX_PEAKEQ;
     FEqualizerConfig: TEqualizerConfig;
     FEqualizerPreset: TEqualizerPreset;
+
+    // Compressor
+    FCompressorEnabled: boolean;
+    FFxCompressor: DWord;
+    FCompressor: BASS_BFX_COMPRESSOR2;
+    FCompressorPreset: TCompressorPreset;
+
+    // DAMP
+    FDampEnabled: boolean;
+    FFxDamp: DWord;
+    FDamp: BASS_BFX_DAMP;
+    FDampPreset: TDampPreset;
 
     FCritSection: TCriticalSection;
     FChannelStatus: DWord;
@@ -72,6 +83,8 @@ type
     procedure CheckBufferProgress;
 
     procedure UpdateEQPreset;
+    procedure UpdateCompressorPreset;
+    procedure UpdateDampPreset;
   protected
     procedure Execute; override;
     procedure SynchronizePlayerMessage;
@@ -98,12 +111,23 @@ type
     procedure PlayURL(AStreamUrl: string;
       const AVolume: Integer;
       const AThreadIndex: Integer;
-      const AEqualizerPreset: TEqualizerPreset);
+      const AEqualizerPreset: TEqualizerPreset;
+      const ACompressorPreset: TCompressorPreset);
 
     // Equalizer
     procedure EqualizerEnable(AUpdateEQPreset: boolean);
     procedure EqualizerDisable();
     procedure UpdateEQ(Band: integer; Pos: Integer);
+
+    // Compressor
+    procedure CompressorEnable(AUpdatePreset: boolean);
+    procedure CompressorDisable();
+    procedure UpdateCompressorPreset(APreset: TCompressorPreset);
+
+    // DAMP
+    procedure DampEnable(AUpdatePreset: boolean);
+    procedure DampDisable();
+    procedure UpdateDampPreset(APreset: TDampPreset);
 
     property OnStreamPlaying: TStreamStatusEvent read FOnStreamPlaying write FOnStreamPlaying;
     property OnStreamStopped: TNotifyEvent read FOnStreamStopped write FOnStreamStopped;
@@ -215,32 +239,37 @@ begin
     DoFadeIn;
 
     // get the broadcast name and bitrate
-      icy := BASS_ChannelGetTags(FChannel, BASS_TAG_ICY);
+    icy := BASS_ChannelGetTags(FChannel, BASS_TAG_ICY);
 
-      if (icy = nil) then
-        icy := BASS_ChannelGetTags(FChannel, BASS_TAG_HTTP); // no ICY tags, try HTTP
-      if (icy <> nil) then
-        while (icy^ <> #0) do
-        begin
-          if (Copy(icy, 1, 9) = 'icy-name:') then
-            SendPlayerMessage(Copy(icy, 10, MaxInt), TPlayerMessageType.StreamName)
-          else if (Copy(icy, 1, 7) = 'icy-br:') then
-            SendPlayerMessage(Copy(icy, 8, MaxInt), TPlayerMessageType.Bitrate); // bitrate
-          icy := icy + Length(icy) + 1;
-        end;
+    if (icy = nil) then
+      icy := BASS_ChannelGetTags(FChannel, BASS_TAG_HTTP); // no ICY tags, try HTTP
 
-      // get the stream title and set sync for subsequent titles
-      MetaStream;
-
-      // play it!
-      if BASS_ChannelPlay(FChannel, FALSE) then
+    if (icy <> nil) then
+      while (icy^ <> #0) do
       begin
+        if (Copy(icy, 1, 9) = 'icy-name:') then
+          SendPlayerMessage(Copy(icy, 10, MaxInt), TPlayerMessageType.StreamName)
+        else if (Copy(icy, 1, 7) = 'icy-br:') then
+          SendPlayerMessage(Copy(icy, 8, MaxInt), TPlayerMessageType.Bitrate); // bitrate
 
-        if FEqualizerConfig.Enabled then
-          EqualizerEnable(true);
-
-        SendPlayerMessage(EMPTY_STR, TPlayerMessageType.Other);
+        icy := icy + Length(icy) + 1;
       end;
+
+    // get the stream title and set sync for subsequent titles
+    MetaStream;
+
+    // play it!
+    if BASS_ChannelPlay(FChannel, FALSE) then
+    begin
+
+      if FEqualizerConfig.Enabled then
+        EqualizerEnable(true);
+
+      if FEqualizerConfig.CompressorEnabled then
+        CompressorEnable(true);
+
+      SendPlayerMessage(EMPTY_STR, TPlayerMessageType.Other);
+    end;
 
   end;
 
@@ -256,6 +285,8 @@ begin
   FReq := 0;
 
   FEqualizerPreset := TEqualizerPreset.Create;
+  FCompressorPreset := TCompressorPreset.Create;
+  FDampPreset := TDampPreset.Create;
 
   FEqualizerConfig := AEqualizerConfig;
 
@@ -291,6 +322,12 @@ begin
 
   if Assigned(FEqualizerPreset) then
     FreeAndNil(FEqualizerPreset);
+
+  if Assigned(FCompressorPreset) then
+    FreeAndNil(FCompressorPreset);
+
+  if Assigned(FDampPreset) then
+    FreeAndNil(FDampPreset);
 
   // Delete critical section
   DeleteCriticalSection(FCritSection);
@@ -395,7 +432,8 @@ end;
 
 procedure TRadioPlayerThread.PlayURL(AStreamUrl: string;
   const AVolume: Integer; const AThreadIndex: Integer;
-  const AEqualizerPreset: TEqualizerPreset);
+  const AEqualizerPreset: TEqualizerPreset;
+  const ACompressorPreset: TCompressorPreset);
 begin
   StreamStop;
 
@@ -407,15 +445,29 @@ begin
   FChannelStatus := BASS_ACTIVE_STOPPED;
 
   // Copy equalizer preset
-  FEqualizerPreset.Name := AEqualizerPreset.Name;
-  FEqualizerPreset.Band1Gain := AEqualizerPreset.Band1Gain;
-  FEqualizerPreset.Band2Gain := AEqualizerPreset.Band2Gain;
-  FEqualizerPreset.Band3Gain := AEqualizerPreset.Band3Gain;
-  FEqualizerPreset.Band4Gain := AEqualizerPreset.Band4Gain;
-  FEqualizerPreset.Band5Gain := AEqualizerPreset.Band5Gain;
-  FEqualizerPreset.Band6Gain := AEqualizerPreset.Band6Gain;
-  FEqualizerPreset.Band7Gain := AEqualizerPreset.Band7Gain;
-  FEqualizerPreset.Band8Gain := AEqualizerPreset.Band8Gain;
+  with FEqualizerPreset do
+  begin
+    Name := AEqualizerPreset.Name;
+    Band1Gain := AEqualizerPreset.Band1Gain;
+    Band2Gain := AEqualizerPreset.Band2Gain;
+    Band3Gain := AEqualizerPreset.Band3Gain;
+    Band4Gain := AEqualizerPreset.Band4Gain;
+    Band5Gain := AEqualizerPreset.Band5Gain;
+    Band6Gain := AEqualizerPreset.Band6Gain;
+    Band7Gain := AEqualizerPreset.Band7Gain;
+    Band8Gain := AEqualizerPreset.Band8Gain;
+  end;
+
+  // Copy compressor presset
+  with FCompressorPreset do
+  begin
+    Name := ACompressorPreset.Name;
+    Gain := ACompressorPreset.Gain;
+    Threshold := ACompressorPreset.Threshold;
+    Ratio := ACompressorPreset.Ratio;
+    Attack := ACompressorPreset.Attack;
+    Release := ACompressorPreset.Release;
+  end;
 
   // Copy these data to used it by execute method
   FStreamUrlToPlay := AStreamUrl;
@@ -629,6 +681,8 @@ begin
   // set peaking equalizer effect with no bands
   FFxEq := BASS_ChannelSetFX(FChannel, BASS_FX_BFX_PEAKEQ, 0);
 
+  //FFxDamp := BASS_ChannelSetFX(FChannel, BASS_FX_BFX_DAMP, 0);
+
   with FEq do begin
     fBandwidth := FEqualizerConfig.Bandwidth;
     FQ := 0;
@@ -678,6 +732,8 @@ begin
 
   FEqEnabled := false;
   BASS_ChannelRemoveFX(FChannel, FFxEq);
+
+  BASS_ChannelRemoveFX(FChannel, FFxDamp);
 end;
 
 procedure TRadioPlayerThread.UpdateEQ(Band: integer; Pos: Integer);
@@ -698,6 +754,128 @@ begin
   BASS_FXGetParameters(FFxEq, @FEq);
   FEq.fGain := Pos;
   BASS_FXSetParameters(FFxEq, @FEq);
+end;
+
+{$ENDREGION}
+
+{$REGION 'Compressor'}
+
+procedure TRadioPlayerThread.CompressorEnable(AUpdatePreset: boolean);
+begin
+  if FCompressorEnabled then exit;
+
+  FCompressorEnabled := true;
+
+  FFxCompressor := BASS_ChannelSetFX(FChannel, BASS_FX_BFX_COMPRESSOR2, 0);
+
+  if AUpdatePreset then
+    UpdateCompressorPreset;
+end;
+
+procedure TRadioPlayerThread.CompressorDisable();
+begin
+  if not FCompressorEnabled then exit;
+
+  FCompressorEnabled := false;
+
+  BASS_ChannelRemoveFX(FChannel, FFxCompressor);
+end;
+
+procedure TRadioPlayerThread.UpdateCompressorPreset;
+begin
+  if not FCompressorEnabled then Exit;
+
+  BASS_FXGetParameters(FFxCompressor, @FCompressor);
+
+  with FCompressor do
+  begin
+    fThreshold := FCompressorPreset.Threshold;
+    fRatio := FCompressorPreset.Ratio;
+    fGain := FCompressorPreset.Gain;
+    fAttack := FCompressorPreset.Attack;
+    fRelease := FCompressorPreset.Release;
+  end;
+
+  BASS_FXSetParameters(FFxCompressor, @FCompressor);
+end;
+
+procedure TRadioPlayerThread.UpdateCompressorPreset(APreset: TCompressorPreset);
+begin
+  if not FCompressorEnabled then Exit;
+
+  // Copy compressor presset
+  with FCompressorPreset do
+  begin
+    Name := APreset.Name;
+    Gain := APreset.Gain;
+    Threshold := APreset.Threshold;
+    Ratio := APreset.Ratio;
+    Attack := APreset.Attack;
+    Release := APreset.Release;
+  end;
+
+  UpdateCompressorPreset;
+end;
+
+{$ENDREGION}
+
+{$REGION 'DAMP'}
+
+procedure TRadioPlayerThread.DampEnable(AUpdatePreset: boolean);
+begin
+  if FDampEnabled then exit;
+
+  FDampEnabled := true;
+
+  FFxDamp := BASS_ChannelSetFX(FChannel, BASS_FX_BFX_DAMP, 0);
+
+  if AUpdatePreset then
+    UpdateDampPreset;
+end;
+
+procedure TRadioPlayerThread.DampDisable();
+begin
+  if not FDampEnabled then exit;
+
+  FDampEnabled := false;
+
+  BASS_ChannelRemoveFX(FChannel, FFxDamp);
+end;
+
+procedure TRadioPlayerThread.UpdateDampPreset;
+begin
+  if not FDampEnabled then Exit;
+
+  BASS_FXGetParameters(FFxDamp, @FDamp);
+
+  with FDamp do
+  begin
+    fTarget := FDampPreset.Target;
+    fQuiet := FDampPreset.Quiet;
+    fRate := FDampPreset.Rate;
+    fGain := FDampPreset.Gain;
+    fDelay := FDampPreset.Delay;
+  end;
+
+  BASS_FXSetParameters(FFxDamp, @FDamp);
+end;
+
+procedure TRadioPlayerThread.UpdateDampPreset(APreset: TDampPreset);
+begin
+  if not FDampEnabled then Exit;
+
+  // Copy compressor presset
+  with FDampPreset do
+  begin
+    Name := APreset.Name;
+    Target := APreset.Target;
+    Quiet := APreset.Quiet;
+    Rate := APreset.Rate;
+    Gain := APreset.Gain;
+    Delay := APreset.Delay;
+  end;
+
+  UpdateDampPreset;
 end;
 
 {$ENDREGION}

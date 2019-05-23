@@ -33,7 +33,9 @@
 		<Item name="MainMenu.Settings" type="string">Ustawienia</Item>
 		<Item name="MainMenu.Settings.Language" type="string">Język</Item>
 		<Item name="MainMenu.Settings.Skins" type="string">Skórki</Item>
-		<Item name="MainMenu.DictionaryTables" type="string">Tablice Słownikowe</Item>
+		<Item name="MainMenu.Settings.DictionaryTables" type="string">Tablice Słownikowe</Item>
+		<Item name="MainMenu.Settings.Equalizer" type="string">Equalizer</Item>
+		<Item name="MainMenu.About" type="string">O programie</Item>
 		
 		<!-- Main Form - Station List -->
 		<Item name="MainForm.StationList.StationName" type="string">Nazwa Stacji</Item>
@@ -98,6 +100,25 @@
 		<Item name="DictionaryTables.Genre" type="string">Gatunek</Item>
 		<Item name="DictionaryTables.Region" type="string">Region</Item>
 		<Item name="DictionaryTables.Country" type="string">Kraj</Item>
+		
+		<!-- Equalizer -->
+		<Item name="Equalizer.WindowName" type="string">Equalizer</Item>
+		<Item name="Equalizer.OnOff" type="string">On / Off</Item>
+		<Item name="Equalizer.Presets" type="string">Presets</Item>
+		<Item name="Equalizer.KHz" type="string">kHz</Item>
+		<Item name="Equalizer.Hz" type="string">Hz</Item>
+		<Item name="Equalizer.Compressor" type="string">Compressor</Item>
+		<Item name="Equalizer.CompressorPresets" type="string">Presets</Item>
+		<Item name="Equalizer.DAmp" type="string">Dynamic Amplification</Item>
+		<Item name="Equalizer.DAmpPresets" type="string">Presets</Item>
+		
+		<!-- About -->
+		<Item name="About.WindowName" type="string">O programie</Item>
+		<Item name="About.Version" type="string">Wersja:</Item>
+		<Item name="About.FileVersion" type="string">Wersja pliku:</Item>
+		<Item name="About.License" type="string">Licencja:</Item>
+		<Item name="About.SourceCode" type="string">Kod źródłowy:</Item>
+		<Item name="About.PoweredBy" type="string">Powered by:</Item>
 
 	</Items>
 </Resource>

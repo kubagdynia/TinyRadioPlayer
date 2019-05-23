@@ -13,8 +13,10 @@
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <MinorVersionNr Value="2"/>
-      <StringTable CompanyName="Jakub Kurlowicz" ProductName="Tiny Radio Player"/>
+      <AutoIncrementBuild Value="True"/>
+      <MinorVersionNr Value="6"/>
+      <BuildNr Value="4"/>
+      <StringTable CompanyName="Jakub Kurlowicz" LegalCopyright="MIT License, Copyright (c) 2019 Jakub Kurlowicz" OriginalFilename="TinyRadioPlayer" ProductName="Tiny Radio Player" ProductVersion="2019.1"/>
     </VersionInfo>
     <BuildModes Count="2">
       <Item1 Name="Debug" Default="True"/>
@@ -79,7 +81,7 @@
         <PackageName Value="LCL"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="28">
+    <Units Count="29">
       <Unit0>
         <Filename Value="TinyRadioPlayer.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -240,6 +242,14 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="EqualizerFormUnit"/>
       </Unit27>
+      <Unit28>
+        <Filename Value="aboutformunit.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="AboutForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="AboutFormUnit"/>
+      </Unit28>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -25,6 +25,8 @@ type
 
   { TMainForm }
   TMainForm = class(TForm)
+    AboutAction: TAction;
+    miAbout: TMenuItem;
     OpenEqualizerAction: TAction;
     miEqualizer: TMenuItem;
     miCopyTitleToClipboard: TMenuItem;
@@ -75,6 +77,7 @@ type
     btnPlay: TBCButton;
     pbRightLevelMeter: TBGRAFlashProgressBar;
     Timer1: TTimer;
+    procedure AboutActionExecute(Sender: TObject);
     procedure AddStationActionExecute(Sender: TObject);
     procedure BottomFunctionPanelResize(Sender: TObject);
     procedure DeleteStationActionExecute(Sender: TObject);
@@ -152,6 +155,8 @@ type
     procedure StationDetailManagement(OpenMode: TOpenMode; DropFileName: string = EMPTY_STR);
 
     procedure RadioActions(Sender: TObject);
+
+    procedure TextScrollSetDefaultValues;
   public
     RadioPlayer: TRadioPlayer;
 
@@ -170,7 +175,7 @@ implementation
 
 uses
   Language, TRPSettings, Repository, StationDetailFormUnit, DictionaryTablesManagementFormUnit,
-  LCLIntf, Clipbrd, EqualizerFormUnit;
+  LCLIntf, Clipbrd, EqualizerFormUnit, AboutFormUnit;
 
 {$R *.lfm}
 
@@ -197,8 +202,7 @@ begin
   // Create text scroll
   TextScroll := TCTRPTextScroll.Create(Self);
   TextScroll.Parent := TopInfoPanel;
-  TextScroll.Lines.TextScrollLine1.ScrollText := 'Tiny Radio Player';
-  TextScroll.Lines.TextScrollLine2.ScrollText := 'ver. 0.1';
+  TextScrollSetDefaultValues;
   TextScroll.OnMouseEnter := @TextScrollMouseEnter;
   TextScroll.OnMouseLeave := @TextScrollMouseLeave;
 
@@ -389,6 +393,16 @@ begin
   end;
 end;
 
+procedure TMainForm.TextScrollSetDefaultValues;
+var
+  appInfo: TApplicationInfo;
+begin
+  appInfo := GetApplicationInfo;
+
+  TextScroll.Lines.TextScrollLine1.ScrollText := appInfo.ProductName;
+  TextScroll.Lines.TextScrollLine2.ScrollText := appInfo.FileVersion;
+end;
+
 procedure TMainForm.PopupMenuStationListPopup(Sender: TObject);
 var
   stationSelected: boolean;
@@ -448,6 +462,20 @@ end;
 procedure TMainForm.AddStationActionExecute(Sender: TObject);
 begin
   StationDetailManagement(TOpenMode.omNew);
+end;
+
+procedure TMainForm.AboutActionExecute(Sender: TObject);
+begin
+  if not Assigned(AboutForm) then
+  begin
+    AboutForm := TAboutForm.Create(Self);
+    try
+      AboutForm.ShowModal;
+    finally
+      FreeAndNil(AboutForm);
+    end;
+
+  end;
 end;
 
 procedure TMainForm.EditStationActionExecute(Sender: TObject);
@@ -597,6 +625,7 @@ begin
   miSkins.Caption := GetLanguageItem('MainMenu.Settings.Skins', 'Skins');
   miDictionaryTables.Caption := GetLanguageItem('MainMenu.Settings.DictionaryTables', 'Dictionary Tables');
   miEqualizer.Caption := GetLanguageItem('MainMenu.Settings.Equalizer', 'Equalizer');
+  miAbout.Caption := GetLanguageItem('MainMenu.About', 'About');
 
   VstStationList.Header.Columns[0].Text :=
     GetLanguageItem('MainForm.StationList.StationName', 'Station Name');
@@ -901,7 +930,7 @@ begin
     // Colorize line with currently playing station
     if (Data^.snd.ID = RadioPlayer.CurrentStationId) then
     begin
-      ItemColor := GridLineColorCurrentlyPlaying;
+      ItemColor := TSkins.GetColorItem('StationList.Grid.CurrentlyPlayingStationColor');
       EraseAction := eaColor;
     end
     else
