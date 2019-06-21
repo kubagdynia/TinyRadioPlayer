@@ -108,6 +108,8 @@ type
     function FindAnItemInTheComboBox(var ComboBox: TComboBox; Code: string): ErrorId;
     function GetDictionaryCodeFromSelectedItem(var ComboBox: TComboBox;
       out DictionaryCode: string): ErrorId;
+    function GetDictionaryCodeFromSelectedItem(var ComboBox: TComboBox;
+      out DictionaryCode: string; out ParentDictionaryCode: string): ErrorId;
 
 
   end;
@@ -682,6 +684,15 @@ end;
 function TDictionaryRepository.GetDictionaryCodeFromSelectedItem(
   var ComboBox: TComboBox; out DictionaryCode: string): ErrorId;
 var
+  parentDictionaryCode: string;
+begin
+  Result := GetDictionaryCodeFromSelectedItem(ComboBox, DictionaryCode, parentDictionaryCode);
+end;
+
+function TDictionaryRepository.GetDictionaryCodeFromSelectedItem(
+  var ComboBox: TComboBox; out DictionaryCode: string;
+  out ParentDictionaryCode: string): ErrorId;
+var
   err: ErrorId;
   selectedItem: integer;
 begin
@@ -702,9 +713,15 @@ begin
     if err = ERR_OK then
     begin
       if ComboBox.Items.Objects[selectedItem] = nil then
-        DictionaryCode := EMPTY_STR
+      begin
+        DictionaryCode := EMPTY_STR;
+        ParentDictionaryCode := EMPTY_STR;
+      end
       else
+      begin
         DictionaryCode := PDictionaryTable(ComboBox.Items.Objects[selectedItem])^.Code;
+        ParentDictionaryCode := PDictionaryTable(ComboBox.Items.Objects[selectedItem])^.ParentDictionaryRowCode;
+      end;
     end;
 
   except
@@ -716,6 +733,7 @@ begin
   end;
 
   Result := err;
+
 end;
 
 function TDictionaryRepository.DictionaryRowExists(DictionaryId: integer;

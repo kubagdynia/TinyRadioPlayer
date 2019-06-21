@@ -36,13 +36,14 @@ type
 { - - - - - - - - - - - - - - - - StationInfo - - - - - - - - - - - - - - - - - }
 type
   TStationInfo = packed record
-    Id                  : integer;
+    Id                  : string;
     Name                : string;
     StreamUrl           : string;
     Description         : string;
     WebpageUrl          : string;
     GenreCode           : string;
     CountryCode         : string;
+    RegionCode          : string;
   end;
 
 { - - - - - - - - - - - - - - - ApplicationInfo - - - - - - - - - - - - - - - - }
@@ -74,15 +75,15 @@ type
 type
   TStationNodeData = class
   protected
-    FID      : integer;
+    FID      : string;
     FName    : string;
     FGenre   : string;
     FCountry : string;
   public
-    constructor Create(const Id: integer;
+    constructor Create(const Id: string;
       const Name, Genre, Country: string); overload;
 
-    property ID       : integer  read FID       write FID;
+    property ID       : string   read FID       write FID;
     property Name     : string   read FName     write FName;
     property Genre    : string   read FGenre    write FGenre;
     property Country  : string   read FCountry  write FCountry;
@@ -260,7 +261,7 @@ implementation
 
 { TStationNodeData }
 
-constructor TStationNodeData.Create(const Id: integer; const Name, Genre,
+constructor TStationNodeData.Create(const Id: string; const Name, Genre,
   Country: string);
 begin
   inherited Create;

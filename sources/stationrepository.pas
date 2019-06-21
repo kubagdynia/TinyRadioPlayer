@@ -31,18 +31,18 @@ type
     destructor Destroy; override;
 
     function AddStation(const AStationName: string; const AStreamUrl: string;
-      out AStationId: integer): ErrorId;
+      out AStationId: string): ErrorId;
     function AddStation(const AStationName: string; const AStreamUrl: string;
       const ADescription: string; const AWebpageUrl: string;
-      const AGenreCode: string; const ACountryCode: string;
-      out AStationId: integer): ErrorId;
-    function AddStation(AStationInfo: TStationInfo; out AStationId: integer): ErrorId;
+      const AGenreCode: string; const ACountryCode: string; const ARegionCode: string;
+      out AStationId: string): ErrorId;
+    function AddStation(AStationInfo: TStationInfo; out AStationId: string): ErrorId;
 
     function UpdateStation(StationInfo: TStationInfo): ErrorId;
 
-    function DeleteStation(StationId: integer): ErrorId;
+    function DeleteStation(StationId: string): ErrorId;
 
-    function IsStationExists(StationName: string; ExcludeStationId: integer;
+    function IsStationExists(StationName: string; ExcludeStationId: string;
       out IsExists: boolean): ErrorId;
 
     function DoesAnyStationUseTheGivenItemOfTheDictionary(
@@ -52,10 +52,10 @@ type
     function UpdateStationDictionaryCode(DictionaryType: TDictionaryType;
       OldCode: string; NewCode: string): ErrorId;
 
-    function LoadStation(var StationInfo: TStationInfo; const StationId: integer): ErrorId;
+    function LoadStation(var StationInfo: TStationInfo; const StationId: string): ErrorId;
     function LoadStations(var VstList: TVirtualStringTree; const Text: string): ErrorId;
 
-    function GetSelectedStationId(var VstList: TVirtualStringTree): integer;
+    function GetSelectedStationId(var VstList: TVirtualStringTree): string;
   end;
 
 implementation
@@ -80,14 +80,15 @@ begin
 end;
 
 function TStationRepository.AddStation(const AStationName: string;
-  const AStreamUrl: string; out AStationId: integer): ErrorId;
+  const AStreamUrl: string; out AStationId: string): ErrorId;
 begin
-  Result := AddStation(AStationName, AStreamUrl, EMPTY_STR, EMPTY_STR, EMPTY_STR, EMPTY_STR, AStationId);
+  Result := AddStation(AStationName, AStreamUrl, EMPTY_STR, EMPTY_STR, EMPTY_STR, EMPTY_STR, EMPTY_STR, AStationId);
 end;
 
 function TStationRepository.AddStation(const AStationName: string;
   const AStreamUrl: string; const ADescription: string; const AWebpageUrl: string;
-  const AGenreCode: string; const ACountryCode: string; out AStationId: integer): ErrorId;
+  const AGenreCode: string; const ACountryCode: string; const ARegionCode: string;
+  out AStationId: string): ErrorId;
 var
   err: ErrorId;
   stationInfo: TStationInfo;
@@ -96,13 +97,14 @@ begin
 
   with stationInfo do
     begin
-      Id := EMPTY_INT;
+      Id := EMPTY_STR;
       Name := AStationName;
       StreamUrl := AStreamUrl;
       Description := ADescription;
       WebpageUrl := AWebpageUrl;
       GenreCode := AGenreCode;
       CountryCode := ACountryCode;
+      RegionCode := ARegionCode;
     end;
 
   err := AddStation(stationInfo, AStationId);
@@ -110,7 +112,7 @@ begin
   Result := err;
 end;
 
-function TStationRepository.AddStation(AStationInfo: TStationInfo; out AStationId: integer): ErrorId;
+function TStationRepository.AddStation(AStationInfo: TStationInfo; out AStationId: string): ErrorId;
 var
   query: TZQuery;
   err: ErrorId;
@@ -120,14 +122,14 @@ begin
   err := ERR_OK;
 
   try
-    err := IsStationExists(AStationInfo.Name, EMPTY_INT, isExists);
+    err := IsStationExists(AStationInfo.Name, EMPTY_STR, isExists);
 
     if (err = ERR_OK) and isExists then
       err := ERR_DB_STATION_ALREADY_EXISTS;
 
     if err = ERR_OK then
     begin
-      AStationId := TRepository.GetNewDbTableKey(DB_TABLE_STATIONS);
+      AStationId := TRepository.GetNewDbTableKeyAsGUID;
       dateNow := GetUnixTimestamp();
 
       query := TZQuery.Create(nil);
@@ -136,11 +138,11 @@ begin
 
         query.SQL.Add(
           'INSERT INTO ' + DB_TABLE_STATIONS +
-          ' (ID, Name, StreamUrl, Description, WebpageUrl, GenreCode, CountryCode, Created, Modified) ' +
-          'VALUES(:ID,:Name,:StreamUrl,:Description,:WebpageUrl,:GenreCode,:CountryCode,:Created,:Modified);'
+          ' (ID, Name, StreamUrl, Description, WebpageUrl, GenreCode, CountryCode, RegionCode, Created, Modified) ' +
+          'VALUES(:ID,:Name,:StreamUrl,:Description,:WebpageUrl,:GenreCode,:CountryCode,:RegionCode,:Created,:Modified);'
         );
 
-        query.Params.ParamByName('ID').AsInteger := AStationId;
+        query.Params.ParamByName('ID').AsString := AStationId;
         query.Params.ParamByName('Name').AsString := Trim(AStationInfo.Name);
         query.Params.ParamByName('StreamUrl').AsString := Trim(AStationInfo.StreamUrl);
 
@@ -155,6 +157,8 @@ begin
 
         if (Trim(AStationInfo.CountryCode) <> EMPTY_STR) then
           query.Params.ParamByName('CountryCode').AsString := Trim(AStationInfo.CountryCode);
+        if (Trim(AStationInfo.RegionCode) <> EMPTY_STR) then
+          query.Params.ParamByName('RegionCode').AsString := Trim(AStationInfo.RegionCode);
 
         query.Params.ParamByName('Created').AsInteger := dateNow;
         query.Params.ParamByName('Modified').AsInteger := dateNow;
@@ -212,7 +216,7 @@ begin
         query.ParamByName('GenreCode').AsString := StationInfo.GenreCode;
         query.ParamByName('CountryCode').AsString := StationInfo.CountryCode;
         query.ParamByName('Modified').AsInteger := GetUnixTimestamp();
-        query.ParamByName('StationId').AsInteger := StationInfo.Id;
+        query.ParamByName('StationId').AsString := StationInfo.Id;
 
         query.ExecSQL;
 
@@ -292,7 +296,7 @@ begin
   Result := err;
 end;
 
-function TStationRepository.DeleteStation(StationId: integer): ErrorId;
+function TStationRepository.DeleteStation(StationId: string): ErrorId;
 var
   query: TZQuery;
   err: ErrorId;
@@ -306,7 +310,7 @@ begin
 
       query.SQL.Add('DELETE FROM ' + DB_TABLE_STATIONS + ' WHERE ID = :StationId;');
 
-      query.ParamByName('StationId').AsInteger := StationId;
+      query.ParamByName('StationId').AsString := StationId;
 
       query.ExecSQL;
     finally
@@ -324,7 +328,7 @@ begin
   Result := err;
 end;
 
-function TStationRepository.IsStationExists(StationName: string; ExcludeStationId: integer;
+function TStationRepository.IsStationExists(StationName: string; ExcludeStationId: string;
   out IsExists: boolean): ErrorId;
 var
   query: TZQuery;
@@ -338,10 +342,10 @@ begin
     try
       query.Connection := TRepository.GetDbConnection;
 
-      if (ExcludeStationId > 0) then
+      if (ExcludeStationId <> EMPTY_STR) then
       begin
         query.SQL.Add('SELECT EXISTS(SELECT 1 FROM ' + DB_TABLE_STATIONS + ' WHERE ID <> :Id AND UPPER(Name) = UPPER(:Name)) AS IsExist;');
-        query.ParamByName('Id').AsInteger := ExcludeStationId;
+        query.ParamByName('Id').AsString := ExcludeStationId;
       end
       else
         query.SQL.Add('SELECT EXISTS(SELECT 1 FROM ' + DB_TABLE_STATIONS + ' WHERE UPPER(Name) = UPPER(:Name)) AS IsExist;');
@@ -429,7 +433,7 @@ begin
 end;
 
 function TStationRepository.LoadStation(var StationInfo: TStationInfo;
-  const StationId: integer): ErrorId;
+  const StationId: string): ErrorId;
 var
   query: TZQuery;
   err: ErrorId;
@@ -448,7 +452,7 @@ begin
         'FROM ' + DB_TABLE_STATIONS + ' S ' +
         'WHERE S.ID = :StationId;');
 
-      query.ParamByName('StationId').AsInteger := StationId;
+      query.ParamByName('StationId').AsString := StationId;
 
       query.Open;
 
@@ -456,7 +460,7 @@ begin
       begin
         with StationInfo do
         begin
-          Id := query.FieldByName('ID').AsInteger;
+          Id := query.FieldByName('ID').AsString;
           Name := query.FieldByName('Name').AsString;
           StreamUrl := query.FieldByName('StreamUrl').AsString;
           Description := query.FieldByName('Description').AsString;
@@ -496,7 +500,7 @@ var
 
   textList: TStringList;
 
-  selectedId: integer;
+  selectedId: string;
 begin
   err := ERR_OK;
 
@@ -509,7 +513,7 @@ begin
       data := VstList.GetNodeData(node);
       selectedId := data^.snd.ID;
     end else
-      selectedId := EMPTY_INT;
+      selectedId := EMPTY_STR;
 
     // Determine hot to sort
     if VstList.Header.SortColumn >= 0 then
@@ -549,7 +553,7 @@ begin
         'LEFT JOIN ' + DB_TABLE_DICTIONARY + ' DG ON ' +
         '  DG.Code = ''' + DICTIONARY_GENRE_CODE + ''' ' +
         'LEFT JOIN ' + DB_TABLE_DICTIONARY_ROW + ' DRG ON ' +
-        '  DRG.DictionaryID = DG.ID AND DRG.Code = S.GenreCode ' +
+        '  DRG.DictionaryID = DG.ID AND UPPER(DRG.Code) = UPPER(S.GenreCode) ' +
 
         'LEFT JOIN ' + DB_TABLE_DICTIONARY + ' DC ON ' +
         '  DC.Code = ''' + DICTIONARY_COUNTRY_CODE + ''' ' +
@@ -589,13 +593,13 @@ begin
           data := VstList.GetNodeData(node);
 
           data^.snd := TStationNodeData.Create(
-            query.FieldByName('ID').AsInteger,
+            query.FieldByName('ID').AsString,
             query.FieldByName('Name').AsString,
             query.FieldByName('GenreText').AsString,
             query.FieldByName('CountryText').AsString
           );
 
-          if (selectedId <> EMPTY_INT) and (query.FieldByName('ID').AsInteger = selectedId) then
+          if (selectedId <> EMPTY_STR) and (query.FieldByName('ID').AsString = selectedId) then
             VstList.Selected[node] := true;
 
           query.Next;
@@ -622,12 +626,12 @@ begin
   Result := err;
 end;
 
-function TStationRepository.GetSelectedStationId(var VstList: TVirtualStringTree): integer;
+function TStationRepository.GetSelectedStationId(var VstList: TVirtualStringTree): string;
 var
   node: PVirtualNode;
   data: PStationNodeRec;
 begin
-  Result := EMPTY_INT;
+  Result := EMPTY_STR;
 
   node := VstList.GetFirstSelected;
 

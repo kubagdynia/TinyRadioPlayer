@@ -45,7 +45,7 @@ type
     FThreadWatcher: TTimer;
     FOnRadioPlayerTags: TRadioPlayerTagsEvent;
     FOnRadioPlay: TNotifyEvent;
-    FCurrentStationId: integer;
+    FCurrentStationId: string;
 
     // Equalizer
     FEqualizerConfig: TEqualizerConfig;
@@ -81,8 +81,8 @@ type
     destructor Destroy; override;
 
     procedure PlayURL(const AStreamUrl: string; const AVolume: ShortInt);
-    procedure PlayStation(const StationId: integer; const Volume: ShortInt);
-    function GetSelectedStationId(var VstStationsList: TVirtualStringTree): integer;
+    procedure PlayStation(const StationId: string; const Volume: ShortInt);
+    function GetSelectedStationId(var VstStationsList: TVirtualStringTree): string;
 
     function Stop(): Boolean;
     procedure Volume(Value: Integer);
@@ -115,7 +115,7 @@ type
       read FOnRadioPlayerTags write FOnRadioPlayerTags;
     property OnRadioPlay: TNotifyEvent read FOnRadioPlay write FOnRadioPlay;
 
-    property CurrentStationId: integer read FCurrentStationId;
+    property CurrentStationId: string read FCurrentStationId;
 
     property EqualizerPresets: TEqualizerPresets read FEqualizerPresets;
     property EqualizerConfig: TEqualizerConfig read FEqualizerConfig;
@@ -136,7 +136,7 @@ constructor TRadioPlayer.Create;
 begin
   inherited Create;
 
-  FCurrentStationId := EMPTY_INT;
+  FCurrentStationId := EMPTY_STR;
 
   LoadEqualizerConfigAndPresets;
   LoadCompressorConfigAndPressets;
@@ -236,7 +236,7 @@ begin
     FCompressorPresets[FEqualizerConfig.DefaultCompressorPreset]);
 end;
 
-procedure TRadioPlayer.PlayStation(const StationId: integer;
+procedure TRadioPlayer.PlayStation(const StationId: string;
   const Volume: ShortInt);
 var
   StationInfo: TStationInfo;
@@ -246,12 +246,12 @@ begin
   PlayURL(StationInfo.StreamUrl, Volume);
 end;
 
-function TRadioPlayer.GetSelectedStationId(var VstStationsList: TVirtualStringTree): integer;
+function TRadioPlayer.GetSelectedStationId(var VstStationsList: TVirtualStringTree): string;
 var
   node: PVirtualNode;
   data: PStationNodeRec;
 begin
-  Result := EMPTY_INT;
+  Result := EMPTY_STR;
 
   node := VstStationsList.GetFirstSelected;
 
@@ -271,7 +271,7 @@ begin
   if FRadioPlayerThreads[FActiveRadioPlayerThread] <> nil then
   begin
     Result := FRadioPlayerThreads[FActiveRadioPlayerThread].Stop;
-    FCurrentStationId := EMPTY_INT;
+    FCurrentStationId := EMPTY_STR;
   end;
 end;
 
@@ -314,7 +314,7 @@ end;
 
 function TRadioPlayer.NoCurrentStationLoaded: Boolean;
 begin
-  Result := CurrentStationId = EMPTY_INT;
+  Result := CurrentStationId = EMPTY_STR;
 end;
 
 // Displays an error message

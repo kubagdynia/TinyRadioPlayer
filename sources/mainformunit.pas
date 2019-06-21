@@ -1105,7 +1105,7 @@ begin
     case OpenMode of
       { NEW }
       TOpenMode.omNew: begin
-        StationDetailForm := TStationDetailForm.Create(Self, OpenMode, EMPTY_INT, DropFileName);
+        StationDetailForm := TStationDetailForm.Create(Self, OpenMode, EMPTY_STR, DropFileName);
         try
           mr := StationDetailForm.ShowModal;
 

@@ -41,9 +41,9 @@ type
     procedure MainPanelResize(Sender: TObject);
     procedure ValidateEnteredData(Sender: TObject);
   private
-    FStationId: integer;
+    FStationId: string;
 
-    procedure LoadStationData(AStationId: integer);
+    procedure LoadStationData(AStationId: string);
 
     function AddStation: ErrorId;
     function UpdateStation: ErrorId;
@@ -56,7 +56,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     constructor Create(AOwner: TComponent; AOpenMode: TOpenMode;
-      StationId: integer = EMPTY_INT; DroppedFileName: string = EMPTY_STR); overload;
+      StationId: string = EMPTY_STR; DroppedFileName: string = EMPTY_STR); overload;
     destructor Destroy; override;
   end;
 
@@ -78,7 +78,7 @@ begin
 end;
 
 constructor TStationDetailForm.Create(AOwner: TComponent; AOpenMode: TOpenMode;
-  StationId: integer; DroppedFileName: string);
+  StationId: string; DroppedFileName: string);
 var
   err: ErrorId;
 begin
@@ -251,7 +251,7 @@ begin
   inherited LoadSkins;
 end;
 
-procedure TStationDetailForm.LoadStationData(AStationId: integer);
+procedure TStationDetailForm.LoadStationData(AStationId: string);
 var
   stationInfo: TStationInfo;
   err: ErrorId;
@@ -277,27 +277,29 @@ var
   stationInfo: TStationInfo;
   gCode: string;
   cCode: string;
-  stationId: integer;
+  rCode: string;
+  stationId: string;
 begin
   err := ERR_OK;
 
   try
 
     err := TRepository.GetDictionaryCodeFromSelectedItem(cboGenre, gCode);
-    err := TRepository.GetDictionaryCodeFromSelectedItem(cboCountry, cCode);
+    err := TRepository.GetDictionaryCodeFromSelectedItem(cboCountry, cCode, rCode);
 
     if err = ERR_OK then
     begin
 
       with stationInfo do
       begin
-        Id := EMPTY_INT;
+        Id := EMPTY_STR;
         Name := edtStationName.Text;
         StreamUrl := edtStreamUrl.Text;
         Description := mmoDescription.Text;
         WebpageUrl := edtWebpageUrl.Text;
         GenreCode := gCode;
         CountryCode := cCode;
+        RegionCode := rCode;
       end;
 
       err := TRepository.AddStation(stationInfo, stationId);
@@ -321,13 +323,14 @@ var
   stationInfo: TStationInfo;
   gCode: string;
   cCode: string;
+  rCode: string;
 begin
   err := ERR_OK;
 
   try
 
     err := TRepository.GetDictionaryCodeFromSelectedItem(cboGenre, gCode);
-    err := TRepository.GetDictionaryCodeFromSelectedItem(cboCountry, cCode);
+    err := TRepository.GetDictionaryCodeFromSelectedItem(cboCountry, cCode, rCode);
 
     if err = ERR_OK then
     begin
@@ -341,6 +344,7 @@ begin
         WebpageUrl := edtWebpageUrl.Text;
         GenreCode := gCode;
         CountryCode := cCode;
+        RegionCode := rCode;
       end;
 
       err := TRepository.UpdateStation(stationInfo);

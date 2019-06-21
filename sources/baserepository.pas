@@ -52,6 +52,7 @@ type
     function IsConnected : boolean;
 
     function GetNewTableKey(const TableName: string): integer;
+    function GetNewTableKeyAsGUID: string;
 
     property Connection: TZConnection read GetConnection;
     property StationRepo: TStationRepository read GetStationRepository;
@@ -169,6 +170,15 @@ begin
       Application.ShowException(E);
     end;
   end;
+end;
+
+// Generates a new GUID
+function TBaseRepository.GetNewTableKeyAsGUID: string;
+var
+  newGuid: TGuid;
+begin
+  CreateGUID(newGuid);
+  Result := GUIDToString(newGuid);
 end;
 
 // Connect to the database
@@ -415,13 +425,14 @@ begin
       // Stations
       ExecuteQuery(
         'CREATE TABLE ' + DB_TABLE_STATIONS + ' (' +
-        'ID INTEGER PRIMARY KEY NOT NULL, ' +
+        'ID VARCHAR PRIMARY KEY NOT NULL, ' +
         'Name VARCHAR NOT NULL, ' +
         'StreamUrl VARCHAR NOT NULL, ' +
         'Description TEXT NULL, ' +
         'WebpageUrl VARCHAR NULL, ' +
         'GenreCode VARCHAR NULL, ' +
         'CountryCode VARCHAR NULL, ' +
+        'RegionCode VARCHAR NULL, ' +
         'Created INTEGER NOT NULL, ' +
         'Modified INTEGER NULL);');
 
