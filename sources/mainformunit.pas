@@ -19,13 +19,16 @@ uses
   Forms, Controls, Graphics, Dialogs, LCLType, StdCtrls,
   ExtCtrls, Menus, Helpers, RadioPlayer, RadioPlayerTypes, VirtualTrees,
   ImgList, ActnList, CTRPTextScroll, CTRPTrackBar, zipper,
-  OpenStationUrlFormUnit, Skins, Consts, CTRPCustomDrawn;
+  OpenStationUrlFormUnit, Skins, Consts, CTRPCustomDrawn, ExportImport;
 
 type
 
   { TMainForm }
   TMainForm = class(TForm)
     AboutAction: TAction;
+    ExportStationsAction: TAction;
+    miLine1: TMenuItem;
+    miExportStations: TMenuItem;
     miAbout: TMenuItem;
     OpenEqualizerAction: TAction;
     miEqualizer: TMenuItem;
@@ -81,6 +84,7 @@ type
     procedure AddStationActionExecute(Sender: TObject);
     procedure BottomFunctionPanelResize(Sender: TObject);
     procedure DeleteStationActionExecute(Sender: TObject);
+    procedure ExportStationsActionExecute(Sender: TObject);
     procedure MainPanelResize(Sender: TObject);
     procedure miCopyTitleToClipboardClick(Sender: TObject);
     procedure miSearchOnYoutubeClick(Sender: TObject);
@@ -494,6 +498,38 @@ begin
   StationDetailManagement(TOpenMode.omDelete);
 end;
 
+procedure TMainForm.ExportStationsActionExecute(Sender: TObject);
+var
+  exportImport: TExportImport;
+  saveDialog: TSaveDialog;
+begin
+
+  saveDialog := TSaveDialog.Create(self);
+  try
+    saveDialog.Title :=
+      GetLanguageItem('ExportStations.Dialog.Title', 'Export the stations list to a file');
+
+    saveDialog.InitialDir := GetCurrentDir;
+    saveDialog.Filter := 'JSON files|*.json|All|*.*';
+    saveDialog.DefaultExt := 'json';
+    saveDialog.FileName := 'TRPStations';
+    saveDialog.FilterIndex := 1;
+
+    if saveDialog.Execute then
+    begin
+      exportImport := TExportImport.Create();
+      try
+        exportImport.ExportToJsonFile(saveDialog.Filename);
+      finally
+        exportImport.Free;
+      end;
+    end;
+  finally
+    saveDialog.Free;
+  end;
+
+end;
+
 procedure TMainForm.MainPanelResize(Sender: TObject);
 begin
   VstStationList.Left := 1;
@@ -619,6 +655,7 @@ end;
 procedure TMainForm.LoadLoanguages;
 begin
   miFile.Caption := GetLanguageItem('MainMenu.File', 'File');
+  miExportStations.Caption := GetLanguageItem('MainMenu.File.ExportStations', 'Export Stations');
   miExit.Caption := GetLanguageItem('MainMenu.File.Exit', 'Exit');
   miSettings.Caption := GetLanguageItem('MainMenu.Settings', 'Settings');
   miLanguage.Caption := GetLanguageItem('MainMenu.Settings.Language', 'Language');

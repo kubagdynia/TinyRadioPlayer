@@ -20,6 +20,9 @@
 		<Item name="Dialog.Answer.Yes" type="string">Tak</Item>
 		<Item name="Dialog.Answer.No" type="string">Nie</Item>
 		
+		<!-- ExportStations -->
+		<Item name="ExportStations.Dialog.Title" type="string">Eksportuj listę stacji do pliku</Item>
+		
 		<!-- General Buttons -->
 		<Item name="Button.Close" type="string">Zamknij</Item>
 		<Item name="Button.Cancel" type="string">Anuluj</Item>
@@ -29,6 +32,7 @@
 		
 		<!-- Main Menu -->
 		<Item name="MainMenu.File" type="string">Plik</Item>
+		<Item name="MainMenu.File.ExportStations" type="string">Eksport listy stacji</Item>
 		<Item name="MainMenu.File.Exit" type="string">Zakończ</Item>
 		<Item name="MainMenu.Settings" type="string">Ustawienia</Item>
 		<Item name="MainMenu.Settings.Language" type="string">Język</Item>

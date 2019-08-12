@@ -15,7 +15,7 @@ Description:         Dictionary management
 interface
 
 uses
-  Classes, SysUtils, StdCtrls, VirtualTrees, RadioPlayerTypes, Consts;
+  Classes, SysUtils, StdCtrls, VirtualTrees, RadioPlayerTypes, Consts, contnrs;
 
 type
 
@@ -111,7 +111,8 @@ type
     function GetDictionaryCodeFromSelectedItem(var ComboBox: TComboBox;
       out DictionaryCode: string; out ParentDictionaryCode: string): ErrorId;
 
-
+    // Get All
+    function GetAllDictionaries(out ADictionaryList : TObjectList): ErrorId;
   end;
 
 implementation
@@ -734,6 +735,146 @@ begin
 
   Result := err;
 
+end;
+
+function TDictionaryRepository.GetAllDictionaries(out
+  ADictionaryList: TObjectList): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+  dictionaryList: TObjectList;
+  dictionary, childDictionary: TDictionary;
+  dictionaryDetail, childDictionaryDetail: TDictionaryDetail;
+  prevPropCode, prevPropDetailCode: string;
+  propName, propCode, propDescription: string;
+  propDetailText, propDetailCode: string;
+  propDetailPosition: integer;
+begin
+  err := ERR_OK;
+
+  try
+    dictionaryList := TObjectList.Create(true); // true means that objects will be released when the list is destroyed
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'SELECT ' +
+        // dictionary
+        '  d.Name, d.Code, d.Description, ' +
+
+        // dictionary details
+        '  dd.Text DetailText, dd.Code DetailCode, dd.Position DetailPosition, ' +
+
+        // child dictionary
+        '  cd.Name ChildName, cd.Code ChildCode, cd.Description ChildDescription, ' +
+
+        // child dictionary details
+        '  cdd.Text ChildDetailText, cdd.Code ChildDetailCode, cdd.Position ChildDetailPosition ' +
+
+        'FROM ' + DB_TABLE_DICTIONARY + ' d ' +
+        'LEFT JOIN ' + DB_TABLE_DICTIONARY + ' cd ON cd.ParentCode = d.Code ' +
+        'LEFT JOIN ' + DB_TABLE_DICTIONARY_ROW + ' dd ON dd.DictionaryID = d.ID ' +
+        'LEFT JOIN ' + DB_TABLE_DICTIONARY_ROW + ' cdd ON cdd.ParentDictionaryRowID = dd.ID ' +
+        'WHERE d.ParentCode IS NULL ' +
+        'ORDER BY UPPER(d.Name), dd.Position, UPPER(dd.Text), cdd.Position, UPPER(cdd.Text)');
+
+      query.Open;
+
+      while not query.EOF do  // iterate over dictionary
+      begin
+
+        propName := query.FieldByName('Name').AsString;
+        propCode := query.FieldByName('Code').AsString;
+        propDescription := query.FieldByName('Description').AsString;
+
+        if (prevPropCode <> propCode) then
+        begin
+          prevPropCode := propCode;
+
+          dictionary := TDictionary.Create(
+            propName, propCode,propDescription);
+
+          if (query.FieldByName('DetailCode').AsString <> EMPTY_STR) then
+            dictionary.D_Details := TObjectList.Create(true);
+
+          while ((not query.EOF) and (prevPropCode = query.FieldByName('Code').AsString)) do // iterate over dictionary details
+          begin
+            propDetailText := query.FieldByName('DetailText').AsString;
+            propDetailCode := query.FieldByName('DetailCode').AsString;
+            propDetailPosition := query.FieldByName('DetailPosition').AsInteger;
+
+            prevPropDetailCode := propDetailCode;
+
+            if (propDetailCode <> EMPTY_STR) then
+            begin
+              dictionaryDetail := TDictionaryDetail.Create(
+                propDetailText, propDetailCode, propDetailPosition);
+
+              if (query.FieldByName('ChildCode').AsString <> EMPTY_STR) then
+              begin
+                childDictionary := TDictionary.Create(
+                  query.FieldByName('ChildName').AsString,
+                  query.FieldByName('ChildCode').AsString,
+                  query.FieldByName('ChildDescription').AsString);
+
+                if (query.FieldByName('ChildDetailCode').AsString <> EMPTY_STR) then
+                begin
+                  childDictionary.D_Details := TObjectList.Create(true);
+
+                  while ((not query.EOF) and (prevPropDetailCode = query.FieldByName('DetailCode').AsString)) do
+                  begin
+                    childDictionaryDetail := TDictionaryDetail.Create(
+                      query.FieldByName('ChildDetailText').AsString,
+                      query.FieldByName('ChildDetailCode').AsString,
+                      query.FieldByName('ChildDetailPosition').AsInteger);
+
+                    childDictionary.D_Details.Add(childDictionaryDetail);
+
+                    query.Next;
+                  end;
+
+                  if not query.EOF then
+                    query.Prior;
+
+                end;
+
+                dictionaryDetail.D_Child := childDictionary;
+              end;
+
+              dictionary.D_Details.Add(dictionaryDetail);
+            end;
+
+            query.Next;
+          end;
+
+          if not query.EOF then
+            query.Prior;
+
+          dictionaryList.Add(dictionary);
+        end;
+
+        prevPropCode := propCode;
+
+        query.Next;
+      end;
+
+      ADictionaryList := dictionaryList;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'GetAllDictionaries', E);
+        err := ERR_GET_ALL_DICTIONARIES;
+      end;
+  end;
+
+  Result := err;
 end;
 
 function TDictionaryRepository.DictionaryRowExists(DictionaryId: integer;

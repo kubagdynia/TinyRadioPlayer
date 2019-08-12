@@ -15,7 +15,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MinorVersionNr Value="6"/>
-      <BuildNr Value="5"/>
+      <BuildNr Value="19"/>
       <StringTable CompanyName="Jakub Kurlowicz" LegalCopyright="MIT License, Copyright (c) 2019 Jakub Kurlowicz" OriginalFilename="TinyRadioPlayer" ProductName="Tiny Radio Player" ProductVersion="2019.1"/>
     </VersionInfo>
     <BuildModes Count="2">
@@ -81,7 +81,7 @@
         <PackageName Value="LCL"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="29">
+    <Units Count="30">
       <Unit0>
         <Filename Value="TinyRadioPlayer.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -250,6 +250,11 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="AboutFormUnit"/>
       </Unit28>
+      <Unit29>
+        <Filename Value="exportimport.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ExportImport"/>
+      </Unit29>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -15,7 +15,7 @@ Description:         Database operations related to station data management
 interface
 
 uses
-  Classes, SysUtils, RadioPlayerTypes, VirtualTrees;
+  Classes, SysUtils, RadioPlayerTypes, VirtualTrees, contnrs;
 
 type
 
@@ -56,6 +56,8 @@ type
     function LoadStations(var VstList: TVirtualStringTree; const Text: string): ErrorId;
 
     function GetSelectedStationId(var VstList: TVirtualStringTree): string;
+
+    function GetAllStations(out AStationList : TObjectList): ErrorId;
   end;
 
 implementation
@@ -641,6 +643,64 @@ begin
     Exit;
 
   Result := data^.snd.ID;
+end;
+
+function TStationRepository.GetAllStations(out AStationList : TObjectList): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+  stationList: TObjectList;
+begin
+  err := ERR_OK;
+
+  try
+    stationList := TObjectList.Create(true); // true means that objects will be released when the list is destroyed
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'SELECT ' +
+        '  S.ID, S.Name, S.StreamUrl, S.Description, S.WebpageUrl, S.GenreCode, S.CountryCode, S.RegionCode ' +
+        'FROM ' + DB_TABLE_STATIONS + ' S ' +
+        'ORDER BY UPPER(S.Name)');
+
+      query.Open;
+
+      while not query.EOF do
+      begin
+        stationList.Add(
+          TStation.Create(
+            query.FieldByName('ID').AsString,
+            query.FieldByName('Name').AsString,
+            query.FieldByName('StreamUrl').AsString,
+            query.FieldByName('Description').AsString,
+            query.FieldByName('WebpageUrl').AsString,
+            query.FieldByName('GenreCode').AsString,
+            query.FieldByName('CountryCode').AsString,
+            query.FieldByName('RegionCode').AsString
+          )
+        );
+
+        query.Next;
+      end;
+
+      AStationList := stationList;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'GetAllStations', E);
+        err := ERR_DB_GET_ALL_STATIONS;
+      end;
+  end;
+
+  Result := err;
 end;
 
 end.

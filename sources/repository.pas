@@ -16,7 +16,7 @@ interface
 
 uses
   Classes, SysUtils, StdCtrls, ZConnection, RadioPlayerTypes, MainRepository,
-  BaseRepository, VirtualTrees, Consts;
+  BaseRepository, VirtualTrees, Consts, contnrs;
 
 type
 
@@ -52,6 +52,7 @@ type
       out ItemIsUsed: boolean): ErrorId;
     class function UpdateStationDictionaryCode(DictionaryType: TDictionaryType;
       OldCode: string; NewCode: string): ErrorId;
+    class function GetAllStations(out AStationList : TObjectList): ErrorId;
 
     // Dictionary
     class function AddDictionary(const Name: string; const Code: string;
@@ -100,6 +101,7 @@ type
       out DictionaryRowId: integer): ErrorId;
     class function GetDictionaryRowCode(DictionaryRowId: integer;
       out Code: string): ErrorId;
+    class function GetAllDictionaries(out ADictionaryList: TObjectList): ErrorId;
   end;
 
 implementation
@@ -202,6 +204,11 @@ class function TRepository.UpdateStationDictionaryCode(
   DictionaryType: TDictionaryType; OldCode: string; NewCode: string): ErrorId;
 begin
   Result := FMainRepo.StationRepo.UpdateStationDictionaryCode(DictionaryType, OldCode, NewCode);
+end;
+
+class function TRepository.GetAllStations(out AStationList: TObjectList): ErrorId;
+begin
+  Result := FMainRepo.StationRepo.GetAllStations(AStationList);
 end;
 
 class function TRepository.AddDictionary(const Name: string;
@@ -349,6 +356,11 @@ class function TRepository.GetDictionaryRowCode(DictionaryRowId: integer; out
   Code: string): ErrorId;
 begin
   Result := FMainRepo.DictionaryRepo.GetDictionaryRowCode(DictionaryRowId, Code);
+end;
+
+class function TRepository.GetAllDictionaries(out ADictionaryList: TObjectList): ErrorId;
+begin
+  REsult := FMainRepo.DictionaryRepo.GetAllDictionaries(ADictionaryList);
 end;
 
 initialization
