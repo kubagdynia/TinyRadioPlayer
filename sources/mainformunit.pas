@@ -26,7 +26,9 @@ type
   { TMainForm }
   TMainForm = class(TForm)
     AboutAction: TAction;
+    ImportStationsAction: TAction;
     ExportStationsAction: TAction;
+    miImportStations: TMenuItem;
     miLine1: TMenuItem;
     miExportStations: TMenuItem;
     miAbout: TMenuItem;
@@ -85,6 +87,7 @@ type
     procedure BottomFunctionPanelResize(Sender: TObject);
     procedure DeleteStationActionExecute(Sender: TObject);
     procedure ExportStationsActionExecute(Sender: TObject);
+    procedure ImportStationsActionExecute(Sender: TObject);
     procedure MainPanelResize(Sender: TObject);
     procedure miCopyTitleToClipboardClick(Sender: TObject);
     procedure miSearchOnYoutubeClick(Sender: TObject);
@@ -504,10 +507,10 @@ var
   saveDialog: TSaveDialog;
 begin
 
-  saveDialog := TSaveDialog.Create(self);
+  saveDialog := TSaveDialog.Create(Self);
   try
     saveDialog.Title :=
-      GetLanguageItem('ExportStations.Dialog.Title', 'Export the stations list to a file');
+      GetLanguageItem('ExportStations.Dialog.Title', 'Export station list');
 
     saveDialog.InitialDir := GetCurrentDir;
     saveDialog.Filter := 'JSON files|*.json|All|*.*';
@@ -526,6 +529,38 @@ begin
     end;
   finally
     saveDialog.Free;
+  end;
+
+end;
+
+procedure TMainForm.ImportStationsActionExecute(Sender: TObject);
+var
+  exportImport: TExportImport;
+  openDialog: TOpenDialog;
+begin
+  openDialog := TOpenDialog.Create(Self);
+  try
+    openDialog.Title :=
+      GetLanguageItem('ImportStations.Dialog.Title', 'Import station list');
+
+    openDialog.InitialDir := GetCurrentDir;
+    openDialog.Filter := 'JSON files|*.json|All|*.*';
+    openDialog.DefaultExt := 'json';
+    openDialog.FileName := 'TRPStations.json';
+    openDialog.FilterIndex := 1;
+
+    if openDialog.Execute then
+    begin
+      exportImport := TExportImport.Create();
+      try
+        exportImport.ImportFromJsonFile(openDialog.FileName);
+      finally
+        exportImport.Free;
+      end;
+    end;
+
+  finally
+    openDialog.Free;
   end;
 
 end;

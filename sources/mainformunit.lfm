@@ -1457,6 +1457,9 @@ object MainForm: TMainForm
       object miExportStations: TMenuItem
         Action = ExportStationsAction
       end
+      object miImportStations: TMenuItem
+        Action = ImportStationsAction
+      end
       object miLine1: TMenuItem
         Caption = '-'
       end
@@ -1534,6 +1537,10 @@ object MainForm: TMainForm
     object ExportStationsAction: TAction
       Caption = 'Export Stations'
       OnExecute = ExportStationsActionExecute
+    end
+    object ImportStationsAction: TAction
+      Caption = 'Import Stations'
+      OnExecute = ImportStationsActionExecute
     end
   end
   object PopupMenuStationList: TPopupMenu

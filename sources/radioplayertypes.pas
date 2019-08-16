@@ -259,7 +259,7 @@ type
 
 { - - - - - - - - - - - - - - - - - TStation - - - - - - - - - - - - - - - - - }
 type
-    TStation = class(TPersistent)
+    TStation = class(TCollectionItem)
     private
       FID          : string;
       FName        : string;
@@ -288,10 +288,12 @@ type
 
 { - - - - - - - - - - - - - - - - - TDictionary - - - - - - - - - - - - - - - - }
 type
-
-    { TDictionary }
-
     TDictionary = class(TPersistent)
+    const
+      PropNameName         = 'A_Name';
+      PropCodeName         = 'B_Code';
+      PropDescriptionName  = 'C_Description';
+      PropDetailsName      = 'D_Details';
     private
       FName        : string;
       FCode        : string;
@@ -313,10 +315,12 @@ type
 
 { - - - - - - - - - - - - - - - - TDictionaryDetail - - - - - - - - - - - - - - }
 type
-
-    { TDictionaryDetail }
-
     TDictionaryDetail = class(TPersistent)
+    const
+      PropTextName         = 'A_Text';
+      PropCodeName         = 'B_Code';
+      PropPositionName     = 'C_Position';
+      PropChildName        = 'D_Child';
     private
       FText        : string;
       FCode        : string;
@@ -336,6 +340,10 @@ type
 { - - - - - - - - - - - - - - - - TExportImportDto - - - - - - - - - - - - - - }
 type
     TExportImportDto = class(TPersistent)
+    const
+      PropDateName         = 'A_Date';
+      PropStationsName     = 'B_Stations';
+      PropDictionariesName = 'C_Dictionaries';
     private
       FDate         : string;
       FStations     : TObjectList;

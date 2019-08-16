@@ -21,7 +21,8 @@
 		<Item name="Dialog.Answer.No" type="string">Nie</Item>
 		
 		<!-- ExportStations -->
-		<Item name="ExportStations.Dialog.Title" type="string">Eksportuj listę stacji do pliku</Item>
+		<Item name="ExportStations.Dialog.Title" type="string">Eksportuj listę stacji</Item>
+		<Item name="ImportStations.Dialog.Title" type="string">Importuj listę stacji</Item>
 		
 		<!-- General Buttons -->
 		<Item name="Button.Close" type="string">Zamknij</Item>
@@ -33,6 +34,7 @@
 		<!-- Main Menu -->
 		<Item name="MainMenu.File" type="string">Plik</Item>
 		<Item name="MainMenu.File.ExportStations" type="string">Eksport listy stacji</Item>
+		<Item name="MainMenu.File.ImportStations" type="string">Import listy stacji</Item>
 		<Item name="MainMenu.File.Exit" type="string">Zakończ</Item>
 		<Item name="MainMenu.Settings" type="string">Ustawienia</Item>
 		<Item name="MainMenu.Settings.Language" type="string">Język</Item>
