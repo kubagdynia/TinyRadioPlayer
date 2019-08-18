@@ -44,6 +44,8 @@ type
 
     function IsStationExists(StationName: string; ExcludeStationId: string;
       out IsExists: boolean): ErrorId;
+    function IsStationExists(StationId: string; out IsExists: boolean): ErrorId;
+    function IsStationExists(StationInfo: TStationInfo; out IsExists: boolean): ErrorId;
 
     function DoesAnyStationUseTheGivenItemOfTheDictionary(
       DictionaryType: TDictionaryType; DictionaryRowCode: string;
@@ -159,6 +161,7 @@ begin
 
         if (Trim(AStationInfo.CountryCode) <> EMPTY_STR) then
           query.Params.ParamByName('CountryCode').AsString := Trim(AStationInfo.CountryCode);
+
         if (Trim(AStationInfo.RegionCode) <> EMPTY_STR) then
           query.Params.ParamByName('RegionCode').AsString := Trim(AStationInfo.RegionCode);
 
@@ -190,6 +193,7 @@ var
   isExists: boolean;
 begin
   err := ERR_OK;
+  isExists := false;
 
   try
 
@@ -197,6 +201,12 @@ begin
 
     if (err = ERR_OK) and isExists then
       err := ERR_DB_STATION_ALREADY_EXISTS;
+
+    // Check if data are the same and no need to update them
+    err := IsStationExists(StationInfo, isExists);
+
+    if (err = ERR_OK) and isExists then
+      err := ERR_DB_DATA_ARE_THE_SAME_STATION_UPDATE_IS_NOT_NEEDED;
 
     if err = ERR_OK then
     begin
@@ -213,10 +223,27 @@ begin
 
         query.ParamByName('StationName').AsString := StationInfo.Name;
         query.ParamByName('StreamUrl').AsString := StationInfo.StreamUrl;
-        query.ParamByName('Description').AsString := StationInfo.Description;
-        query.ParamByName('WebpageUrl').AsString := StationInfo.WebpageUrl;
-        query.ParamByName('GenreCode').AsString := StationInfo.GenreCode;
-        query.ParamByName('CountryCode').AsString := StationInfo.CountryCode;
+
+        if StationInfo.Description = EMPTY_STR then
+          query.ParamByName('Description').Clear
+        else
+          query.ParamByName('Description').AsString := StationInfo.Description;
+
+        if StationInfo.WebpageUrl = EMPTY_STR then
+          query.ParamByName('WebpageUrl').Clear
+        else
+          query.ParamByName('WebpageUrl').AsString := StationInfo.WebpageUrl;
+
+        if StationInfo.GenreCode = EMPTY_STR then
+          query.ParamByName('GenreCode').Clear
+        else
+          query.ParamByName('GenreCode').AsString := StationInfo.GenreCode;
+
+        if StationInfo.CountryCode = EMPTY_STR then
+          query.ParamByName('CountryCode').Clear
+        else
+          query.ParamByName('CountryCode').AsString := StationInfo.CountryCode;
+
         query.ParamByName('Modified').AsInteger := GetUnixTimestamp();
         query.ParamByName('StationId').AsString := StationInfo.Id;
 
@@ -337,6 +364,7 @@ var
   err: ErrorId;
 begin
   err := ERR_OK;
+  IsExists := false;
 
   try
 
@@ -353,6 +381,117 @@ begin
         query.SQL.Add('SELECT EXISTS(SELECT 1 FROM ' + DB_TABLE_STATIONS + ' WHERE UPPER(Name) = UPPER(:Name)) AS IsExist;');
 
       query.ParamByName('Name').AsString := StationName;
+
+      query.Open;
+
+      if query.RecordCount = 1 then
+        IsExists := query.Fields[0].AsBoolean;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'IsStationExists', E);
+        err := ERR_DB_IS_STATION_EXISTS;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TStationRepository.IsStationExists(StationId: string; out
+  IsExists: boolean): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+begin
+  err := ERR_OK;
+  IsExists := false;
+
+  try
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add('SELECT EXISTS(SELECT 1 FROM ' + DB_TABLE_STATIONS + ' WHERE ID = UPPER(:Id)) AS IsExist;');
+
+      query.ParamByName('Id').AsString := StationId;
+
+      query.Open;
+
+      if query.RecordCount = 1 then
+        IsExists := query.Fields[0].AsBoolean;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'IsStationExists', E);
+        err := ERR_DB_IS_STATION_EXISTS;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TStationRepository.IsStationExists(StationInfo: TStationInfo;
+  out IsExists: boolean): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+begin
+  err := ERR_OK;
+  IsExists := false;
+
+  try
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add('SELECT EXISTS(SELECT 1 FROM ' + DB_TABLE_STATIONS + ' ' +
+      'WHERE UPPER(ID) = UPPER(:Id) AND UPPER(Name) = UPPER(:Name) AND UPPER(StreamUrl) = UPPER(:StreamUrl)' +
+      ' AND (UPPER(Description) = UPPER(:Description) OR (:Description IS NULL AND Description IS NULL))' +
+      ' AND (UPPER(WebpageUrl) = UPPER(:WebpageUrl) OR (:WebpageUrl IS NULL AND WebpageUrl IS NULL))' +
+      ' AND (UPPER(GenreCode) = UPPER(:GenreCode) OR (:GenreCode IS NULL AND GenreCode IS NULL))' +
+      ' AND (UPPER(CountryCode) = UPPER(:CountryCode) OR (:CountryCode IS NULL AND CountryCode IS NULL))' +
+      ' AND (UPPER(RegionCode) = UPPER(:RegionCode) OR (:RegionCode IS NULL AND RegionCode IS NULL))) AS IsExist;');
+
+      query.ParamByName('Id').AsString := StationInfo.Id;
+      query.ParamByName('Name').AsString := StationInfo.Name;
+      query.ParamByName('StreamUrl').AsString := StationInfo.StreamUrl;
+
+      if StationInfo.Description = EMPTY_STR then
+        query.ParamByName('Description').Clear
+      else
+        query.ParamByName('Description').AsString := StationInfo.Description;
+
+      if StationInfo.WebpageUrl = EMPTY_STR then
+        query.ParamByName('WebpageUrl').Clear
+      else
+        query.ParamByName('WebpageUrl').AsString := StationInfo.WebpageUrl;
+
+      if StationInfo.GenreCode = EMPTY_STR then
+        query.ParamByName('GenreCode').Clear
+      else
+        query.ParamByName('GenreCode').AsString := StationInfo.GenreCode;
+
+      if StationInfo.CountryCode = EMPTY_STR then
+        query.ParamByName('CountryCode').Clear
+      else
+        query.ParamByName('CountryCode').AsString := StationInfo.CountryCode;
+
+      if StationInfo.RegionCode = EMPTY_STR then
+        query.ParamByName('RegionCode').Clear
+      else
+        query.ParamByName('RegionCode').AsString := StationInfo.RegionCode;
 
       query.Open;
 

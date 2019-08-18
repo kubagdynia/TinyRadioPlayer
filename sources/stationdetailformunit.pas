@@ -193,7 +193,8 @@ begin
 
   // error handling
   case err of
-    ERR_OK: inherited;
+    ERR_OK,
+    ERR_DB_DATA_ARE_THE_SAME_STATION_UPDATE_IS_NOT_NEEDED: inherited;
 
     // if error exists show error message
     ERR_DB_ADD_STATION,

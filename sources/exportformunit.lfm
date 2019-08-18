@@ -1,0 +1,42 @@
+inherited ExportForm: TExportForm
+  Left = 494
+  Height = 383
+  Top = 224
+  Width = 490
+  Caption = 'Export'
+  ClientHeight = 383
+  ClientWidth = 490
+  inherited TitlePanel: TBCPanel
+    Width = 490
+    inherited lblTitle: TBCLabel
+      Width = 23
+    end
+  end
+  inherited MainPanel: TBCPanel
+    Height = 297
+    Width = 490
+    object btnExport: TButton[0]
+      Left = 32
+      Height = 25
+      Top = 56
+      Width = 75
+      Caption = 'Export'
+      OnClick = btnExportClick
+      TabOrder = 0
+    end
+  end
+  inherited BottomPanel: TBCPanel
+    Top = 338
+    Width = 490
+    inherited btnCancel: TBCButton
+      Left = 251
+    end
+    inherited btnOk: TBCButton
+      Left = 369
+    end
+  end
+  inherited BaseFormActionList: TActionList
+    left = 208
+    top = 192
+  end
+end

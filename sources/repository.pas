@@ -53,6 +53,7 @@ type
     class function UpdateStationDictionaryCode(DictionaryType: TDictionaryType;
       OldCode: string; NewCode: string): ErrorId;
     class function GetAllStations(out AStationList : TObjectList): ErrorId;
+    class function IsStationExists(StationId: string; out IsExists: boolean): ErrorId;
 
     // Dictionary
     class function AddDictionary(const Name: string; const Code: string;
@@ -102,6 +103,7 @@ type
     class function GetDictionaryRowCode(DictionaryRowId: integer;
       out Code: string): ErrorId;
     class function GetAllDictionaries(out ADictionaryList: TObjectList): ErrorId;
+    class function ImportDictionaries(var dto: TExportImportDto): ErrorId;
   end;
 
 implementation
@@ -209,6 +211,12 @@ end;
 class function TRepository.GetAllStations(out AStationList: TObjectList): ErrorId;
 begin
   Result := FMainRepo.StationRepo.GetAllStations(AStationList);
+end;
+
+class function TRepository.IsStationExists(StationId: string; out
+  IsExists: boolean): ErrorId;
+begin
+  Result := FMainRepo.StationRepo.IsStationExists(StationId, IsExists);
 end;
 
 class function TRepository.AddDictionary(const Name: string;
@@ -360,7 +368,12 @@ end;
 
 class function TRepository.GetAllDictionaries(out ADictionaryList: TObjectList): ErrorId;
 begin
-  REsult := FMainRepo.DictionaryRepo.GetAllDictionaries(ADictionaryList);
+  Result := FMainRepo.DictionaryRepo.GetAllDictionaries(ADictionaryList);
+end;
+
+class function TRepository.ImportDictionaries(var dto: TExportImportDto): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.ImportDictionaries(dto);
 end;
 
 initialization

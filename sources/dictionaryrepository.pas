@@ -113,6 +113,8 @@ type
 
     // Get All
     function GetAllDictionaries(out ADictionaryList : TObjectList): ErrorId;
+
+    function ImportDictionaries(var dto: TExportImportDto): ErrorId;
   end;
 
 implementation
@@ -870,6 +872,37 @@ begin
     on E: Exception do
       begin
         LogException(EMPTY_STR, ClassName, 'GetAllDictionaries', E);
+        err := ERR_GET_ALL_DICTIONARIES;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TDictionaryRepository.ImportDictionaries(var dto: TExportImportDto): ErrorId;
+var
+  err: ErrorId;
+  i: integer;
+  dictionary: TDictionary;
+  str: string;
+begin
+  err := ERR_OK;
+
+  if (dto = nil) or (dto.C_Dictionaries = nil) then
+    exit;
+
+  try
+
+    for i := 0 to dto.C_Dictionaries.Count - 1 do
+    begin
+      dictionary := dto.C_Dictionaries[i] as TDictionary;
+      str := dictionary.A_Name;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'ImportDictionaries', E);
         err := ERR_GET_ALL_DICTIONARIES;
       end;
   end;
