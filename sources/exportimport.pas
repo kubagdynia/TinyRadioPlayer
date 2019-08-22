@@ -39,7 +39,8 @@ type
     constructor Create(); overload;
     destructor Destroy; override;
 
-    procedure ExportToJsonFile(FilePath: string);
+    function ExportToJsonFile(FilePath: string;
+      ExportStations: boolean = true; ExportDictionaries: boolean = true): ErrorId;
     procedure ImportFromJsonFile(FilePath: string);
 
     property OnImportStation: TImportStationEvent read FOnImportStation write FOnImportStation;
@@ -49,7 +50,7 @@ type
 implementation
 
 uses
-  Repository, TRPErrors;
+  Repository, TRPErrors, Helpers, Consts;
 
 constructor TExportImport.Create();
 begin
@@ -61,7 +62,8 @@ begin
   inherited Destroy;
 end;
 
-procedure TExportImport.ExportToJsonFile(FilePath: string);
+function TExportImport.ExportToJsonFile(FilePath: string;
+  ExportStations: boolean = true; ExportDictionaries: boolean = true): ErrorId;
 var
   err: ErrorId;
   content: string;
@@ -69,23 +71,46 @@ var
   stationList: TObjectList;
   dictionaryList: TObjectList;
 begin
+  err := ERR_OK;
 
-  err := TRepository.GetAllStations(stationList);
-  err := TRepository.GetAllDictionaries(dictionaryList);
-
-  exportImportDto := TExportImportDto.Create;
   try
-    // prepare data
-    exportImportDto.A_Date := DateTimeToStr(Now);
-    exportImportDto.B_Stations := stationList;
-    exportImportDto.C_Dictionaries := dictionaryList;
 
-    // and save
-    content := GetFormatedJsonString(exportImportDto);
-    SaveStringToFile(content, FilePath);
-  finally
-    FreeAndNil(exportImportDto);
+    if ExportStations then
+      err := TRepository.GetAllStations(stationList);
+
+    if (ExportDictionaries) and (err = ERR_OK) then
+      err := TRepository.GetAllDictionaries(dictionaryList);
+
+    if err = ERR_OK then
+    begin
+      exportImportDto := TExportImportDto.Create;
+      try
+        // prepare data
+        exportImportDto.A_Date := DateTimeToStr(Now);
+
+        if ExportStations then
+          exportImportDto.B_Stations := stationList;
+
+        if ExportDictionaries then
+          exportImportDto.C_Dictionaries := dictionaryList;
+
+        // and save
+        content := GetFormatedJsonString(exportImportDto);
+        SaveStringToFile(content, FilePath);
+      finally
+        FreeAndNil(exportImportDto);
+      end;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'ExportToJsonFile', E);
+        err := ERR_EXPORT_TO_JSON_FILE;
+      end;
   end;
+
+  Result := err;
 end;
 
 procedure TExportImport.ImportFromJsonFile(FilePath: string);
@@ -95,8 +120,6 @@ begin
   exportImportDto := ParseImportFile(FilePath);
   try
     ImportStations(exportImportDto);
-
-
   finally
     exportImportDto.Free;
   end;

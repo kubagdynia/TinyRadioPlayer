@@ -21,7 +21,18 @@
 		<Item name="Dialog.Answer.No" type="string">Nie</Item>
 		
 		<!-- ExportStations -->
-		<Item name="ExportStations.Dialog.Title" type="string">Eksportuj listę stacji</Item>
+		<Item name="ExportData.Dialog.Title" type="string">Wybierz plik do zapisu danych</Item>
+		<Item name="ExportData.WindowName" type="string">Eksport danych</Item>
+		<Item name="ExportData.Title" type="string">Eksport danych do pliku json</Item>
+		<Item name="ExportData.ExportStatus.Success" type="string">Sukces</Item>
+		<Item name="ExportData.ExportStatus.Failed" type="string">Porażka</Item>
+		<Item name="ExportData.Button.Exporty" type="string">Eksport</Item>
+		<Item name="ExportData.GroupBox.File" type="string">Wybierz plik</Item>
+		<Item name="ExportData.GroupBox.ToExported" type="string">Wybierz dane do eksportu</Item>
+		<Item name="ExportData.GroupBox.ToExported.Stations" type="string">Stacje</Item>
+		<Item name="ExportData.GroupBox.ToExported.Dictionaries" type="string">Słowniki</Item>
+		<Item name="ExportData.GroupBox.ExportStatus" type="string">Status eksportu</Item>		
+		
 		<Item name="ImportStations.Dialog.Title" type="string">Importuj listę stacji</Item>
 		
 		<!-- General Buttons -->

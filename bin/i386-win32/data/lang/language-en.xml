@@ -20,8 +20,19 @@
 		<Item name="Dialog.Answer.Yes" type="string">Yes</Item>
 		<Item name="Dialog.Answer.No" type="string">No</Item>
 		
-		<!-- ExportStations -->
-		<Item name="ExportStations.Dialog.Title" type="string">Export station list</Item>
+		<!-- ExportData -->
+		<Item name="ExportData.Dialog.Title" type="string">Select file to save data</Item>
+		<Item name="ExportData.WindowName" type="string">Export data</Item>
+		<Item name="ExportData.Title" type="string">Export data to json file</Item>
+		<Item name="ExportData.ExportStatus.Success" type="string">SUCCESS</Item>
+		<Item name="ExportData.ExportStatus.Failed" type="string">FAILED</Item>
+		<Item name="ExportData.Button.Exporty" type="string">Export</Item>
+		<Item name="ExportData.GroupBox.File" type="string">Choose a file</Item>
+		<Item name="ExportData.GroupBox.ToExported" type="string">Select data to export</Item>
+		<Item name="ExportData.GroupBox.ToExported.Stations" type="string">Stations</Item>
+		<Item name="ExportData.GroupBox.ToExported.Dictionaries" type="string">Dictionaries</Item>
+		<Item name="ExportData.GroupBox.ExportStatus" type="string">Export status</Item>		
+		
 		<Item name="ImportStations.Dialog.Title" type="string">Import station list</Item>
 		
 		<!-- General Buttons -->

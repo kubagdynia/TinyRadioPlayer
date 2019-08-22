@@ -78,6 +78,9 @@ const
   // Settings
   ERR_SET_GROUP_VALUE                       = $00000301;
 
+  // ExportImport
+  ERR_EXPORT_TO_JSON_FILE                   = $00000401;
+
   procedure ShowErrorMessage(const Err: ErrorId;
     const AClassName: string = EMPTY_STR;
     const AMethodName: string = EMPTY_STR);
