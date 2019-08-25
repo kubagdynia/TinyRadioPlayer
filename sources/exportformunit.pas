@@ -15,7 +15,7 @@ type
 
   TExportForm = class(TBaseForm)
     btnExport: TBCButton;
-    btnOk1: TBCButton;
+    btnChooseAFile: TBCButton;
     cbExportStations: TCheckBox;
     cbExportDictionaries: TCheckBox;
     edtFilePath: TEdit;
@@ -24,7 +24,7 @@ type
     gbToExported: TGroupBox;
     lblExportStatus: TLabel;
     procedure btnExportClick(Sender: TObject);
-    procedure btnOk1Click(Sender: TObject);
+    procedure btnChooseAFileClick(Sender: TObject);
     procedure cbExportDictionariesChange(Sender: TObject);
     procedure cbExportStationsChange(Sender: TObject);
     procedure edtFilePathChange(Sender: TObject);
@@ -45,7 +45,7 @@ var
 implementation
 
 uses
-  Language, ExportImport, TRPErrors;
+  Language, ExportImport, TRPErrors, TRPSettings;
 
 {$R *.lfm}
 
@@ -66,7 +66,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TExportForm.btnOk1Click(Sender: TObject);
+procedure TExportForm.btnChooseAFileClick(Sender: TObject);
 var
   saveDialog: TSaveDialog;
 begin
@@ -76,9 +76,12 @@ begin
       GetLanguageItem('ExportData.Dialog.Title', 'Select file to save data');
 
     saveDialog.InitialDir := GetCurrentDir;
-    saveDialog.Filter := 'JSON files|*.json|All|*.*';
-    saveDialog.DefaultExt := 'json';
-    saveDialog.FileName := 'TRPStations';
+    saveDialog.Filter :=
+      TTRPSettings.GetGroupValue('FileFilter', 'ExportData', 'JSON files|*.json|All|*.*', true);
+    saveDialog.DefaultExt :=
+      TTRPSettings.GetGroupValue('DefaultFileExtension', 'ExportData', 'json', true);
+    saveDialog.FileName :=
+      TTRPSettings.GetGroupValue('DefaultFileName', 'ExportData', 'trpData', true);
     saveDialog.FilterIndex := 1;
 
     if saveDialog.Execute then
@@ -141,7 +144,7 @@ begin
 
   Self.Caption := GetLanguageItem('ExportData.WindowName', 'Export data');
   lblTitle.Caption := GetLanguageItem('ExportData.Title', 'Export data to json file');
-  btnExport.Caption := GetLanguageItem('ExportData.Button.Exporty', 'Export');
+  btnExport.Caption := GetLanguageItem('ExportData.Button.Export', 'Export');
   gbFile.Caption := GetLanguageItem('ExportData.GroupBox.File', 'Choose a file');
   gbExportStatus.Caption := GetLanguageItem('ExportData.GroupBox.ExportStatus', 'Export status');
   gbToExported.Caption := GetLanguageItem('ExportData.GroupBox.ToExported', 'Select data to export');

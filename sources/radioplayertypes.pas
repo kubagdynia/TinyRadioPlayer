@@ -33,6 +33,11 @@ type
 type
   TDictionaryType = (dkNone, dkGenre, dkRegion, dkCountry);
 
+{ - - - - - - - - - - - - - - - Import Data Status - - - - - - - - - - - - - - }
+type
+  TImportDataStatus = (idsStationAdded, idsStationUpdated, idsStationNotUpdatedCosTheSameData,
+                       idsDictionaryAdded, idsDictionaryUpdated, idsDictionaryNotUpdatedCosTheSameData);
+
 { - - - - - - - - - - - - - - - - StationInfo - - - - - - - - - - - - - - - - - }
 type
   TStationInfo = packed record
@@ -356,6 +361,27 @@ type
       property C_Dictionaries  : TObjectList read FDictionaries write FDictionaries;
     end;
 
+{ - - - - - - - - - - - - - - TImportDataNodeData - - - - - - - - - - - - - - - }
+type
+  TImportDataNodeData = class
+  protected
+    FName             : string;
+    FStatus           : string;
+    FImportDataStatus : TImportDataStatus;
+  public
+    constructor Create(const Name, Status: string; ImportDataStatus: TImportDataStatus); overload;
+
+    property Name             : string read FName   write FName;
+    property Status           : string read FStatus write FStatus;
+    property ImportDataStatus : TImportDataStatus read FImportDataStatus write FImportDataStatus;
+  end;
+
+  PImportDataNodeRec = ^TImportDataNodeRec;
+  TImportDataNodeRec =
+  record
+     idnd : TImportDataNodeData;
+  end;
+
 { **************************************************************************** }
 { **************************************************************************** }
 
@@ -602,6 +628,18 @@ begin
     FDictionaries.Free;
 
   inherited Destroy;
+end;
+
+{ TImportDataNodeData }
+
+constructor TImportDataNodeData.Create(const Name, Status: string;
+  ImportDataStatus: TImportDataStatus);
+begin
+  inherited Create;
+
+  FName := Name;
+  FStatus := Status;
+  FImportDataStatus := ImportDataStatus;
 end;
 
 end.

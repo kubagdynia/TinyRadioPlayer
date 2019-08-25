@@ -1454,11 +1454,11 @@ object MainForm: TMainForm
     top = 248
     object miFile: TMenuItem
       Caption = 'File'
-      object miImportStations: TMenuItem
-        Action = ImportStationsAction
+      object miImportData: TMenuItem
+        Action = ImportDataAction
       end
-      object miExport: TMenuItem
-        Action = ExportAction
+      object miExportData: TMenuItem
+        Action = ExportDataAction
       end
       object miLine1: TMenuItem
         Caption = '-'
@@ -1534,13 +1534,13 @@ object MainForm: TMainForm
       Caption = 'About'
       OnExecute = AboutActionExecute
     end
-    object ImportStationsAction: TAction
-      Caption = 'Import Stations'
-      OnExecute = ImportStationsActionExecute
+    object ImportDataAction: TAction
+      Caption = 'Import Data'
+      OnExecute = ImportDataActionExecute
     end
-    object ExportAction: TAction
-      Caption = 'Export'
-      OnExecute = ExportActionExecute
+    object ExportDataAction: TAction
+      Caption = 'Export data'
+      OnExecute = ExportDataActionExecute
     end
   end
   object PopupMenuStationList: TPopupMenu

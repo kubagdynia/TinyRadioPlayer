@@ -20,20 +20,31 @@
 		<Item name="Dialog.Answer.Yes" type="string">Tak</Item>
 		<Item name="Dialog.Answer.No" type="string">Nie</Item>
 		
-		<!-- ExportStations -->
+		<!-- ExportData -->
 		<Item name="ExportData.Dialog.Title" type="string">Wybierz plik do zapisu danych</Item>
 		<Item name="ExportData.WindowName" type="string">Eksport danych</Item>
 		<Item name="ExportData.Title" type="string">Eksport danych do pliku json</Item>
-		<Item name="ExportData.ExportStatus.Success" type="string">Sukces</Item>
-		<Item name="ExportData.ExportStatus.Failed" type="string">Porażka</Item>
-		<Item name="ExportData.Button.Exporty" type="string">Eksport</Item>
+		<Item name="ExportData.ExportStatus.Success" type="string">SUKCES</Item>
+		<Item name="ExportData.ExportStatus.Failed" type="string">PORAŻKA</Item>
+		<Item name="ExportData.Button.Export" type="string">Eksport</Item>
 		<Item name="ExportData.GroupBox.File" type="string">Wybierz plik</Item>
 		<Item name="ExportData.GroupBox.ToExported" type="string">Wybierz dane do eksportu</Item>
 		<Item name="ExportData.GroupBox.ToExported.Stations" type="string">Stacje</Item>
 		<Item name="ExportData.GroupBox.ToExported.Dictionaries" type="string">Słowniki</Item>
-		<Item name="ExportData.GroupBox.ExportStatus" type="string">Status eksportu</Item>		
-		
-		<Item name="ImportStations.Dialog.Title" type="string">Importuj listę stacji</Item>
+		<Item name="ExportData.GroupBox.ExportStatus" type="string">Status eksportu</Item>	
+
+		<!-- ImportData -->
+		<Item name="ImportData.Dialog.Title" type="string">Wybierz plik do importu danych</Item>
+		<Item name="ImportData.WindowName" type="string">Import danych</Item>
+		<Item name="ImportData.Title" type="string">Import danych z pliku json</Item>
+		<Item name="ImportData.ImportStatus.Success" type="string">SUKCES</Item>
+		<Item name="ImportData.ImportStatus.Failed" type="string">PORAŻKA</Item>
+		<Item name="ImportData.Button.Import" type="string">Import</Item>
+		<Item name="ImportData.GroupBox.File" type="string">Wybierz plik</Item>
+		<Item name="ImportData.GroupBox.ToImported" type="string">Wybierz dane do importu</Item>
+		<Item name="ImportData.GroupBox.ToImported.Stations" type="string">Stacje</Item>
+		<Item name="ImportData.GroupBox.ToImported.Dictionaries" type="string">Słowniki</Item>
+		<Item name="ImportData.GroupBox.ImportStatus" type="string">Status importu</Item>
 		
 		<!-- General Buttons -->
 		<Item name="Button.Close" type="string">Zamknij</Item>
@@ -44,8 +55,8 @@
 		
 		<!-- Main Menu -->
 		<Item name="MainMenu.File" type="string">Plik</Item>
-		<Item name="MainMenu.File.ExportStations" type="string">Eksport listy stacji</Item>
-		<Item name="MainMenu.File.ImportStations" type="string">Import listy stacji</Item>
+		<Item name="MainMenu.File.ExportData" type="string">Eksport danych</Item>
+		<Item name="MainMenu.File.ImportData" type="string">Import danych</Item>
 		<Item name="MainMenu.File.Exit" type="string">Zakończ</Item>
 		<Item name="MainMenu.Settings" type="string">Ustawienia</Item>
 		<Item name="MainMenu.Settings.Language" type="string">Język</Item>

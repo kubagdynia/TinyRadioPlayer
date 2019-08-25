@@ -19,17 +19,17 @@ uses
   Forms, Controls, Graphics, Dialogs, LCLType, StdCtrls,
   ExtCtrls, Menus, Helpers, RadioPlayer, RadioPlayerTypes, VirtualTrees,
   ImgList, ActnList, CTRPTextScroll, CTRPTrackBar, zipper,
-  OpenStationUrlFormUnit, Skins, Consts, CTRPCustomDrawn, ExportImport;
+  OpenStationUrlFormUnit, Skins, Consts, CTRPCustomDrawn;
 
 type
 
   { TMainForm }
   TMainForm = class(TForm)
     AboutAction: TAction;
-    ExportAction: TAction;
-    ImportStationsAction: TAction;
-    miExport: TMenuItem;
-    miImportStations: TMenuItem;
+    ExportDataAction: TAction;
+    ImportDataAction: TAction;
+    miExportData: TMenuItem;
+    miImportData: TMenuItem;
     miLine1: TMenuItem;
     miAbout: TMenuItem;
     OpenEqualizerAction: TAction;
@@ -86,8 +86,8 @@ type
     procedure AddStationActionExecute(Sender: TObject);
     procedure BottomFunctionPanelResize(Sender: TObject);
     procedure DeleteStationActionExecute(Sender: TObject);
-    procedure ExportActionExecute(Sender: TObject);
-    procedure ImportStationsActionExecute(Sender: TObject);
+    procedure ExportDataActionExecute(Sender: TObject);
+    procedure ImportDataActionExecute(Sender: TObject);
     procedure MainPanelResize(Sender: TObject);
     procedure miCopyTitleToClipboardClick(Sender: TObject);
     procedure miSearchOnYoutubeClick(Sender: TObject);
@@ -112,7 +112,6 @@ type
     procedure StopActionExecute(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
   private
-    procedure exportImportImportStation(AStationInfo: TStationInfo);
     procedure LoadLoanguages;
     procedure LoadSettings;
     procedure LoadSkin;
@@ -183,7 +182,7 @@ implementation
 
 uses
   Language, TRPSettings, Repository, StationDetailFormUnit, DictionaryTablesManagementFormUnit,
-  LCLIntf, Clipbrd, EqualizerFormUnit, AboutFormUnit, ExportFormUnit;
+  LCLIntf, Clipbrd, EqualizerFormUnit, AboutFormUnit, ExportFormUnit, ImportFormUnit;
 
 {$R *.lfm}
 
@@ -502,7 +501,7 @@ begin
   StationDetailManagement(TOpenMode.omDelete);
 end;
 
-procedure TMainForm.ExportActionExecute(Sender: TObject);
+procedure TMainForm.ExportDataActionExecute(Sender: TObject);
 begin
   if not Assigned(ExportForm) then
   begin
@@ -515,37 +514,17 @@ begin
   end;
 end;
 
-procedure TMainForm.ImportStationsActionExecute(Sender: TObject);
-var
-  exportImport: TExportImport;
-  openDialog: TOpenDialog;
+procedure TMainForm.ImportDataActionExecute(Sender: TObject);
 begin
-  openDialog := TOpenDialog.Create(Self);
-  try
-    openDialog.Title :=
-      GetLanguageItem('ImportStations.Dialog.Title', 'Import station list');
-
-    openDialog.InitialDir := GetCurrentDir;
-    openDialog.Filter := 'JSON files|*.json|All|*.*';
-    openDialog.DefaultExt := 'json';
-    openDialog.FileName := 'TRPStations.json';
-    openDialog.FilterIndex := 1;
-
-    if openDialog.Execute then
-    begin
-      exportImport := TExportImport.Create();
-      try
-        exportImport.OnImportStation:= @exportImportImportStation;
-        exportImport.ImportFromJsonFile(openDialog.FileName);
-      finally
-        exportImport.Free;
-      end;
+  if not Assigned(ImportForm) then
+  begin
+    ImportForm := TImportForm.Create(Self);
+    try
+      ImportForm.ShowModal;
+    finally
+      FreeAndNil(ImportForm);
     end;
-
-  finally
-    openDialog.Free;
   end;
-
 end;
 
 procedure TMainForm.MainPanelResize(Sender: TObject);
@@ -670,18 +649,11 @@ begin
   end;
 end;
 
-procedure TMainForm.exportImportImportStation(AStationInfo: TStationInfo);
-var
-  aName: string;
-begin
-  aName := AStationInfo.Name;
-
-end;
-
 procedure TMainForm.LoadLoanguages;
 begin
   miFile.Caption := GetLanguageItem('MainMenu.File', 'File');
-  miExport.Caption := GetLanguageItem('MainMenu.File.ExportStations', 'Export Stations');
+  miExportData.Caption := GetLanguageItem('MainMenu.File.ExportData', 'Export data');
+  miImportData.Caption := GetLanguageItem('MainMenu.File.ImportData', 'Import data');;
   miExit.Caption := GetLanguageItem('MainMenu.File.Exit', 'Exit');
   miSettings.Caption := GetLanguageItem('MainMenu.Settings', 'Settings');
   miLanguage.Caption := GetLanguageItem('MainMenu.Settings.Language', 'Language');

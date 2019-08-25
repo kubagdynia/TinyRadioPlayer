@@ -9,7 +9,7 @@ uses
   RadioPlayerTypes;
 
 type
-  TImportStationEvent = procedure(AStationInfo: TStationInfo) of object;
+  TImportStationEvent = procedure(AStationInfo: TStationInfo; AImportDataStatus: TImportDataStatus) of object;
 
 type
 
@@ -41,7 +41,8 @@ type
 
     function ExportToJsonFile(FilePath: string;
       ExportStations: boolean = true; ExportDictionaries: boolean = true): ErrorId;
-    procedure ImportFromJsonFile(FilePath: string);
+    procedure ImportFromJsonFile(FilePath: string;
+      ExportStations: boolean = true; ExportDictionaries: boolean = true);
 
     property OnImportStation: TImportStationEvent read FOnImportStation write FOnImportStation;
   end;
@@ -113,13 +114,16 @@ begin
   Result := err;
 end;
 
-procedure TExportImport.ImportFromJsonFile(FilePath: string);
+procedure TExportImport.ImportFromJsonFile(FilePath: string;
+  ExportStations: boolean = true; ExportDictionaries: boolean = true);
 var
   exportImportDto: TExportImportDto;
 begin
   exportImportDto := ParseImportFile(FilePath);
   try
-    ImportStations(exportImportDto);
+    if ExportStations then
+      ImportStations(exportImportDto);
+
   finally
     exportImportDto.Free;
   end;
@@ -147,6 +151,7 @@ begin
 
     if isExists then
     begin
+      // Update station
       with stationInfo do
       begin
         Id := station.A_ID;
@@ -162,11 +167,17 @@ begin
       err := TRepository.UpdateStation(stationInfo);
 
       // call event
-      if (err = ERR_OK) and (Assigned(OnImportStation)) then
-        OnImportStation(stationInfo);
+      if Assigned(OnImportStation) then
+      begin
+        if (err = ERR_OK) then
+          OnImportStation(stationInfo, idsStationUpdated)
+        else if (err = ERR_DB_DATA_ARE_THE_SAME_STATION_UPDATE_IS_NOT_NEEDED) then
+          OnImportStation(stationInfo, idsStationNotUpdatedCosTheSameData)
+      end;
 
     end else
     begin
+      // Add station
 
     end;
 

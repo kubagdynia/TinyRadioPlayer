@@ -26,14 +26,25 @@
 		<Item name="ExportData.Title" type="string">Export data to json file</Item>
 		<Item name="ExportData.ExportStatus.Success" type="string">SUCCESS</Item>
 		<Item name="ExportData.ExportStatus.Failed" type="string">FAILED</Item>
-		<Item name="ExportData.Button.Exporty" type="string">Export</Item>
+		<Item name="ExportData.Button.Export" type="string">Export</Item>
 		<Item name="ExportData.GroupBox.File" type="string">Choose a file</Item>
 		<Item name="ExportData.GroupBox.ToExported" type="string">Select data to export</Item>
 		<Item name="ExportData.GroupBox.ToExported.Stations" type="string">Stations</Item>
 		<Item name="ExportData.GroupBox.ToExported.Dictionaries" type="string">Dictionaries</Item>
-		<Item name="ExportData.GroupBox.ExportStatus" type="string">Export status</Item>		
+		<Item name="ExportData.GroupBox.ExportStatus" type="string">Export status</Item>
 		
-		<Item name="ImportStations.Dialog.Title" type="string">Import station list</Item>
+		<!-- ImportData -->
+		<Item name="ImportData.Dialog.Title" type="string">Select file to import</Item>
+		<Item name="ImportData.WindowName" type="string">Import data</Item>
+		<Item name="ImportData.Title" type="string">Import data from json file</Item>
+		<Item name="ImportData.ImportStatus.Success" type="string">SUCCESS</Item>
+		<Item name="ImportData.ImportStatus.Failed" type="string">FAILED</Item>
+		<Item name="ImportData.Button.Import" type="string">Import</Item>
+		<Item name="ImportData.GroupBox.File" type="string">Choose a file</Item>
+		<Item name="ImportData.GroupBox.ToImported" type="string">Select data to import</Item>
+		<Item name="ImportData.GroupBox.ToImported.Stations" type="string">Stations</Item>
+		<Item name="ImportData.GroupBox.ToImported.Dictionaries" type="string">Dictionaries</Item>
+		<Item name="ImportData.GroupBox.ImportStatus" type="string">Import status</Item>		
 		
 		<!-- General Buttons -->
 		<Item name="Button.Close" type="string">Close</Item>
@@ -44,7 +55,8 @@
 		
 		<!-- Main Menu -->
 		<Item name="MainMenu.File" type="string">File</Item>
-		<Item name="MainMenu.File.ExportStations" type="string">Export Stations</Item>
+		<Item name="MainMenu.File.ExportData" type="string">Export data</Item>
+		<Item name="MainMenu.File.ImportData" type="string">Import data</Item>
 		<Item name="MainMenu.File.ImportStations" type="string">Import Stations</Item>
 		<Item name="MainMenu.File.Exit" type="string">Exit</Item>
 		<Item name="MainMenu.Settings" type="string">Settings</Item>
