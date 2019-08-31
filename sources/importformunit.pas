@@ -5,7 +5,7 @@ unit ImportFormUnit;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, BCPanel, BCLabel, BCButton, Forms, Controls,
+  Classes, SysUtils, FileUtil, BCLabel, BCButton, Forms, Controls,
   Graphics, Dialogs, ActnList, ComCtrls, StdCtrls, BaseFormUnit,
   RadioPlayerTypes, Helpers, VirtualTrees, Consts;
 
@@ -178,9 +178,9 @@ end;
 procedure TImportForm.OnImportStation(AStationInfo: TStationInfo; AImportDataStatus: TImportDataStatus);
 begin
   if AImportDataStatus = idsStationAdded then
-    AddImportStatus(AStationInfo.Name, 'Added', AImportDataStatus)
+    AddImportStatus(AStationInfo.Name, GetLanguageItem('ImportData.ImportStation.Added', 'Station Added'), AImportDataStatus)
   else if AImportDataStatus = idsStationUpdated then
-    AddImportStatus(AStationInfo.Name, 'Updated', AImportDataStatus);
+    AddImportStatus(AStationInfo.Name, GetLanguageItem('ImportData.ImportStation.Updated', 'Station Updated'), AImportDataStatus);
 end;
 
 procedure TImportForm.ImportEnabled;
@@ -266,12 +266,26 @@ procedure TImportForm.VSTImportStatusListBeforeItemErase(
   Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode;
   const ItemRect: TRect; var ItemColor: TColor;
   var EraseAction: TItemEraseAction);
+var
+  data: PImportDataNodeRec;
 begin
   // Coloring every second line
   if (Odd(Node^.Index)) and (not Sender.Selected[Node]) then
   begin
     ItemColor := GridLineColor;
     EraseAction := eaColor;
+  end;
+
+  data := Sender.GetNodeData(Node);
+
+  if (Assigned(data)) and (data^.idnd <> nil) then
+  begin
+
+    if (data^.idnd.ImportDataStatus in [idsStationUpdated, idsStationAdded, idsDictionaryAdded, idsDictionaryUpdated]) then
+      ItemColor := ColorGreen
+    else
+      ItemColor := ColorRed;
+
   end;
 end;
 

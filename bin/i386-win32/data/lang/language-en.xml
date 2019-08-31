@@ -39,6 +39,8 @@
 		<Item name="ImportData.Title" type="string">Import data from json file</Item>
 		<Item name="ImportData.ImportStatus.Success" type="string">SUCCESS</Item>
 		<Item name="ImportData.ImportStatus.Failed" type="string">FAILED</Item>
+		<Item name="ImportData.ImportStation.Added" type="string">Station Added</Item>
+		<Item name="ImportData.ImportStation.Updated" type="string">Station Updated</Item>
 		<Item name="ImportData.Button.Import" type="string">Import</Item>
 		<Item name="ImportData.GroupBox.File" type="string">Choose a file</Item>
 		<Item name="ImportData.GroupBox.ToImported" type="string">Select data to import</Item>

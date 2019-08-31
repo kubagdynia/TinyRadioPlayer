@@ -15,7 +15,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MinorVersionNr Value="6"/>
-      <BuildNr Value="55"/>
+      <BuildNr Value="56"/>
       <StringTable CompanyName="Jakub Kurlowicz" LegalCopyright="MIT License, Copyright (c) 2019 Jakub Kurlowicz" OriginalFilename="TinyRadioPlayer" ProductName="Tiny Radio Player" ProductVersion="2019.1"/>
     </VersionInfo>
     <BuildModes Count="2">

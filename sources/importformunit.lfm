@@ -269,15 +269,15 @@ inherited ImportForm: TImportForm
     Top = 410
     Width = 406
     inherited btnCancel: TBCButton
-      Left = 136
-      Width = 106
-    end
-    inherited btnOk: TBCButton
-      Left = 13
-      Width = 43
+      Left = 8
+      Width = 25
       Anchors = [akTop, akLeft, akBottom]
       Enabled = False
       Visible = False
+    end
+    inherited btnOk: TBCButton
+      Left = 136
+      Width = 106
     end
     object btnImport: TBCButton[2]
       Left = 249

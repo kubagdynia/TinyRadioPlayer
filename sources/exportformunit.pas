@@ -150,7 +150,6 @@ begin
   gbToExported.Caption := GetLanguageItem('ExportData.GroupBox.ToExported', 'Select data to export');
   cbExportStations.Caption := GetLanguageItem('ExportData.GroupBox.ToExported.Stations', 'Stations');
   cbExportDictionaries.Caption := GetLanguageItem('ExportData.GroupBox.ToExported.Dictionaries', 'Dictionaries');
-
 end;
 
 procedure TExportForm.LoadSkins;
