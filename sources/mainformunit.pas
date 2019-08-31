@@ -62,7 +62,6 @@ type
     miSkins: TMenuItem;
     OpenUrlAction: TAction;
     MainActionList: TActionList;
-    btnRec: TBCButton;
     btnPrev: TBCButton;
     btnNext: TBCButton;
     btnOpen: TBCButton;
@@ -457,11 +456,10 @@ begin
     VolumeTrackBar.Left := BottomFunctionPanel.Width - VolumeTrackBar.Width - 3;
   end;
 
-  btnPrev.Left := button7 - (6 * buttonWidth) - (5 * buttonSpace);
-  btnPlay.Left := button7 - (5 * buttonWidth) - (4 * buttonSpace);
-  btnStop.Left := button7 - (4 * buttonWidth) - (3 * buttonSpace);
-  btnNext.Left := button7 - (3 * buttonWidth) - (2 * buttonSpace);
-  btnRec.Left := button7 - (2 * buttonWidth) - buttonSpace;
+  btnPrev.Left := button7 - (5 * buttonWidth) - (4 * buttonSpace);
+  btnPlay.Left := button7 - (4 * buttonWidth) - (3 * buttonSpace);
+  btnStop.Left := button7 - (3 * buttonWidth) - (2 * buttonSpace);
+  btnNext.Left := button7 - (2 * buttonWidth) - (buttonSpace);
   btnOpen.Left := button7 - buttonWidth;
 
 end;
@@ -1310,7 +1308,6 @@ begin
   btnPrev.Glyph.Assign(ASkinData.GetBitmapItem('btnPrev'));
   btnStop.Glyph.Assign(ASkinData.GetBitmapItem('btnStop'));
   btnNext.Glyph.Assign(ASkinData.GetBitmapItem('btnNext'));
-  btnRec.Glyph.Assign(ASkinData.GetBitmapItem('btnRec'));
   btnOpen.Glyph.Assign(ASkinData.GetBitmapItem('btnOpen'));
 end;
 
