@@ -178,9 +178,23 @@ end;
 procedure TImportForm.OnImportStation(AStationInfo: TStationInfo; AImportDataStatus: TImportDataStatus);
 begin
   if AImportDataStatus = idsStationAdded then
-    AddImportStatus(AStationInfo.Name, GetLanguageItem('ImportData.ImportStation.Added', 'Station Added'), AImportDataStatus)
+    AddImportStatus(AStationInfo.Name, GetLanguageItem('ImportData.ImportStation.Added', 'Station added'), AImportDataStatus)
+  else if AImportDataStatus = idsStationNotAddedBecauseNoDictionaryIten then
+    AddImportStatus(AStationInfo.Name, GetLanguageItem('ImportData.ImportStation.NotAdded', 'Station not added'), AImportDataStatus)
+  else if AImportDataStatus = idsStationNotAddedBecauseAlreadyExists then
+    AddImportStatus(AStationInfo.Name, GetLanguageItem('ImportData.ImportStation.NotAddedBecauseAlreadyExists', 'Station already exists'), AImportDataStatus)
+
   else if AImportDataStatus = idsStationUpdated then
-    AddImportStatus(AStationInfo.Name, GetLanguageItem('ImportData.ImportStation.Updated', 'Station Updated'), AImportDataStatus);
+    AddImportStatus(AStationInfo.Name, GetLanguageItem('ImportData.ImportStation.Updated', 'Station updated'), AImportDataStatus)
+  else if AImportDataStatus = idsStationNotUpdatedBecauseNoDictionaryIten then
+    AddImportStatus(AStationInfo.Name, GetLanguageItem('ImportData.ImportStation.NotUpdated', 'Station not updated'), AImportDataStatus)
+  else if AImportDataStatus = idsStationNotUpdatedBecauseAlreadyExists then
+    AddImportStatus(AStationInfo.Name, GetLanguageItem('ImportData.ImportStation.NotUpdatedBecauseAlreadyExists', 'Station already exists'), AImportDataStatus)
+  else if AImportDataStatus = idsStationNotUpdatedCosTheSameData then
+    AddImportStatus(AStationInfo.Name, GetLanguageItem('ImportData.ImportStation.NotUpdatedBecauseTheSameData', 'The same data'), AImportDataStatus);
+
+
+
 end;
 
 procedure TImportForm.ImportEnabled;

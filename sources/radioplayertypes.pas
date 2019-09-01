@@ -36,7 +36,11 @@ type
 { - - - - - - - - - - - - - - - Import Data Status - - - - - - - - - - - - - - }
 type
   TImportDataStatus = (idsStationAdded, idsStationUpdated, idsStationNotUpdatedCosTheSameData,
-                       idsDictionaryAdded, idsDictionaryUpdated, idsDictionaryNotUpdatedCosTheSameData);
+                       idsStationNotAddedBecauseAlreadyExists,
+                       idsStationNotUpdatedBecauseNoDictionaryIten,
+                       idsStationNotAddedBecauseNoDictionaryIten,
+                       idsDictionaryAdded, idsDictionaryUpdated, idsDictionaryNotUpdatedCosTheSameData,
+                       idsStationNotUpdatedBecauseAlreadyExists);
 
 { - - - - - - - - - - - - - - - - StationInfo - - - - - - - - - - - - - - - - - }
 type

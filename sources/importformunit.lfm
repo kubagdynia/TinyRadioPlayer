@@ -1,10 +1,10 @@
 inherited ImportForm: TImportForm
-  Height = 455
+  Height = 468
   Width = 406
   Caption = 'Import'
-  ClientHeight = 455
+  ClientHeight = 468
   ClientWidth = 406
-  Constraints.MinHeight = 325
+  Constraints.MinHeight = 370
   Constraints.MinWidth = 280
   inherited TitlePanel: TBCPanel
     Width = 406
@@ -13,7 +13,7 @@ inherited ImportForm: TImportForm
     end
   end
   inherited MainPanel: TBCPanel
-    Height = 369
+    Height = 382
     Width = 406
     object gbFile: TGroupBox[0]
       Left = 8
@@ -242,12 +242,12 @@ inherited ImportForm: TImportForm
     end
     object gbImportStatus: TGroupBox[2]
       Left = 8
-      Height = 176
+      Height = 205
       Top = 168
       Width = 385
-      Anchors = [akTop, akLeft, akRight]
+      Anchors = [akTop, akLeft, akRight, akBottom]
       Caption = 'Import status'
-      ClientHeight = 156
+      ClientHeight = 185
       ClientWidth = 381
       TabOrder = 2
       object lblImportStatus: TLabel
@@ -266,7 +266,7 @@ inherited ImportForm: TImportForm
     end
   end
   inherited BottomPanel: TBCPanel
-    Top = 410
+    Top = 423
     Width = 406
     inherited btnCancel: TBCButton
       Left = 8

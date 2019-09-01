@@ -136,6 +136,7 @@ var
   err: ErrorId;
   isExists: boolean;
   stationInfo: TStationInfo;
+  stationId: string;
 begin
   if (dto = nil) or (dto.B_Stations = nil) or (dto.B_Stations.Count = 0) then
     exit;
@@ -173,11 +174,38 @@ begin
           OnImportStation(stationInfo, idsStationUpdated)
         else if (err = ERR_DB_DATA_ARE_THE_SAME_STATION_UPDATE_IS_NOT_NEEDED) then
           OnImportStation(stationInfo, idsStationNotUpdatedCosTheSameData)
+        else if (err = ERR_DICTIONARY_NOT_ROW_EXISTS) then
+          OnImportStation(stationInfo, idsStationNotUpdatedBecauseNoDictionaryIten)
+        else if (err = ERR_DB_STATION_ALREADY_EXISTS) then
+          OnImportStation(stationInfo, idsStationNotUpdatedBecauseAlreadyExists);
       end;
 
     end else
     begin
       // Add station
+      with stationInfo do
+      begin
+        Name := station.B_Name;
+        StreamUrl := station.C_StreamUrl;
+        Description := station.D_Description;
+        WebpageUrl := station.E_WebpageUrl;
+        GenreCode := station.F_GenreCode;
+        CountryCode := station.G_CountryCode;
+        RegionCode := station.H_RegionCode;
+      end;
+
+      err := TRepository.AddStation(stationInfo, stationId);
+
+      // call event
+      if Assigned(OnImportStation) then
+      begin
+        if (err = ERR_OK) then
+          OnImportStation(stationInfo, idsStationAdded)
+        else if (err = ERR_DICTIONARY_NOT_ROW_EXISTS) then
+          OnImportStation(stationInfo, idsStationNotAddedBecauseNoDictionaryIten)
+        else if (err = ERR_DB_STATION_ALREADY_EXISTS) then
+          OnImportStation(stationInfo, idsStationNotAddedBecauseAlreadyExists)
+      end;
 
     end;
 

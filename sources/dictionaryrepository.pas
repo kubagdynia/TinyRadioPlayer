@@ -35,6 +35,7 @@ type
     function DictionaryRowExists(DictionaryId: integer; Code: string; Text: string;
       ParentDictionaryRowId: integer = EMPTY_INT;
       ExcludeDictionaryRowId: integer = EMPTY_INT): boolean;
+
     function IsDictionaryRowUsedAsAParent(DictionaryRowId: integer): boolean;
 
     function RefreshDictionary(ADictionaryType: TDictionaryType): ErrorId;
@@ -115,6 +116,10 @@ type
     function GetAllDictionaries(out ADictionaryList : TObjectList): ErrorId;
 
     function ImportDictionaries(var dto: TExportImportDto): ErrorId;
+
+    // Exists
+    function DictionaryRowExists(DictionaryType: TDictionaryType; Code: string): boolean;
+    function DictionaryRowExists(DictionaryType: TDictionaryType; Code: string; ParentCode: string): boolean;
   end;
 
 implementation
@@ -938,7 +943,6 @@ begin
         query.Params.ParamByName('ParentDictionaryRowId').AsInteger := ParentDictionaryRowId;
       end;
 
-
       query.Params.ParamByName('ID').AsInteger := ExcludeDictionaryRowId;
       query.Params.ParamByName('DictionaryID').AsInteger := DictionaryId;
       query.Params.ParamByName('Code').AsString := Code;
@@ -955,6 +959,65 @@ begin
   except
     on E: Exception do
       RaiseErrorMessage(ERR_CHECKING_IF_DICTIONARY_ROW_EXISTS, ClassName, 'DictionaryRowExists');
+  end;
+end;
+
+function TDictionaryRepository.DictionaryRowExists(
+  DictionaryType: TDictionaryType; Code: string): boolean;
+var
+  dictionaryId: integer;
+  dictionaryParentId: integer;
+begin
+  try
+
+    GetDictionaryId(DictionaryType, dictionaryId, dictionaryParentId);
+    Result := DictionaryRowExists(dictionaryId, Code, EMPTY_STR);
+
+  except
+    on E: Exception do
+      RaiseErrorMessage(ERR_CHECKING_IF_DICTIONARY_ROW_EXISTS, ClassName, 'DictionaryRowCodeExists');
+  end;
+
+end;
+
+function TDictionaryRepository.DictionaryRowExists(
+  DictionaryType: TDictionaryType; Code: string; ParentCode: string): boolean;
+var
+  query: TZQuery;
+  dictionaryId: integer;
+  dictionaryParentId: integer;
+begin
+  try
+
+    GetDictionaryId(DictionaryType, dictionaryId, dictionaryParentId);
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'SELECT COUNT(1) AS Count FROM ' + DB_TABLE_DICTIONARY_ROW +
+        ' WHERE DictionaryID = :DictionaryID AND Code = :Code AND ParentDictionaryRowID = ( ' +
+        '   SELECT ID FROM ' + DB_TABLE_DICTIONARY_ROW +
+        '   WHERE DictionaryID = :DictionaryParentId AND Code = :ParentCode limit 1)'
+      );
+
+      query.Params.ParamByName('DictionaryID').AsInteger := dictionaryId;
+      query.Params.ParamByName('Code').AsString := Code;
+      query.Params.ParamByName('DictionaryParentId').AsInteger := dictionaryParentId;
+      query.Params.ParamByName('ParentCode').AsString := ParentCode;
+
+      query.Open;
+
+      Result := query.FieldByName('Count').AsInteger > 0;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      RaiseErrorMessage(ERR_CHECKING_IF_DICTIONARY_ROW_EXISTS, ClassName, 'DictionaryRowCodeExists');
   end;
 end;
 

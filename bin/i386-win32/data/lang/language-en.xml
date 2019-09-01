@@ -39,8 +39,13 @@
 		<Item name="ImportData.Title" type="string">Import data from json file</Item>
 		<Item name="ImportData.ImportStatus.Success" type="string">SUCCESS</Item>
 		<Item name="ImportData.ImportStatus.Failed" type="string">FAILED</Item>
-		<Item name="ImportData.ImportStation.Added" type="string">Station Added</Item>
-		<Item name="ImportData.ImportStation.Updated" type="string">Station Updated</Item>
+		<Item name="ImportData.ImportStation.Added" type="string">Station added</Item>
+		<Item name="ImportData.ImportStation.NotAdded" type="string">Station not added</Item>
+		<Item name="ImportData.ImportStation.NotAddedBecauseAlreadyExists" type="string">Station already exists</Item>
+		<Item name="ImportData.ImportStation.Updated" type="string">Station updated</Item>
+		<Item name="ImportData.ImportStation.NotUpdated" type="string">Station not updated</Item>
+		<Item name="ImportData.ImportStation.NotUpdatedBecauseAlreadyExists" type="string">Station already exists</Item>
+		<Item name="ImportData.ImportStation.NotUpdatedBecauseTheSameData" type="string">The same data</Item>
 		<Item name="ImportData.Button.Import" type="string">Import</Item>
 		<Item name="ImportData.GroupBox.File" type="string">Choose a file</Item>
 		<Item name="ImportData.GroupBox.ToImported" type="string">Select data to import</Item>
