@@ -70,8 +70,8 @@ const
   DICTIONARY_NAMES: ARRAY[Low(TDictionaryType)..High(TDictionaryType)] of string = (EMPTY_STR, DICTIONARY_GENRE_CODE, DICTIONARY_REGION_CODE, DICTIONARY_COUNTRY_CODE);
 
 { - - - - - - - - - - - - - - - - - Grid Colors - - - - - - - - - - - - - - - - }
-GridLineColor: TColor = (250 or (250 shl 8) or (250 shl 16)); // RGB(250, 250, 250);
-GridLineColorCurrentlyPlaying: TColor = (199 or (237 shl 8) or (252 shl 16)); // RGB(255, 187, 187);
+GridLineColor: TColor = (250 or (250 shl 8) or (250 shl 16));
+GridLineColorCurrentlyPlaying: TColor = (199 or (237 shl 8) or (252 shl 16));
 
 { - - - - - - - - - - - - - - - - - - Colors - - - - - - - - - - - - - - - - - }
 ColorBlue: TColor = (220 or (234 shl 8) or (248 shl 16));

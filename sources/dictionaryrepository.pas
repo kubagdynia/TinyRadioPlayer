@@ -15,7 +15,7 @@ Description:         Dictionary management
 interface
 
 uses
-  Classes, SysUtils, StdCtrls, VirtualTrees, RadioPlayerTypes, Consts;
+  Classes, SysUtils, StdCtrls, VirtualTrees, RadioPlayerTypes, Consts, contnrs;
 
 type
 
@@ -35,6 +35,7 @@ type
     function DictionaryRowExists(DictionaryId: integer; Code: string; Text: string;
       ParentDictionaryRowId: integer = EMPTY_INT;
       ExcludeDictionaryRowId: integer = EMPTY_INT): boolean;
+
     function IsDictionaryRowUsedAsAParent(DictionaryRowId: integer): boolean;
 
     function RefreshDictionary(ADictionaryType: TDictionaryType): ErrorId;
@@ -108,8 +109,17 @@ type
     function FindAnItemInTheComboBox(var ComboBox: TComboBox; Code: string): ErrorId;
     function GetDictionaryCodeFromSelectedItem(var ComboBox: TComboBox;
       out DictionaryCode: string): ErrorId;
+    function GetDictionaryCodeFromSelectedItem(var ComboBox: TComboBox;
+      out DictionaryCode: string; out ParentDictionaryCode: string): ErrorId;
 
+    // Get All
+    function GetAllDictionaries(out ADictionaryList : TObjectList): ErrorId;
 
+    function ImportDictionaries(var dto: TExportImportDto): ErrorId;
+
+    // Exists
+    function DictionaryRowExists(DictionaryType: TDictionaryType; Code: string): boolean;
+    function DictionaryRowExists(DictionaryType: TDictionaryType; Code: string; ParentCode: string): boolean;
   end;
 
 implementation
@@ -682,6 +692,15 @@ end;
 function TDictionaryRepository.GetDictionaryCodeFromSelectedItem(
   var ComboBox: TComboBox; out DictionaryCode: string): ErrorId;
 var
+  parentDictionaryCode: string;
+begin
+  Result := GetDictionaryCodeFromSelectedItem(ComboBox, DictionaryCode, parentDictionaryCode);
+end;
+
+function TDictionaryRepository.GetDictionaryCodeFromSelectedItem(
+  var ComboBox: TComboBox; out DictionaryCode: string;
+  out ParentDictionaryCode: string): ErrorId;
+var
   err: ErrorId;
   selectedItem: integer;
 begin
@@ -702,9 +721,15 @@ begin
     if err = ERR_OK then
     begin
       if ComboBox.Items.Objects[selectedItem] = nil then
-        DictionaryCode := EMPTY_STR
+      begin
+        DictionaryCode := EMPTY_STR;
+        ParentDictionaryCode := EMPTY_STR;
+      end
       else
+      begin
         DictionaryCode := PDictionaryTable(ComboBox.Items.Objects[selectedItem])^.Code;
+        ParentDictionaryCode := PDictionaryTable(ComboBox.Items.Objects[selectedItem])^.ParentDictionaryRowCode;
+      end;
     end;
 
   except
@@ -712,6 +737,178 @@ begin
       begin
         LogException(EMPTY_STR, ClassName, 'GetDictionaryCodeFromSelectedItem', E);
         err := ERR_GET_CODE_FROM_SELECTED_ITEM;
+      end;
+  end;
+
+  Result := err;
+
+end;
+
+function TDictionaryRepository.GetAllDictionaries(out
+  ADictionaryList: TObjectList): ErrorId;
+var
+  query: TZQuery;
+  err: ErrorId;
+  dictionaryList: TObjectList;
+  dictionary, childDictionary: TDictionary;
+  dictionaryDetail, childDictionaryDetail: TDictionaryDetail;
+  prevPropCode, prevPropDetailCode: string;
+  propName, propCode, propDescription: string;
+  propDetailText, propDetailCode: string;
+  propDetailPosition: integer;
+begin
+  err := ERR_OK;
+
+  try
+    dictionaryList := TObjectList.Create(true); // true means that objects will be released when the list is destroyed
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'SELECT ' +
+        // dictionary
+        '  d.Name, d.Code, d.Description, ' +
+
+        // dictionary details
+        '  dd.Text DetailText, dd.Code DetailCode, dd.Position DetailPosition, ' +
+
+        // child dictionary
+        '  cd.Name ChildName, cd.Code ChildCode, cd.Description ChildDescription, ' +
+
+        // child dictionary details
+        '  cdd.Text ChildDetailText, cdd.Code ChildDetailCode, cdd.Position ChildDetailPosition ' +
+
+        'FROM ' + DB_TABLE_DICTIONARY + ' d ' +
+        'LEFT JOIN ' + DB_TABLE_DICTIONARY + ' cd ON cd.ParentCode = d.Code ' +
+        'LEFT JOIN ' + DB_TABLE_DICTIONARY_ROW + ' dd ON dd.DictionaryID = d.ID ' +
+        'LEFT JOIN ' + DB_TABLE_DICTIONARY_ROW + ' cdd ON cdd.ParentDictionaryRowID = dd.ID ' +
+        'WHERE d.ParentCode IS NULL ' +
+        'ORDER BY UPPER(d.Name), dd.Position, UPPER(dd.Text), cdd.Position, UPPER(cdd.Text)');
+
+      query.Open;
+
+      while not query.EOF do  // iterate over dictionary
+      begin
+
+        propName := query.FieldByName('Name').AsString;
+        propCode := query.FieldByName('Code').AsString;
+        propDescription := query.FieldByName('Description').AsString;
+
+        if (prevPropCode <> propCode) then
+        begin
+          prevPropCode := propCode;
+
+          dictionary := TDictionary.Create(
+            propName, propCode,propDescription);
+
+          if (query.FieldByName('DetailCode').AsString <> EMPTY_STR) then
+            dictionary.D_Details := TObjectList.Create(true);
+
+          while ((not query.EOF) and (prevPropCode = query.FieldByName('Code').AsString)) do // iterate over dictionary details
+          begin
+            propDetailText := query.FieldByName('DetailText').AsString;
+            propDetailCode := query.FieldByName('DetailCode').AsString;
+            propDetailPosition := query.FieldByName('DetailPosition').AsInteger;
+
+            prevPropDetailCode := propDetailCode;
+
+            if (propDetailCode <> EMPTY_STR) then
+            begin
+              dictionaryDetail := TDictionaryDetail.Create(
+                propDetailText, propDetailCode, propDetailPosition);
+
+              if (query.FieldByName('ChildCode').AsString <> EMPTY_STR) then
+              begin
+                childDictionary := TDictionary.Create(
+                  query.FieldByName('ChildName').AsString,
+                  query.FieldByName('ChildCode').AsString,
+                  query.FieldByName('ChildDescription').AsString);
+
+                if (query.FieldByName('ChildDetailCode').AsString <> EMPTY_STR) then
+                begin
+                  childDictionary.D_Details := TObjectList.Create(true);
+
+                  while ((not query.EOF) and (prevPropDetailCode = query.FieldByName('DetailCode').AsString)) do
+                  begin
+                    childDictionaryDetail := TDictionaryDetail.Create(
+                      query.FieldByName('ChildDetailText').AsString,
+                      query.FieldByName('ChildDetailCode').AsString,
+                      query.FieldByName('ChildDetailPosition').AsInteger);
+
+                    childDictionary.D_Details.Add(childDictionaryDetail);
+
+                    query.Next;
+                  end;
+
+                  if not query.EOF then
+                    query.Prior;
+
+                end;
+
+                dictionaryDetail.D_Child := childDictionary;
+              end;
+
+              dictionary.D_Details.Add(dictionaryDetail);
+            end;
+
+            query.Next;
+          end;
+
+          if not query.EOF then
+            query.Prior;
+
+          dictionaryList.Add(dictionary);
+        end;
+
+        prevPropCode := propCode;
+
+        query.Next;
+      end;
+
+      ADictionaryList := dictionaryList;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'GetAllDictionaries', E);
+        err := ERR_GET_ALL_DICTIONARIES;
+      end;
+  end;
+
+  Result := err;
+end;
+
+function TDictionaryRepository.ImportDictionaries(var dto: TExportImportDto): ErrorId;
+var
+  err: ErrorId;
+  i: integer;
+  dictionary: TDictionary;
+  str: string;
+begin
+  err := ERR_OK;
+
+  if (dto = nil) or (dto.C_Dictionaries = nil) then
+    exit;
+
+  try
+
+    for i := 0 to dto.C_Dictionaries.Count - 1 do
+    begin
+      dictionary := dto.C_Dictionaries[i] as TDictionary;
+      str := dictionary.A_Name;
+    end;
+
+  except
+    on E: Exception do
+      begin
+        LogException(EMPTY_STR, ClassName, 'ImportDictionaries', E);
+        err := ERR_GET_ALL_DICTIONARIES;
       end;
   end;
 
@@ -746,7 +943,6 @@ begin
         query.Params.ParamByName('ParentDictionaryRowId').AsInteger := ParentDictionaryRowId;
       end;
 
-
       query.Params.ParamByName('ID').AsInteger := ExcludeDictionaryRowId;
       query.Params.ParamByName('DictionaryID').AsInteger := DictionaryId;
       query.Params.ParamByName('Code').AsString := Code;
@@ -763,6 +959,65 @@ begin
   except
     on E: Exception do
       RaiseErrorMessage(ERR_CHECKING_IF_DICTIONARY_ROW_EXISTS, ClassName, 'DictionaryRowExists');
+  end;
+end;
+
+function TDictionaryRepository.DictionaryRowExists(
+  DictionaryType: TDictionaryType; Code: string): boolean;
+var
+  dictionaryId: integer;
+  dictionaryParentId: integer;
+begin
+  try
+
+    GetDictionaryId(DictionaryType, dictionaryId, dictionaryParentId);
+    Result := DictionaryRowExists(dictionaryId, Code, EMPTY_STR);
+
+  except
+    on E: Exception do
+      RaiseErrorMessage(ERR_CHECKING_IF_DICTIONARY_ROW_EXISTS, ClassName, 'DictionaryRowCodeExists');
+  end;
+
+end;
+
+function TDictionaryRepository.DictionaryRowExists(
+  DictionaryType: TDictionaryType; Code: string; ParentCode: string): boolean;
+var
+  query: TZQuery;
+  dictionaryId: integer;
+  dictionaryParentId: integer;
+begin
+  try
+
+    GetDictionaryId(DictionaryType, dictionaryId, dictionaryParentId);
+
+    query := TZQuery.Create(nil);
+    try
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'SELECT COUNT(1) AS Count FROM ' + DB_TABLE_DICTIONARY_ROW +
+        ' WHERE DictionaryID = :DictionaryID AND Code = :Code AND ParentDictionaryRowID = ( ' +
+        '   SELECT ID FROM ' + DB_TABLE_DICTIONARY_ROW +
+        '   WHERE DictionaryID = :DictionaryParentId AND Code = :ParentCode limit 1)'
+      );
+
+      query.Params.ParamByName('DictionaryID').AsInteger := dictionaryId;
+      query.Params.ParamByName('Code').AsString := Code;
+      query.Params.ParamByName('DictionaryParentId').AsInteger := dictionaryParentId;
+      query.Params.ParamByName('ParentCode').AsString := ParentCode;
+
+      query.Open;
+
+      Result := query.FieldByName('Count').AsInteger > 0;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      RaiseErrorMessage(ERR_CHECKING_IF_DICTIONARY_ROW_EXISTS, ClassName, 'DictionaryRowCodeExists');
   end;
 end;
 

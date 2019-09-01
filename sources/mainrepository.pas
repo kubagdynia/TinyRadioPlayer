@@ -79,19 +79,25 @@ end;
 function TMainRepository.CreateStations: ErrorId;
 var
   err: ErrorId;
-  stationId: integer;
+  stationId: string;
 begin
   err := ERR_OK;
 
   // Stations
+  err := StationRepo.AddStation('.977 The 80''s Channel', 'http://www.977music.com/tunein/web/80s.asx',
+    EMPTY_STR, 'http://www.977music.com/', 'ClassicHits', 'US', 'NorthAmerica', stationId);
+
+  err := StationRepo.AddStation('.977 The Classic Rock Channel', 'http://www.977music.com/tunein/web/classicrock.asx',
+    EMPTY_STR, 'http://www.977music.com/', 'CLASSICROCK', 'US', 'NorthAmerica', stationId);
+
   err := StationRepo.AddStation('Radio Kaszebe', 'http://stream3.nadaje.com:8048',
-    EMPTY_STR, 'http://radiokaszebe.pl/', 'Pop', 'PL', stationId);
+    EMPTY_STR, 'http://radiokaszebe.pl/', 'Pop', 'PL', 'Europe', stationId);
 
   err := StationRepo.AddStation('Radio Malbork', 'http://78.46.246.97:9022',
-    EMPTY_STR, 'https://www.radiomalbork.fm/', 'Pop', 'PL', stationId);
+    EMPTY_STR, 'https://www.radiomalbork.fm/', 'Pop', 'PL', 'Europe', stationId);
 
   err := StationRepo.AddStation('Planeta RnB', 'http://plarnb-01.cdn.eurozet.pl:8216/',
-    EMPTY_STR, 'https://www.planetafm.pl/', 'RnBSoul', 'PL', stationId);
+    EMPTY_STR, 'https://www.planetafm.pl/', 'RnBSoul', 'PL', 'Europe', stationId);
 
   Result := err;
 end;

@@ -15,7 +15,7 @@ Description:         Types and classes used in the application
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, Contnrs;
 
 { - - - - - - - - - - - - - - - - - Enums - - - - - - - - - - - - - - - - - -  }
 type
@@ -33,16 +33,26 @@ type
 type
   TDictionaryType = (dkNone, dkGenre, dkRegion, dkCountry);
 
+{ - - - - - - - - - - - - - - - Import Data Status - - - - - - - - - - - - - - }
+type
+  TImportDataStatus = (idsStationAdded, idsStationUpdated, idsStationNotUpdatedCosTheSameData,
+                       idsStationNotAddedBecauseAlreadyExists,
+                       idsStationNotUpdatedBecauseNoDictionaryIten,
+                       idsStationNotAddedBecauseNoDictionaryIten,
+                       idsDictionaryAdded, idsDictionaryUpdated, idsDictionaryNotUpdatedCosTheSameData,
+                       idsStationNotUpdatedBecauseAlreadyExists);
+
 { - - - - - - - - - - - - - - - - StationInfo - - - - - - - - - - - - - - - - - }
 type
   TStationInfo = packed record
-    Id                  : integer;
+    Id                  : string;
     Name                : string;
     StreamUrl           : string;
     Description         : string;
     WebpageUrl          : string;
     GenreCode           : string;
     CountryCode         : string;
+    RegionCode          : string;
   end;
 
 { - - - - - - - - - - - - - - - ApplicationInfo - - - - - - - - - - - - - - - - }
@@ -74,15 +84,15 @@ type
 type
   TStationNodeData = class
   protected
-    FID      : integer;
+    FID      : string;
     FName    : string;
     FGenre   : string;
     FCountry : string;
   public
-    constructor Create(const Id: integer;
+    constructor Create(const Id: string;
       const Name, Genre, Country: string); overload;
 
-    property ID       : integer  read FID       write FID;
+    property ID       : string   read FID       write FID;
     property Name     : string   read FName     write FName;
     property Genre    : string   read FGenre    write FGenre;
     property Country  : string   read FCountry  write FCountry;
@@ -256,11 +266,134 @@ type
       property Delay     : single  read FDelay     write FDelay;
     end;
 
+{ - - - - - - - - - - - - - - - - - TStation - - - - - - - - - - - - - - - - - }
+type
+    TStation = class(TCollectionItem)
+    private
+      FID          : string;
+      FName        : string;
+      FStreamUrl   : string;
+      FDescription : string;
+      FWebpageUrl  : string;
+      FGenreCode   : string;
+      FCountryCode : string;
+      FRegionCode  : string;
+    public
+      constructor Create(const AID: string;
+        const AName: string; const AStreamUrl: string;
+        const ADescription: string; const AWebpageUrl: string;
+        const AGenreCode: string; const ACountryCode: string;
+        const ARegionCode: string); overload;
+    published
+      property A_ID           : string read FID          write FID;
+      property B_Name         : string read FName        write FName;
+      property C_StreamUrl    : string read FStreamUrl   write FStreamUrl;
+      property D_Description  : string read FDescription write FDescription;
+      property E_WebpageUrl   : string read FWebpageUrl  write FWebpageUrl;
+      property F_GenreCode    : string read FGenreCode   write FGenreCode;
+      property G_CountryCode  : string read FCountryCode write FCountryCode;
+      property H_RegionCode   : string read FRegionCode  write FRegionCode;
+    end;
+
+{ - - - - - - - - - - - - - - - - - TDictionary - - - - - - - - - - - - - - - - }
+type
+    TDictionary = class(TPersistent)
+    const
+      PropNameName         = 'A_Name';
+      PropCodeName         = 'B_Code';
+      PropDescriptionName  = 'C_Description';
+      PropDetailsName      = 'D_Details';
+    private
+      FName        : string;
+      FCode        : string;
+      FDescription : string;
+      FDetails     : TObjectList;
+    public
+      constructor Create(const AName: string;
+        const ACode: string; const ADescription: string); overload;
+      constructor Create(const AName: string;
+        const ACode: string; const ADescription: string;
+        const ADetails: TObjectList); overload;
+      destructor Destroy; override;
+    published
+      property A_Name         : string      read FName        write FName;
+      property B_Code         : string      read FCode        write FCode;
+      property C_Description  : string      read FDescription write FDescription;
+      property D_Details      : TObjectList read FDetails     write FDetails;
+    end;
+
+{ - - - - - - - - - - - - - - - - TDictionaryDetail - - - - - - - - - - - - - - }
+type
+    TDictionaryDetail = class(TPersistent)
+    const
+      PropTextName         = 'A_Text';
+      PropCodeName         = 'B_Code';
+      PropPositionName     = 'C_Position';
+      PropChildName        = 'D_Child';
+    private
+      FText        : string;
+      FCode        : string;
+      FPosition    : integer;
+      FChild       : TDictionary;
+    public
+      constructor Create(const AText: string;
+        const ACode: string; const APosition: integer); overload;
+      destructor Destroy; override;
+    published
+      property A_Text         : string      read FText        write FText;
+      property B_Code         : string      read FCode        write FCode;
+      property C_Position     : integer     read FPosition    write FPosition;
+      property D_Child        : TDictionary read FChild       write FChild;
+    end;
+
+{ - - - - - - - - - - - - - - - - TExportImportDto - - - - - - - - - - - - - - }
+type
+    TExportImportDto = class(TPersistent)
+    const
+      PropDateName         = 'A_Date';
+      PropStationsName     = 'B_Stations';
+      PropDictionariesName = 'C_Dictionaries';
+    private
+      FDate         : string;
+      FStations     : TObjectList;
+      FDictionaries : TObjectList;
+    public
+      destructor Destroy; override;
+    published
+      property A_Date          : string      read FDate         write FDate;
+      property B_Stations      : TObjectList read FStations     write FStations;
+      property C_Dictionaries  : TObjectList read FDictionaries write FDictionaries;
+    end;
+
+{ - - - - - - - - - - - - - - TImportDataNodeData - - - - - - - - - - - - - - - }
+type
+  TImportDataNodeData = class
+  protected
+    FName             : string;
+    FStatus           : string;
+    FImportDataStatus : TImportDataStatus;
+  public
+    constructor Create(const Name, Status: string; ImportDataStatus: TImportDataStatus); overload;
+
+    property Name             : string read FName   write FName;
+    property Status           : string read FStatus write FStatus;
+    property ImportDataStatus : TImportDataStatus read FImportDataStatus write FImportDataStatus;
+  end;
+
+  PImportDataNodeRec = ^TImportDataNodeRec;
+  TImportDataNodeRec =
+  record
+     idnd : TImportDataNodeData;
+  end;
+
+{ **************************************************************************** }
+{ **************************************************************************** }
+
 implementation
 
 { TStationNodeData }
 
-constructor TStationNodeData.Create(const Id: integer; const Name, Genre,
+constructor TStationNodeData.Create(const Id: string; const Name, Genre,
   Country: string);
 begin
   inherited Create;
@@ -425,6 +558,92 @@ begin
     AValue := 12;
 
   FBand8Gain := AValue;
+end;
+
+{ TStation }
+
+constructor TStation.Create(const AID: string; const AName: string;
+  const AStreamUrl: string; const ADescription: string;
+  const AWebpageUrl: string; const AGenreCode: string;
+  const ACountryCode: string; const ARegionCode: string);
+begin
+  FID := AID;
+  FName := AName;
+  FStreamUrl := AStreamUrl;
+  FDescription := ADescription;
+  FWebpageUrl := AWebpageUrl;
+  FGenreCode := AGenreCode;
+  FCountryCode := ACountryCode;
+  FRegionCode := ARegionCode;
+end;
+
+{ TDictionary }
+
+constructor TDictionary.Create(const AName: string;
+  const ACode: string; const ADescription: string);
+begin
+  FName := AName;
+  FCode := ACode;
+  FDescription := ADescription;
+end;
+
+constructor TDictionary.Create(const AName: string;
+  const ACode: string; const ADescription: string; const ADetails: TObjectList);
+begin
+  FName := AName;
+  FCode := ACode;
+  FDescription := ADescription;
+  FDetails := ADetails;
+end;
+
+destructor TDictionary.Destroy;
+begin
+  if Assigned(FDetails) then
+    FDetails.Free;
+
+  inherited Destroy;
+end;
+
+{ TDictionaryDetail }
+
+constructor TDictionaryDetail.Create(const AText: string; const ACode: string;
+  const APosition: integer);
+begin
+  FText := AText;
+  FCode := ACode;
+  FPosition := APosition;
+end;
+
+destructor TDictionaryDetail.Destroy;
+begin
+  if Assigned(FChild) then
+    FChild.Free;
+
+  inherited Destroy;
+end;
+
+{ TExportImportDto }
+
+destructor TExportImportDto.Destroy;
+begin
+  if Assigned(FStations) then
+    FStations.Free;
+  if Assigned(FDictionaries) then
+    FDictionaries.Free;
+
+  inherited Destroy;
+end;
+
+{ TImportDataNodeData }
+
+constructor TImportDataNodeData.Create(const Name, Status: string;
+  ImportDataStatus: TImportDataStatus);
+begin
+  inherited Create;
+
+  FName := Name;
+  FStatus := Status;
+  FImportDataStatus := ImportDataStatus;
 end;
 
 end.

@@ -42,6 +42,8 @@ const
   ERR_DB_STATION_ALREADY_EXISTS             = $00000037;
   ERR_DB_DOES_ANY_STATION_USE_ITEM_OF_DICTIONARY = $00000038;
   ERR_DB_UPDATE_STATION_DICTIONARY_CODE     = $00000039;
+  ERR_DB_GET_ALL_STATIONS                   = $0000003A;
+  ERR_DB_DATA_ARE_THE_SAME_STATION_UPDATE_IS_NOT_NEEDED = $0000003B;
 
   // Dictionary Repository
   ERR_DB_ADD_GENRE                          = $00000101;
@@ -68,12 +70,17 @@ const
   ERR_GET_DICTIONARY_ROW_CODE               = $00000116;
   ERR_IS_DICTIONARY_ROW_USED_AS_A_PARENT    = $00000117;
   ERR_DICTIONARY_ROW_IS_USED_BY_OTHER_DATA  = $00000118;
+  ERR_GET_ALL_DICTIONARIES                  = $00000119;
+  ERR_DICTIONARY_NOT_ROW_EXISTS             = $0000011A;
 
   // Skins
   ERR_CANT_LOAD_SKIN_ITEMS                  = $00000201;
 
   // Settings
   ERR_SET_GROUP_VALUE                       = $00000301;
+
+  // ExportImport
+  ERR_EXPORT_TO_JSON_FILE                   = $00000401;
 
   procedure ShowErrorMessage(const Err: ErrorId;
     const AClassName: string = EMPTY_STR;

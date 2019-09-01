@@ -1454,6 +1454,15 @@ object MainForm: TMainForm
     top = 248
     object miFile: TMenuItem
       Caption = 'File'
+      object miImportData: TMenuItem
+        Action = ImportDataAction
+      end
+      object miExportData: TMenuItem
+        Action = ExportDataAction
+      end
+      object miLine1: TMenuItem
+        Caption = '-'
+      end
       object miExit: TMenuItem
         Caption = 'Exit'
         ShortCut = 32883
@@ -1524,6 +1533,14 @@ object MainForm: TMainForm
     object AboutAction: TAction
       Caption = 'About'
       OnExecute = AboutActionExecute
+    end
+    object ImportDataAction: TAction
+      Caption = 'Import Data'
+      OnExecute = ImportDataActionExecute
+    end
+    object ExportDataAction: TAction
+      Caption = 'Export data'
+      OnExecute = ExportDataActionExecute
     end
   end
   object PopupMenuStationList: TPopupMenu

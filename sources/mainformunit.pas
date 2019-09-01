@@ -26,6 +26,11 @@ type
   { TMainForm }
   TMainForm = class(TForm)
     AboutAction: TAction;
+    ExportDataAction: TAction;
+    ImportDataAction: TAction;
+    miExportData: TMenuItem;
+    miImportData: TMenuItem;
+    miLine1: TMenuItem;
     miAbout: TMenuItem;
     OpenEqualizerAction: TAction;
     miEqualizer: TMenuItem;
@@ -57,7 +62,6 @@ type
     miSkins: TMenuItem;
     OpenUrlAction: TAction;
     MainActionList: TActionList;
-    btnRec: TBCButton;
     btnPrev: TBCButton;
     btnNext: TBCButton;
     btnOpen: TBCButton;
@@ -81,6 +85,8 @@ type
     procedure AddStationActionExecute(Sender: TObject);
     procedure BottomFunctionPanelResize(Sender: TObject);
     procedure DeleteStationActionExecute(Sender: TObject);
+    procedure ExportDataActionExecute(Sender: TObject);
+    procedure ImportDataActionExecute(Sender: TObject);
     procedure MainPanelResize(Sender: TObject);
     procedure miCopyTitleToClipboardClick(Sender: TObject);
     procedure miSearchOnYoutubeClick(Sender: TObject);
@@ -175,7 +181,7 @@ implementation
 
 uses
   Language, TRPSettings, Repository, StationDetailFormUnit, DictionaryTablesManagementFormUnit,
-  LCLIntf, Clipbrd, EqualizerFormUnit, AboutFormUnit;
+  LCLIntf, Clipbrd, EqualizerFormUnit, AboutFormUnit, ExportFormUnit, ImportFormUnit;
 
 {$R *.lfm}
 
@@ -450,11 +456,10 @@ begin
     VolumeTrackBar.Left := BottomFunctionPanel.Width - VolumeTrackBar.Width - 3;
   end;
 
-  btnPrev.Left := button7 - (6 * buttonWidth) - (5 * buttonSpace);
-  btnPlay.Left := button7 - (5 * buttonWidth) - (4 * buttonSpace);
-  btnStop.Left := button7 - (4 * buttonWidth) - (3 * buttonSpace);
-  btnNext.Left := button7 - (3 * buttonWidth) - (2 * buttonSpace);
-  btnRec.Left := button7 - (2 * buttonWidth) - buttonSpace;
+  btnPrev.Left := button7 - (5 * buttonWidth) - (4 * buttonSpace);
+  btnPlay.Left := button7 - (4 * buttonWidth) - (3 * buttonSpace);
+  btnStop.Left := button7 - (3 * buttonWidth) - (2 * buttonSpace);
+  btnNext.Left := button7 - (2 * buttonWidth) - (buttonSpace);
   btnOpen.Left := button7 - buttonWidth;
 
 end;
@@ -492,6 +497,32 @@ begin
     Exit;
 
   StationDetailManagement(TOpenMode.omDelete);
+end;
+
+procedure TMainForm.ExportDataActionExecute(Sender: TObject);
+begin
+  if not Assigned(ExportForm) then
+  begin
+    ExportForm := TExportForm.Create(Self);
+    try
+      ExportForm.ShowModal;
+    finally
+      FreeAndNil(ExportForm);
+    end;
+  end;
+end;
+
+procedure TMainForm.ImportDataActionExecute(Sender: TObject);
+begin
+  if not Assigned(ImportForm) then
+  begin
+    ImportForm := TImportForm.Create(Self);
+    try
+      ImportForm.ShowModal;
+    finally
+      FreeAndNil(ImportForm);
+    end;
+  end;
 end;
 
 procedure TMainForm.MainPanelResize(Sender: TObject);
@@ -619,6 +650,8 @@ end;
 procedure TMainForm.LoadLoanguages;
 begin
   miFile.Caption := GetLanguageItem('MainMenu.File', 'File');
+  miExportData.Caption := GetLanguageItem('MainMenu.File.ExportData', 'Export data');
+  miImportData.Caption := GetLanguageItem('MainMenu.File.ImportData', 'Import data');;
   miExit.Caption := GetLanguageItem('MainMenu.File.Exit', 'Exit');
   miSettings.Caption := GetLanguageItem('MainMenu.Settings', 'Settings');
   miLanguage.Caption := GetLanguageItem('MainMenu.Settings.Language', 'Language');
@@ -1105,7 +1138,7 @@ begin
     case OpenMode of
       { NEW }
       TOpenMode.omNew: begin
-        StationDetailForm := TStationDetailForm.Create(Self, OpenMode, EMPTY_INT, DropFileName);
+        StationDetailForm := TStationDetailForm.Create(Self, OpenMode, EMPTY_STR, DropFileName);
         try
           mr := StationDetailForm.ShowModal;
 
@@ -1275,7 +1308,6 @@ begin
   btnPrev.Glyph.Assign(ASkinData.GetBitmapItem('btnPrev'));
   btnStop.Glyph.Assign(ASkinData.GetBitmapItem('btnStop'));
   btnNext.Glyph.Assign(ASkinData.GetBitmapItem('btnNext'));
-  btnRec.Glyph.Assign(ASkinData.GetBitmapItem('btnRec'));
   btnOpen.Glyph.Assign(ASkinData.GetBitmapItem('btnOpen'));
 end;
 

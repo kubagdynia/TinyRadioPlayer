@@ -16,7 +16,7 @@ interface
 
 uses
   Classes, SysUtils, StdCtrls, ZConnection, RadioPlayerTypes, MainRepository,
-  BaseRepository, VirtualTrees, Consts;
+  BaseRepository, VirtualTrees, Consts, contnrs;
 
 type
 
@@ -32,25 +32,28 @@ type
 
     class function GetDbConnection: TZConnection;
     class function GetNewDbTableKey(const TableName: string): integer;
+    class function GetNewDbTableKeyAsGUID: string;
 
     // Stations
     class function AddStation(const StationName: string; const StreamUrl: string;
-      out StationId: integer): ErrorId;
+      out StationId: string): ErrorId;
     class function AddStation(const StationName: string; const StreamUrl: string;
       const Description: string; const WebpageUrl: string;
-      const GenreCode: string; const CountryCode: string;
-      out StationId: integer): ErrorId;
-    class function AddStation(StationInfo: TStationInfo; out StationId: integer): ErrorId;
+      const GenreCode: string; const CountryCode: string; const RegionCode: string;
+      out StationId: string): ErrorId;
+    class function AddStation(StationInfo: TStationInfo; out StationId: string): ErrorId;
     class function UpdateStation(StationInfo: TStationInfo): ErrorId;
-    class function DeleteStation(StationId: integer): ErrorId;
+    class function DeleteStation(StationId: string): ErrorId;
     class function LoadStations(var VstList: TVirtualStringTree; const Text: string): ErrorId;
-    class function LoadStation(var StationInfo: TStationInfo; const StationId: integer): ErrorId;
-    class function GetSelectedStationId(var VstList: TVirtualStringTree): integer;
+    class function LoadStation(var StationInfo: TStationInfo; const StationId: string): ErrorId;
+    class function GetSelectedStationId(var VstList: TVirtualStringTree): string;
     class function DoesAnyStationUseTheGivenItemOfTheDictionary(
       DictionaryType: TDictionaryType; DictionaryRowCode: string;
       out ItemIsUsed: boolean): ErrorId;
     class function UpdateStationDictionaryCode(DictionaryType: TDictionaryType;
       OldCode: string; NewCode: string): ErrorId;
+    class function GetAllStations(out AStationList : TObjectList): ErrorId;
+    class function IsStationExists(StationId: string; out IsExists: boolean): ErrorId;
 
     // Dictionary
     class function AddDictionary(const Name: string; const Code: string;
@@ -80,6 +83,8 @@ type
     class function FindAnItemInTheComboBox(var ComboBox: TComboBox; Code: string): ErrorId;
     class function GetDictionaryCodeFromSelectedItem(var ComboBox: TComboBox;
       out DictionaryCode: string): ErrorId;
+    class function GetDictionaryCodeFromSelectedItem(var ComboBox: TComboBox;
+      out DictionaryCode: string; out ParentDictionaryCode: string): ErrorId;
     class function LoadDictionaryNames(var VstList: TVirtualStringTree;
       SelectFirst: boolean = false): ErrorId;
     class function LoadDictionaryDetails(var VstList: TVirtualStringTree;
@@ -97,6 +102,12 @@ type
       out DictionaryRowId: integer): ErrorId;
     class function GetDictionaryRowCode(DictionaryRowId: integer;
       out Code: string): ErrorId;
+    class function GetAllDictionaries(out ADictionaryList: TObjectList): ErrorId;
+    class function ImportDictionaries(var dto: TExportImportDto): ErrorId;
+    class function DictionaryRowExists(DictionaryType: TDictionaryType;
+      Code: string): boolean;
+    class function DictionaryRowExists(DictionaryType: TDictionaryType;
+      Code: string; ParentCode: string): boolean;
   end;
 
 implementation
@@ -135,21 +146,27 @@ begin
   Result := FMainRepo.GetNewTableKey(TableName);
 end;
 
+class function TRepository.GetNewDbTableKeyAsGUID: string;
+begin
+  Result := FMainRepo.GetNewTableKeyAsGUID;
+end;
+
 class function TRepository.AddStation(const StationName: string;
-  const StreamUrl: string; out StationId: integer): ErrorId;
+  const StreamUrl: string; out StationId: string): ErrorId;
 begin
   Result := FMainRepo.StationRepo.AddStation(StationName, StreamUrl, StationId);
 end;
 
 class function TRepository.AddStation(const StationName: string;
   const StreamUrl: string; const Description: string; const WebpageUrl: string;
-  const GenreCode: string; const CountryCode: string; out StationId: integer): ErrorId;
+  const GenreCode: string; const CountryCode: string; const RegionCode: string;
+  out StationId: string): ErrorId;
 begin
   Result := FMainRepo.StationRepo.AddStation(StationName, StreamUrl, Description,
-    WebpageUrl, GenreCode, CountryCode, StationId);
+    WebpageUrl, GenreCode, CountryCode, RegionCode, StationId);
 end;
 
-class function TRepository.AddStation(StationInfo: TStationInfo; out StationId: integer): ErrorId;
+class function TRepository.AddStation(StationInfo: TStationInfo; out StationId: string): ErrorId;
 begin
   Result := FMainRepo.StationRepo.AddStation(StationInfo, StationId);
 end;
@@ -159,7 +176,7 @@ begin
   Result := FMainRepo.StationRepo.UpdateStation(StationInfo);
 end;
 
-class function TRepository.DeleteStation(StationId: integer): ErrorId;
+class function TRepository.DeleteStation(StationId: string): ErrorId;
 begin
   Result := FMainRepo.StationRepo.DeleteStation(StationId);
 end;
@@ -171,12 +188,12 @@ begin
 end;
 
 class function TRepository.LoadStation(var StationInfo: TStationInfo;
-  const StationId: integer): ErrorId;
+  const StationId: string): ErrorId;
 begin
   Result := FMainRepo.StationRepo.LoadStation(StationInfo, StationId);
 end;
 
-class function TRepository.GetSelectedStationId(var VstList: TVirtualStringTree): integer;
+class function TRepository.GetSelectedStationId(var VstList: TVirtualStringTree): string;
 begin
   Result := FMainRepo.StationRepo.GetSelectedStationId(VstList);
 end;
@@ -193,6 +210,17 @@ class function TRepository.UpdateStationDictionaryCode(
   DictionaryType: TDictionaryType; OldCode: string; NewCode: string): ErrorId;
 begin
   Result := FMainRepo.StationRepo.UpdateStationDictionaryCode(DictionaryType, OldCode, NewCode);
+end;
+
+class function TRepository.GetAllStations(out AStationList: TObjectList): ErrorId;
+begin
+  Result := FMainRepo.StationRepo.GetAllStations(AStationList);
+end;
+
+class function TRepository.IsStationExists(StationId: string; out
+  IsExists: boolean): ErrorId;
+begin
+  Result := FMainRepo.StationRepo.IsStationExists(StationId, IsExists);
 end;
 
 class function TRepository.AddDictionary(const Name: string;
@@ -286,6 +314,14 @@ begin
     FMainRepo.DictionaryRepo.GetDictionaryCodeFromSelectedItem(ComboBox, DictionaryCode);
 end;
 
+class function TRepository.GetDictionaryCodeFromSelectedItem(
+  var ComboBox: TComboBox; out DictionaryCode: string; out
+  ParentDictionaryCode: string): ErrorId;
+begin
+  Result :=
+    FMainRepo.DictionaryRepo.GetDictionaryCodeFromSelectedItem(ComboBox, DictionaryCode, ParentDictionaryCode);
+end;
+
 class function TRepository.LoadDictionaryNames(
   var VstList: TVirtualStringTree; SelectFirst: boolean = false): ErrorId;
 begin
@@ -332,6 +368,28 @@ class function TRepository.GetDictionaryRowCode(DictionaryRowId: integer; out
   Code: string): ErrorId;
 begin
   Result := FMainRepo.DictionaryRepo.GetDictionaryRowCode(DictionaryRowId, Code);
+end;
+
+class function TRepository.GetAllDictionaries(out ADictionaryList: TObjectList): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.GetAllDictionaries(ADictionaryList);
+end;
+
+class function TRepository.ImportDictionaries(var dto: TExportImportDto): ErrorId;
+begin
+  Result := FMainRepo.DictionaryRepo.ImportDictionaries(dto);
+end;
+
+class function TRepository.DictionaryRowExists(DictionaryType: TDictionaryType;
+  Code: string): boolean;
+begin
+  Result := FMainRepo.DictionaryRepo.DictionaryRowExists(DictionaryType, Code);
+end;
+
+class function TRepository.DictionaryRowExists(DictionaryType: TDictionaryType;
+  Code: string; ParentCode: string): boolean;
+begin
+  Result := FMainRepo.DictionaryRepo.DictionaryRowExists(DictionaryType, Code, ParentCode);
 end;
 
 initialization
