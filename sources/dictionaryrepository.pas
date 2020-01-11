@@ -31,11 +31,6 @@ type
     function ClearDictionary(AFreeAndNilDictionary: boolean = false;
       ADictionaryType: TDictionaryType = TDictionaryType.dkNone): ErrorId;
 
-    // Exists
-    function DictionaryRowExists(DictionaryId: integer; Code: string; Text: string;
-      ParentDictionaryRowId: integer = EMPTY_INT;
-      ExcludeDictionaryRowId: integer = EMPTY_INT): boolean;
-
     function IsDictionaryRowUsedAsAParent(DictionaryRowId: integer): boolean;
 
     function RefreshDictionary(ADictionaryType: TDictionaryType): ErrorId;
@@ -118,8 +113,13 @@ type
     function ImportDictionaries(var dto: TExportImportDto): ErrorId;
 
     // Exists
+    function DictionaryExists(Code: string; out DictionaryId: integer): boolean;
     function DictionaryRowExists(DictionaryType: TDictionaryType; Code: string): boolean;
     function DictionaryRowExists(DictionaryType: TDictionaryType; Code: string; ParentCode: string): boolean;
+
+    function DictionaryRowExists(DictionaryId: integer; Code: string; Text: string;
+      ParentDictionaryRowId: integer = EMPTY_INT;
+      ExcludeDictionaryRowId: integer = EMPTY_INT): boolean;
   end;
 
 implementation
@@ -913,6 +913,47 @@ begin
   end;
 
   Result := err;
+end;
+
+function TDictionaryRepository.DictionaryExists(Code: string; out DictionaryId: integer): boolean;
+var
+  query: TZQuery;
+begin
+  try
+    query := TZQuery.Create(nil);
+    try
+      DictionaryId := EMPTY_INT;
+
+      query.Connection := TRepository.GetDbConnection;
+
+      query.SQL.Add(
+        'SELECT ID FROM ' + DB_TABLE_DICTIONARY + ' WHERE UPPER(Code) = UPPER(:Code)'
+      );
+      query.ParamByName('Code').AsString := Code;
+
+      query.Open;
+
+      if query.RecordCount = 0 then
+      begin
+        Result := false;
+        Exit;
+      end;
+
+      if query.RecordCount > 1 then
+        raise Exception.Create(GetLanguageItem('ErrorMessage.MoreThanOneRecordWasReturned'));
+
+      DictionaryId := query.FieldByName('ID').AsInteger;
+
+      Result := true;
+
+    finally
+      query.Free;
+    end;
+
+  except
+    on E: Exception do
+      RaiseErrorMessage(ERR_CHECKING_IF_DICTIONARY_EXISTS, ClassName, 'DicrionaryExists', E.Message);
+  end;
 end;
 
 function TDictionaryRepository.DictionaryRowExists(DictionaryId: integer;

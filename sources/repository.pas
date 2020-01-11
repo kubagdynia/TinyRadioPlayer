@@ -104,6 +104,7 @@ type
       out Code: string): ErrorId;
     class function GetAllDictionaries(out ADictionaryList: TObjectList): ErrorId;
     class function ImportDictionaries(var dto: TExportImportDto): ErrorId;
+    class function DictionaryExists(Code: string; out DictionaryId: integer): boolean;
     class function DictionaryRowExists(DictionaryType: TDictionaryType;
       Code: string): boolean;
     class function DictionaryRowExists(DictionaryType: TDictionaryType;
@@ -378,6 +379,11 @@ end;
 class function TRepository.ImportDictionaries(var dto: TExportImportDto): ErrorId;
 begin
   Result := FMainRepo.DictionaryRepo.ImportDictionaries(dto);
+end;
+
+class function TRepository.DictionaryExists(Code: string; out DictionaryId: integer): boolean;
+begin
+  Result := FMainRepo.DictionaryRepo.DictionaryExists(Code, DictionaryId);
 end;
 
 class function TRepository.DictionaryRowExists(DictionaryType: TDictionaryType;

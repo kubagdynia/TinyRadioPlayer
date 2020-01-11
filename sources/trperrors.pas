@@ -71,7 +71,8 @@ const
   ERR_IS_DICTIONARY_ROW_USED_AS_A_PARENT    = $00000117;
   ERR_DICTIONARY_ROW_IS_USED_BY_OTHER_DATA  = $00000118;
   ERR_GET_ALL_DICTIONARIES                  = $00000119;
-  ERR_DICTIONARY_NOT_ROW_EXISTS             = $0000011A;
+  ERR_DICTIONARY_ROW_NOT_EXISTS             = $0000011A;
+  ERR_CHECKING_IF_DICTIONARY_EXISTS         = $0000011B;
 
   // Skins
   ERR_CANT_LOAD_SKIN_ITEMS                  = $00000201;
@@ -88,7 +89,8 @@ const
 
   procedure RaiseErrorMessage(const Err: ErrorId;
     const AClassName: string = EMPTY_STR;
-    const AMethodName: string = EMPTY_STR);
+    const AMethodName: string = EMPTY_STR;
+    const AMessage: string = EMPTY_STR);
 
   procedure ShowWarningMessage(const Err: ErrorId);
 
@@ -123,7 +125,7 @@ begin
 end;
 
 procedure RaiseErrorMessage(const Err: ErrorId; const AClassName: string;
-  const AMethodName: string);
+  const AMethodName: string; const AMessage: string = EMPTY_STR);
 var
   errorMessage: string;
 begin
@@ -132,9 +134,14 @@ begin
     errorMessage := GetErrorMessage(Err);
 
     if (Trim(AClassName) <> EMPTY_STR) or (Trim(AMethodName) <> EMPTY_STR) then
-      TLog.LogError(
-        Format('Code[%d] %s', [err, errorMessage]),
-        AClassName, AMethodName);
+    begin
+      if AMessage <> EMPTY_STR then
+        TLog.LogError(
+          Format('Code[%d] %s %s', [err, errorMessage, AMessage]), AClassName, AMethodName)
+      else
+        TLog.LogError(
+          Format('Code[%d] %s', [err, errorMessage]), AClassName, AMethodName)
+    end;
 
     raise Exception.Create(errorMessage);
   end;
@@ -199,7 +206,6 @@ begin
     ERR_DICTIONARY_ROW_IS_USED_BY_OTHER_DATA:
       Result := GetLanguageItem('ErrorMessage.DictionaryRowCanNotBeDeleted',
              'This dictionary element is used so it can not be deleted!');
-
 
     else
       Result := GetLanguageItem('ErrorMessage.UnspecifiedError',

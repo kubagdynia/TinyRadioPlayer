@@ -31,6 +31,7 @@ type
     function ParseDictionary(const jData: TJSONData): TDictionary;
 
     procedure ImportStations(const dto: TExportImportDto);
+    procedure ImportDictionaries(const dto: TExportImportDto);
 
     procedure JSONToObject(const JSON: TJSONData; AObject: TObject);
     procedure JSONToObject(const JSON: TJSONObject; AObject: TObject);
@@ -121,6 +122,10 @@ var
 begin
   exportImportDto := ParseImportFile(FilePath);
   try
+
+    if ExportDictionaries then
+      ImportDictionaries(exportImportDto);
+
     if ExportStations then
       ImportStations(exportImportDto);
 
@@ -174,9 +179,9 @@ begin
           OnImportStation(stationInfo, idsStationUpdated)
         else if (err = ERR_DB_DATA_ARE_THE_SAME_STATION_UPDATE_IS_NOT_NEEDED) then
           OnImportStation(stationInfo, idsStationNotUpdatedCosTheSameData)
-        else if (err = ERR_DICTIONARY_NOT_ROW_EXISTS) then
+        else if (err = ERR_DICTIONARY_ROW_NOT_EXISTS) then
           OnImportStation(stationInfo, idsStationNotUpdatedBecauseNoDictionaryIten)
-        else if (err = ERR_DB_STATION_ALREADY_EXISTS) then
+        else if (err = ERR_DICTIONARY_ROW_NOT_EXISTS) then
           OnImportStation(stationInfo, idsStationNotUpdatedBecauseAlreadyExists);
       end;
 
@@ -201,7 +206,7 @@ begin
       begin
         if (err = ERR_OK) then
           OnImportStation(stationInfo, idsStationAdded)
-        else if (err = ERR_DICTIONARY_NOT_ROW_EXISTS) then
+        else if (err = ERR_DICTIONARY_ROW_NOT_EXISTS) then
           OnImportStation(stationInfo, idsStationNotAddedBecauseNoDictionaryIten)
         else if (err = ERR_DB_STATION_ALREADY_EXISTS) then
           OnImportStation(stationInfo, idsStationNotAddedBecauseAlreadyExists)
@@ -211,6 +216,52 @@ begin
 
   end;
 
+
+end;
+
+procedure TExportImport.ImportDictionaries(const dto: TExportImportDto);
+var
+  i, j: integer;
+  err: ErrorId;
+  dictionary: TDictionary;
+  detail: TDictionaryDetail;
+  exists: boolean;
+  dictionaryCode: string;
+  dictionaryId: integer;
+begin
+  if (dto = nil) or (dto.C_Dictionaries = nil) or (dto.C_Dictionaries.Count = 0) then
+    exit;
+
+  err := ERR_OK;
+
+  for i := 0 to dto.C_Dictionaries.Count - 1 do
+  begin
+    dictionary := dto.C_Dictionaries[i] as TDictionary;
+
+    // At the first level, only genre and region are supported
+    //if (dictionary.B_Code <> DICTIONARY_GENRE_CODE) and (dictionary.B_Code <> DICTIONARY_REGION_CODE) then
+      //Continue;
+
+    exists := TRepository.DictionaryExists(dictionary.B_Code, dictionaryId);
+
+    if not exists then
+     err :=  TRepository.AddDictionary(dictionary.A_Name, dictionary.B_Code, dictionary.C_Description, dictionaryId);
+
+    if dictionary.D_Details <> nil then
+    begin
+      for j := 0 to dictionary.D_Details.Count - 1 do
+      begin
+        detail := dictionary.D_Details[j] as TDictionaryDetail;
+
+//        TRepository.DictionaryRowExists();
+
+      end;
+    end;
+
+
+
+
+  end;
 
 end;
 

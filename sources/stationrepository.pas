@@ -137,21 +137,21 @@ begin
     begin
       dictionaryExists := TRepository.DictionaryRowExists(dkGenre, AStationInfo.GenreCode);
       if not dictionaryExists then
-        err := ERR_DICTIONARY_NOT_ROW_EXISTS;
+        err := ERR_DICTIONARY_ROW_NOT_EXISTS;
     end;
 
     if (err = ERR_OK) and (AStationInfo.RegionCode <> EMPTY_STR) then
     begin
       dictionaryExists := TRepository.DictionaryRowExists(dkRegion, AStationInfo.RegionCode);
       if not dictionaryExists then
-        err := ERR_DICTIONARY_NOT_ROW_EXISTS;
+        err := ERR_DICTIONARY_ROW_NOT_EXISTS;
     end;
 
     if (err = ERR_OK) and (AStationInfo.CountryCode <> EMPTY_STR) then
     begin
       dictionaryExists := TRepository.DictionaryRowExists(dkCountry, AStationInfo.CountryCode, AStationInfo.RegionCode);
       if not dictionaryExists then
-        err := ERR_DICTIONARY_NOT_ROW_EXISTS;
+        err := ERR_DICTIONARY_ROW_NOT_EXISTS;
     end;
 
     if err = ERR_OK then
@@ -237,21 +237,21 @@ begin
     begin
       dictionaryExists := TRepository.DictionaryRowExists(dkGenre, StationInfo.GenreCode);
       if not dictionaryExists then
-        err := ERR_DICTIONARY_NOT_ROW_EXISTS;
+        err := ERR_DICTIONARY_ROW_NOT_EXISTS;
     end;
 
     if (err = ERR_OK) and (StationInfo.RegionCode <> EMPTY_STR) then
     begin
       dictionaryExists := TRepository.DictionaryRowExists(dkRegion, StationInfo.RegionCode);
       if not dictionaryExists then
-        err := ERR_DICTIONARY_NOT_ROW_EXISTS;
+        err := ERR_DICTIONARY_ROW_NOT_EXISTS;
     end;
 
     if (err = ERR_OK) and (StationInfo.CountryCode <> EMPTY_STR) then
     begin
       dictionaryExists := TRepository.DictionaryRowExists(dkCountry, StationInfo.CountryCode, StationInfo.RegionCode);
       if not dictionaryExists then
-        err := ERR_DICTIONARY_NOT_ROW_EXISTS;
+        err := ERR_DICTIONARY_ROW_NOT_EXISTS;
     end;
 
     if err = ERR_OK then
