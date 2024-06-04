@@ -9,12 +9,14 @@ inherited AboutForm: TAboutForm
   inherited TitlePanel: TBCPanel
     Width = 417
     inherited lblTitle: TBCLabel
-      Width = 87
+      Height = 20
+      Width = 110
       Caption = 'Application Title'
     end
   end
   inherited MainPanel: TBCPanel
-    Height = 181
+    Height = 160
+    Top = 51
     Width = 417
     object lblVersion: TLabel[0]
       Left = 16
@@ -125,13 +127,13 @@ inherited AboutForm: TAboutForm
     end
   end
   inherited BottomPanel: TBCPanel
-    Top = 222
+    Top = 211
     Width = 417
     inherited btnCancel: TBCButton
-      Left = 178
+      Left = 170
     end
     inherited btnOk: TBCButton
-      Left = 296
+      Left = 288
     end
   end
 end
