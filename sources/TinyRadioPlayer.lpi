@@ -17,7 +17,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MinorVersionNr Value="7"/>
-      <BuildNr Value="2"/>
+      <BuildNr Value="3"/>
       <StringTable CompanyName="Jakub Kurlowicz" LegalCopyright="MIT License, Copyright (c) 2019-2024 Jakub Kurlowicz" OriginalFilename="TinyRadioPlayer" ProductName="Tiny Radio Player" ProductVersion="2024.1"/>
     </VersionInfo>
     <BuildModes Count="2">
@@ -43,6 +43,7 @@
           <Linking>
             <Debugging>
               <GenerateDebugInfo Value="False"/>
+              <DebugInfoType Value="dsDwarf3"/>
             </Debugging>
             <LinkSmart Value="True"/>
             <Options>

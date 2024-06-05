@@ -1,6 +1,6 @@
 {
   BASS 2.4 FreePascal/Lazarus unit (dynamic)
-  Copyright (c) 1999-2014 Un4seen Developments Ltd.
+  Copyright (c) 1999-2022 Un4seen Developments Ltd.
   
   See the BASS.CHM file for more detailed documentation
 
@@ -80,6 +80,9 @@ const
   BASS_ERROR_CODEC        = 44;   // codec is not available/supported
   BASS_ERROR_ENDED        = 45;   // the channel/file has ended
   BASS_ERROR_BUSY         = 46;   // the device is busy
+  BASS_ERROR_UNSTREAMABLE = 47;   // unstreamable file
+  BASS_ERROR_PROTOCOL     = 48;   // unsupported protocol
+  BASS_ERROR_DENIED       = 49;   // access denied
   BASS_ERROR_UNKNOWN      = -1;   // some other mystery problem
 
   // BASS_SetConfig options
@@ -128,19 +131,45 @@ const
   BASS_CONFIG_NET_SEEK      = 56;
   BASS_CONFIG_AM_DISABLE    = 58;
   BASS_CONFIG_NET_PLAYLIST_DEPTH = 59;
-  BASS_CONFIG_NET_PREBUF_WAIT = 60;
+  BASS_CONFIG_NET_PREBUF_WAIT    = 60;
+  BASS_CONFIG_ANDROID_SESSIONID  = 62;
+  BASS_CONFIG_WASAPI_PERSIST     = 65;
+  BASS_CONFIG_REC_WASAPI         = 66;
+  BASS_CONFIG_ANDROID_AAUDIO     = 67;
+  BASS_CONFIG_SAMPLE_ONEHANDLE   = 69;
+  BASS_CONFIG_NET_META           = 71;
+  BASS_CONFIG_NET_RESTRATE       = 72;
+  BASS_CONFIG_REC_DEFAULT        = 73;
+  BASS_CONFIG_NORAMP             = 74;
 
   // BASS_SetConfigPtr options
-  BASS_CONFIG_NET_AGENT     = 16;
-  BASS_CONFIG_NET_PROXY     = 17;
+  BASS_CONFIG_NET_AGENT       = 16;
+  BASS_CONFIG_NET_PROXY       = 17;
+  BASS_CONFIG_ANDROID_JAVAVM  = 63;
+  BASS_CONFIG_LIBSSL          = 64;
+  BASS_CONFIG_FILENAME        = 75;
+
+  BASS_CONFIG_THREAD          = $40000000; // flag: thread-specific setting
+
+  // BASS_CONFIG_IOS_SESSION flags
+  BASS_IOS_SESSION_MIX            = 1;
+  BASS_IOS_SESSION_DUCK           = 2;
+  BASS_IOS_SESSION_AMBIENT        = 4;
+  BASS_IOS_SESSION_SPEAKER        = 8;
+  BASS_IOS_SESSION_DISABLE        = 16;
+  BASS_IOS_SESSION_DEACTIVATE     = 32;
+  BASS_IOS_SESSION_AIRPLAY        = 64;
+  BASS_IOS_SESSION_BTHFP          = 128;
+  BASS_IOS_SESSION_BTA2DP         = $100;
 
   // BASS_Init flags
-  BASS_DEVICE_8BITS       = 1;      // 8 bit resolution, else 16 bit
-  BASS_DEVICE_MONO        = 2;      // mono, else stereo
-  BASS_DEVICE_3D          = 4;      // enable 3D functionality
+  BASS_DEVICE_8BITS       = 1;      // unused
+  BASS_DEVICE_MONO        = 2;      // mono
+  BASS_DEVICE_3D          = 4;      // unused
   BASS_DEVICE_16BITS      = 8;      // limit output to 16 bit
-  BASS_DEVICE_LATENCY     = $100;   // calculate device latency (BASS_INFO struct)
-  BASS_DEVICE_CPSPEAKERS  = $400;   // detect speakers via Windows control panel
+  BASS_DEVICE_REINIT      = 128;    // reinitialize
+  BASS_DEVICE_LATENCY     = $100;   // unused
+  BASS_DEVICE_CPSPEAKERS  = $400;   // unused
   BASS_DEVICE_SPEAKERS    = $800;   // force enabling of speaker assignment
   BASS_DEVICE_NOSPEAKER   = $1000;  // ignore speaker arrangement
   {$IFNDEF MSWINDOWS}
@@ -150,6 +179,7 @@ const
   BASS_DEVICE_STEREO      = $8000;  // limit output to stereo
   BASS_DEVICE_AUDIOTRACK  = $20000; // use AudioTrack output
   BASS_DEVICE_DSOUND      = $40000; // use DirectSound output
+  BASS_DEVICE_SOFTWARE    = $80000; // disable hardware/fastpath output
 
   // DirectSound interfaces (for use with BASS_GetDSoundObject)
   BASS_OBJECT_DS          = 1;   // IDirectSound
@@ -159,6 +189,8 @@ const
   BASS_DEVICE_ENABLED     = 1;
   BASS_DEVICE_DEFAULT     = 2;
   BASS_DEVICE_INIT        = 4;
+  BASS_DEVICE_LOOPBACK    = 8;
+  BASS_DEVICE_DEFAULTCOM  = 128;
 	
   BASS_DEVICE_TYPE_MASK        = $ff000000;
   BASS_DEVICE_TYPE_NETWORK     = $01000000;
@@ -180,10 +212,8 @@ const
   DSCAPS_CONTINUOUSRATE   = $00000010;     // supports all sample rates between min/maxrate
   DSCAPS_EMULDRIVER       = $00000020;     // device does NOT have hardware DirectSound support
   DSCAPS_CERTIFIED        = $00000040;     // device driver has been certified by Microsoft
-  DSCAPS_SECONDARYMONO    = $00000100;     // mono
-  DSCAPS_SECONDARYSTEREO  = $00000200;     // stereo
-  DSCAPS_SECONDARY8BIT    = $00000400;     // 8 bit
-  DSCAPS_SECONDARY16BIT   = $00000800;     // 16 bit
+
+  DSCAPS_HARDWARE         = $80000000;     // hardware mixed
 
   // BASS_RECORDINFO flags (from DSOUND.H)
   DSCCAPS_EMULDRIVER = DSCAPS_EMULDRIVER;  // device does NOT have hardware DirectSound recording support
@@ -208,10 +238,10 @@ const
   BASS_SAMPLE_MONO        = 2;   // mono
   BASS_SAMPLE_LOOP        = 4;   // looped
   BASS_SAMPLE_3D          = 8;   // 3D functionality
-  BASS_SAMPLE_SOFTWARE    = 16;  // not using hardware mixing
+  BASS_SAMPLE_SOFTWARE    = 16;  // unused
   BASS_SAMPLE_MUTEMAX     = 32;  // mute at max distance (3D only)
-  BASS_SAMPLE_VAM         = 64;  // DX7 voice allocation & management
-  BASS_SAMPLE_FX          = 128; // old implementation of DX8 effects
+  BASS_SAMPLE_VAM         = 64;  // unused
+  BASS_SAMPLE_FX          = 128; // unused
   BASS_SAMPLE_OVER_VOL    = $10000; // override lowest volume
   BASS_SAMPLE_OVER_POS    = $20000; // override longest playing
   BASS_SAMPLE_OVER_DIST   = $30000; // override furthest from listener (3D only)
@@ -253,7 +283,7 @@ const
   BASS_SPEAKER_FRONT      = $1000000;  // front speakers
   BASS_SPEAKER_REAR       = $2000000;  // rear/side speakers
   BASS_SPEAKER_CENLFE     = $3000000;  // center & LFE speakers (5.1)
-  BASS_SPEAKER_REAR2      = $4000000;  // rear center speakers (7.1)
+  BASS_SPEAKER_SIDE       = $4000000;  // rear center speakers (7.1)
   BASS_SPEAKER_LEFT       = $10000000; // modifier: left
   BASS_SPEAKER_RIGHT      = $20000000; // modifier: right
   BASS_SPEAKER_FRONTLEFT  = BASS_SPEAKER_FRONT or BASS_SPEAKER_LEFT;
@@ -262,11 +292,14 @@ const
   BASS_SPEAKER_REARRIGHT  = BASS_SPEAKER_REAR or BASS_SPEAKER_RIGHT;
   BASS_SPEAKER_CENTER     = BASS_SPEAKER_CENLFE or BASS_SPEAKER_LEFT;
   BASS_SPEAKER_LFE        = BASS_SPEAKER_CENLFE or BASS_SPEAKER_RIGHT;
-  BASS_SPEAKER_REAR2LEFT  = BASS_SPEAKER_REAR2 or BASS_SPEAKER_LEFT;
-  BASS_SPEAKER_REAR2RIGHT = BASS_SPEAKER_REAR2 or BASS_SPEAKER_RIGHT;
+  BASS_SPEAKER_SIDELEFT   = BASS_SPEAKER_SIDE or BASS_SPEAKER_LEFT;
+  BASS_SPEAKER_SIDERIGHT  = BASS_SPEAKER_SIDE or BASS_SPEAKER_RIGHT;
+  BASS_SPEAKER_REAR2      = BASS_SPEAKER_SIDE;
+  BASS_SPEAKER_REAR2LEFT  = BASS_SPEAKER_SIDELEFT;
+  BASS_SPEAKER_REAR2RIGHT = BASS_SPEAKER_SIDERIGHT;
 
-  BASS_ASYNCFILE          = $40000000;
-  BASS_UNICODE            = $80000000;
+  BASS_ASYNCFILE          = $40000000; // read file asynchronously
+  BASS_UNICODE            = $80000000; // UTF-16
 
   BASS_RECORD_PAUSE       = $8000; // start recording paused
 
@@ -303,6 +336,9 @@ const
   BASS_CTYPE_MUSIC_IT     = $20004;
   BASS_CTYPE_MUSIC_MO3    = $00100; // MO3 flag
 
+  // BASS_PluginLoad flags
+  BASS_PLUGIN_PROC        = 1;
+
   // 3D channel modes
   BASS_3DMODE_NORMAL      = 0; // normal 3D processing
   BASS_3DMODE_RELATIVE    = 1; // position is relative to the listener
@@ -313,6 +349,10 @@ const
   BASS_3DALG_OFF          = 1;
   BASS_3DALG_FULL         = 2;
   BASS_3DALG_LIGHT        = 3;
+
+  // BASS_SampleGetChannel flags
+  BASS_SAMCHAN_NEW        = 1; // get a new playback channel
+  BASS_SAMCHAN_STREAM     = 2; // create a stream
 
   // EAX environments, use with BASS_SetEAXParameters
   EAX_ENVIRONMENT_GENERIC           = 0;
@@ -366,6 +406,7 @@ const
   BASS_FILEPOS_ASYNCBUF   = 7;
   BASS_FILEPOS_SIZE       = 8;
   BASS_FILEPOS_BUFFERING  = 9;
+  BASS_FILEPOS_AVAILABLE  = 10;
 
   // BASS_ChannelSetSync types
   BASS_SYNC_POS           = 0;
@@ -380,6 +421,9 @@ const
   BASS_SYNC_MUSICINST     = 1;
   BASS_SYNC_MUSICFX       = 3;
   BASS_SYNC_OGG_CHANGE    = 12;
+  BASS_SYNC_DEV_FAIL      = 14;
+  BASS_SYNC_DEV_FORMAT    = 15;
+  BASS_SYNC_THREAD        = $20000000; // flag: call sync in other thread
   BASS_SYNC_MIXTIME       = $40000000; // flag: sync at mixtime, else at playtime
   BASS_SYNC_ONETIME       = $80000000; // flag: sync only once, else continuously
 
@@ -388,6 +432,7 @@ const
   BASS_ACTIVE_PLAYING = 1;
   BASS_ACTIVE_STALLED = 2;
   BASS_ACTIVE_PAUSED  = 3;
+  BASS_ACTIVE_PAUSED_DEVICE = 4;
 
   // Channel attributes
   BASS_ATTRIB_FREQ                  = 1;
@@ -403,6 +448,13 @@ const
   BASS_ATTRIB_NORAMP                = 11;
   BASS_ATTRIB_BITRATE               = 12;
   BASS_ATTRIB_BUFFER                = 13;
+  BASS_ATTRIB_GRANULE               = 14;
+  BASS_ATTRIB_USER                  = 15;
+  BASS_ATTRIB_TAIL                  = 16;
+  BASS_ATTRIB_PUSH_LIMIT            = 17;
+  BASS_ATTRIB_DOWNLOADPROC          = 18;
+  BASS_ATTRIB_VOLDSP                = 19;
+  BASS_ATTRIB_VOLDSP_PRIORITY       = 20;
   BASS_ATTRIB_MUSIC_AMPLIFY         = $100;
   BASS_ATTRIB_MUSIC_PANSEP          = $101;
   BASS_ATTRIB_MUSIC_PSCALER         = $102;
@@ -418,7 +470,8 @@ const
 
   // BASS_ChannelGetData flags
   BASS_DATA_AVAILABLE = 0;        // query how much data is buffered
-  BASS_DATA_FIXED     = $20000000; // flag: return 8.24 fixed-point data
+  BASS_DATA_NOREMOVE  = $10000000; // flag: don't remove data from recording buffer
+  BASS_DATA_FIXED     = $20000000; // unused
   BASS_DATA_FLOAT     = $40000000; // flag: return floating-point sample data
   BASS_DATA_FFT256    = $80000000; // 256 sample FFT
   BASS_DATA_FFT512    = $80000001; // 512 FFT
@@ -432,12 +485,14 @@ const
   BASS_DATA_FFT_NOWINDOW = $20;   // FFT flag: no Hanning window
   BASS_DATA_FFT_REMOVEDC = $40;   // FFT flag: pre-remove DC bias
   BASS_DATA_FFT_COMPLEX = $80;    // FFT flag: return complex data
+  BASS_DATA_FFT_NYQUIST = $100;   // FFT flag: return extra Nyquist value
 	
   // BASS_ChannelGetLevelEx flags
-  BASS_LEVEL_MONO     = 1;
-  BASS_LEVEL_STEREO   = 2;
-  BASS_LEVEL_RMS      = 4;
-  BASS_LEVEL_VOLPAN   = 8;
+  BASS_LEVEL_MONO     = 1; // get mono level
+  BASS_LEVEL_STEREO   = 2; // get stereo level
+  BASS_LEVEL_RMS      = 4; // get RMS levels
+  BASS_LEVEL_VOLPAN   = 8; // apply VOL/PAN attributes to the levels
+  BASS_LEVEL_NOREMOVE = 16; // don't remove data from recording buffer
 
   // BASS_ChannelGetTags types : what's returned
   BASS_TAG_ID3           = 0; // ID3v1 tags : TAG_ID3 structure
@@ -454,8 +509,10 @@ const
   BASS_TAG_CA_CODEC      = 11;	// CoreAudio codec info : TAG_CA_CODEC structure
   BASS_TAG_MF            = 13;	// Media Foundation tags : series of null-terminated UTF-8 strings
   BASS_TAG_WAVEFORMAT    = 14;	// WAVE format : WAVEFORMATEEX structure
-  BASS_TAG_AM_MIME       = 15; // Android Media MIME type : ASCII string
   BASS_TAG_AM_NAME       = 16; // Android Media codec name : ASCII string
+  BASS_TAG_ID3V2_2       = 17; // ID3v2 tags (2nd block) : variable length block
+  BASS_TAG_AM_MIME       = 18; // Android Media MIME type : ASCII string
+  BASS_TAG_LOCATION      = 19; // redirected URL : ASCII string
   BASS_TAG_RIFF_INFO     = $100; // RIFF "INFO" tags : series of null-terminated ANSI strings
   BASS_TAG_RIFF_BEXT     = $101; // RIFF/BWF "bext" tags : TAG_BEXT structure
   BASS_TAG_RIFF_CART     = $102; // RIFF/BWF "cart" tags : TAG_CART structure
@@ -468,12 +525,16 @@ const
   BASS_TAG_MUSIC_ORDERS  = $10002; // MOD order list : BYTE array of pattern numbers
   BASS_TAG_MUSIC_AUTH    = $10003; // MOD author : UTF-8 string
   BASS_TAG_MUSIC_INST    = $10100;	// + instrument #, MOD instrument name : ANSI string
+  BASS_TAG_MUSIC_CHAN    = $10200; // + channel #, MOD channel name : ANSI string
   BASS_TAG_MUSIC_SAMPLE  = $10300; // + sample #, MOD sample name : ANSI string
 
   // BASS_ChannelGetLength/GetPosition/SetPosition modes
   BASS_POS_BYTE           = 0; // byte position
   BASS_POS_MUSIC_ORDER    = 1; // order.row position, MAKELONG(order,row)
   BASS_POS_OGG            = 3; // OGG bitstream number
+  BASS_POS_END            = $10; // trimmed end position
+  BASS_POS_LOOP           = $11; // loop start positiom
+  BASS_POS_FLUSH          = $1000000; // flag: flush decoder/FX buffers
   BASS_POS_RESET          = $2000000; // flag: reset user file buffers
   BASS_POS_RELATIVE       = $4000000; // flag: seek relative to the current position
   BASS_POS_INEXACT        = $8000000; // flag: allow seeking to inexact position
@@ -547,13 +608,13 @@ type
 
   BASS_INFO = record
     flags: DWORD;       // device capabilities (DSCAPS_xxx flags)
-    hwsize: DWORD;      // size of total device hardware memory
-    hwfree: DWORD;      // size of free device hardware memory
-    freesam: DWORD;     // number of free sample slots in the hardware
-    free3d: DWORD;      // number of free 3D sample slots in the hardware
-    minrate: DWORD;     // min sample rate supported by the hardware
-    maxrate: DWORD;     // max sample rate supported by the hardware
-    eax: BOOL;          // device supports EAX? (always FALSE if BASS_DEVICE_3D was not used)
+    hwsize: DWORD;      // unused
+    hwfree: DWORD;      // unused
+    freesam: DWORD;     // unused
+    free3d: DWORD;      // unused
+    minrate: DWORD;     // unused
+    maxrate: DWORD;     // unused
+    eax: BOOL;          // unused
     minbuf: DWORD;      // recommended minimum buffer length in ms (requires BASS_DEVICE_LATENCY)
     dsver: DWORD;       // DirectSound version
     latency: DWORD;     // delay (in ms) before start of playback (requires BASS_DEVICE_LATENCY)
@@ -785,6 +846,7 @@ const
   STREAMPROC_DUMMY = Pointer(0);   // "dummy" stream
   STREAMPROC_PUSH = Pointer(-1);   // push stream
   STREAMPROC_DEVICE = Pointer(-2); // device mix stream
+  STREAMPROC_DEVICE_3D = Pointer(-3); // device 3D mix stream
 {$ENDIF}
 
 type
@@ -850,11 +912,13 @@ var BASS_GetCPU:function: FLOAT; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
 var BASS_Start:function: BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
 var BASS_Stop:function: BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
 var BASS_Pause:function: BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
+var BASS_IsStarted:function: DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
 var BASS_SetVolume:function(volume: FLOAT): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
 var BASS_GetVolume:function: FLOAT; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
 
 var BASS_PluginLoad:function(filename: PChar; flags: DWORD): HPLUGIN; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
 var BASS_PluginFree:function(handle: HPLUGIN): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
+var BASS_PluginEnable:function(handle: HPLUGIN; enable: BOOL): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
 var BASS_PluginGetInfo:function(handle: HPLUGIN): PBASS_PLUGININFO; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
 
 var BASS_Set3DFactors:function(distf, rollf, doppf: FLOAT): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
@@ -1023,11 +1087,13 @@ begin
       Pointer(BASS_Start)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Start'));
       Pointer(BASS_Stop)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Stop'));
       Pointer(BASS_Pause)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Pause'));
+      Pointer(BASS_IsStarted)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_IsStarted'));
       Pointer(BASS_SetVolume)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_SetVolume'));
       Pointer(BASS_GetVolume)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_GetVolume'));
 
       Pointer(BASS_PluginLoad)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_PluginLoad'));
       Pointer(BASS_PluginFree)		   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_PluginFree'));
+      Pointer(BASS_PluginEnable)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_PluginEnable'));
       Pointer(BASS_PluginGetInfo)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_PluginGetInfo'));
 
       Pointer(BASS_Set3DFactors)	   :=	DynLibs.GetProcedureAddress(BASS_Handle,PChar('BASS_Set3DFactors'));
@@ -1136,11 +1202,13 @@ begin
         (@BASS_Start=nil) or
         (@BASS_Stop=nil) or
         (@BASS_Pause=nil) or
+        (@BASS_IsStarted=nil) or
         (@BASS_SetVolume=nil) or
         (@BASS_GetVolume=nil) or
 
         (@BASS_PluginLoad=nil) or
         (@BASS_PluginFree=nil) or
+        (@BASS_PluginEnable=nil) or
         (@BASS_PluginGetInfo=nil) or
 
         (@BASS_Set3DFactors=nil) or
